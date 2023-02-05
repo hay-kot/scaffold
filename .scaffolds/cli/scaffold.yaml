@@ -1,0 +1,27 @@
+questions:
+  - name: "Description"
+    prompt:
+      message: "Description of the project"
+    required: true
+  - name: "License"
+    prompt:
+      message: "License of the project"
+      default: "MIT"
+      options:
+        - "MIT"
+        - "Apache-2.0"
+        - "GPL-3.0"
+        - "BSD-3-Clause"
+        - "Unlicense"
+  - name: "Colors"
+    prompt:
+      multi: true
+      message: "Colors of the project"
+      options:
+        - "red"
+        - "green"
+        - "blue"
+        - "yellow"
+  - name: "Use Github Actions"
+    prompt:
+      confirm: "Use Github Actions for CI/CD?"

@@ -1,0 +1,129 @@
+(*scaffold.TemplateNode)({
+  rootFS: (*fs.subFS)({
+    fsys: (embed.FS) {
+      files: (*[]embed.file)((len=9) {
+        (embed.file) {
+          name: (string) (len=9) "testdata/",
+          data: (string) "",
+          hash: ([16]uint8) (len=16) {
+            00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+          }
+        },
+        (embed.file) {
+          name: (string) (len=25) "testdata/nested_scaffold/",
+          data: (string) "",
+          hash: ([16]uint8) (len=16) {
+            00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+          }
+        },
+        (embed.file) {
+          name: (string) (len=38) "testdata/nested_scaffold/scaffold.yaml",
+          data: (string) (len=12) "main: value\n",
+          hash: ([16]uint8) (len=16) {
+            00000000  27 34 01 30 91 7f 4a 63  e4 24 ee 2d 05 5b 7a 82  |'4.0..Jc.$.-.[z.|
+          }
+        },
+        (embed.file) {
+          name: (string) (len=40) "testdata/nested_scaffold/{{ .Project }}/",
+          data: (string) "",
+          hash: ([16]uint8) (len=16) {
+            00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+          }
+        },
+        (embed.file) {
+          name: (string) (len=50) "testdata/nested_scaffold/{{ .Project }}/file_1.txt",
+          data: (string) (len=20) "{{ .Scaffold.Name }}",
+          hash: ([16]uint8) (len=16) {
+            00000000  2f 42 2c e1 1c b6 15 07  b4 fa 1e 9e 46 61 87 7d  |/B,.........Fa.}|
+          }
+        },
+        (embed.file) {
+          name: (string) (len=50) "testdata/nested_scaffold/{{ .Project }}/file_2.txt",
+          data: (string) (len=21) "{{ .Scaffold.Name2 }}",
+          hash: ([16]uint8) (len=16) {
+            00000000  5b 8b 38 8f 0e 30 9d 6b  c9 37 ba 61 b4 dc 73 92  |[.8..0.k.7.a..s.|
+          }
+        },
+        (embed.file) {
+          name: (string) (len=47) "testdata/nested_scaffold/{{ .Project }}/nested/",
+          data: (string) "",
+          hash: ([16]uint8) (len=16) {
+            00000000  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+          }
+        },
+        (embed.file) {
+          name: (string) (len=57) "testdata/nested_scaffold/{{ .Project }}/nested/file_1.txt",
+          data: (string) (len=38) "{{ .Scaffold.Name }}\n\nMulti Line Field",
+          hash: ([16]uint8) (len=16) {
+            00000000  ab 7a 3b 76 ef e0 55 c6  df 92 60 87 b2 c5 5c 0e  |.z;v..U...`...\.|
+          }
+        },
+        (embed.file) {
+          name: (string) (len=57) "testdata/nested_scaffold/{{ .Project }}/nested/file_2.txt",
+          data: (string) (len=21) "{{ .Scaffold.Name2 }}",
+          hash: ([16]uint8) (len=16) {
+            00000000  5b 8b 38 8f 0e 30 9d 6b  c9 37 ba 61 b4 dc 73 92  |[.8..0.k.7.a..s.|
+          }
+        }
+      })
+    },
+    dir: (string) (len=39) "testdata/nested_scaffold/{{ .Project }}"
+  }),
+  folder: (bool) true,
+  templatePath: (string) (len=1) ".",
+  templateFile: (io.Reader) <nil>,
+  outpath: (string) "",
+  outContent: ([]uint8) <nil>,
+  Children: ([]*scaffold.TemplateNode) (len=3) {
+    (*scaffold.TemplateNode)({
+      rootFS: (*fs.subFS)(<already shown>),
+      folder: (bool) false,
+      templatePath: (string) (len=10) "file_1.txt",
+      templateFile: (io.Reader) <nil>,
+      outpath: (string) "",
+      outContent: ([]uint8) <nil>,
+      Children: ([]*scaffold.TemplateNode) {
+      }
+    }),
+    (*scaffold.TemplateNode)({
+      rootFS: (*fs.subFS)(<already shown>),
+      folder: (bool) false,
+      templatePath: (string) (len=10) "file_2.txt",
+      templateFile: (io.Reader) <nil>,
+      outpath: (string) "",
+      outContent: ([]uint8) <nil>,
+      Children: ([]*scaffold.TemplateNode) {
+      }
+    }),
+    (*scaffold.TemplateNode)({
+      rootFS: (*fs.subFS)(<already shown>),
+      folder: (bool) true,
+      templatePath: (string) (len=6) "nested",
+      templateFile: (io.Reader) <nil>,
+      outpath: (string) "",
+      outContent: ([]uint8) <nil>,
+      Children: ([]*scaffold.TemplateNode) (len=2) {
+        (*scaffold.TemplateNode)({
+          rootFS: (*fs.subFS)(<already shown>),
+          folder: (bool) false,
+          templatePath: (string) (len=17) "nested/file_1.txt",
+          templateFile: (io.Reader) <nil>,
+          outpath: (string) "",
+          outContent: ([]uint8) <nil>,
+          Children: ([]*scaffold.TemplateNode) {
+          }
+        }),
+        (*scaffold.TemplateNode)({
+          rootFS: (*fs.subFS)(<already shown>),
+          folder: (bool) false,
+          templatePath: (string) (len=17) "nested/file_2.txt",
+          templateFile: (io.Reader) <nil>,
+          outpath: (string) "",
+          outContent: ([]uint8) <nil>,
+          Children: ([]*scaffold.TemplateNode) {
+          }
+        })
+      }
+    })
+  }
+})

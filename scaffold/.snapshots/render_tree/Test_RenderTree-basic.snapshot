@@ -1,0 +1,11 @@
+TEST_PROJECT:  (type=dir)
+	main.go:  (type=file)
+		package main
+		
+		import "os"
+		
+		func main() {
+			os.Exit(0)
+		}
+		
+

@@ -28,8 +28,11 @@ func Test_RenderTree(t *testing.T) {
 	}
 
 	vars := Vars{
-		"Name":  "Your Name1",
-		"Name2": "Your Name2",
+		"Project": "TestProject",
+		"Scaffold": Vars{
+			"Name":  "Your Name1",
+			"Name2": "Your Name2",
+		},
 	}
 
 	snapshot := cupaloy.New(

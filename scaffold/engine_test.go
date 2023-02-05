@@ -23,7 +23,7 @@ func TestScaffold_TmplString(t *testing.T) {
 	}{
 		{
 			name: "Basic template",
-			tmpl: "./path/to/file/{{ .Scaffold.Name }}",
+			tmpl: "./path/to/file/{{ .Name }}",
 			want: "./path/to/file/Name",
 			vars: Vars{
 				"Name": "Name",
@@ -98,7 +98,7 @@ func TestScaffold_RenderTemplate(t *testing.T) {
 	}{
 		{
 			name:    "Basic template",
-			tmpl:    "Hello {{ .Scaffold.World }}",
+			tmpl:    "Hello {{ .World }}",
 			want:    "Hello World!",
 			wantErr: false,
 			vars: Vars{
@@ -107,7 +107,7 @@ func TestScaffold_RenderTemplate(t *testing.T) {
 		},
 		{
 			name:    "Basic template with sprig function",
-			tmpl:    "Hello {{ .Scaffold.World | upper }}",
+			tmpl:    "Hello {{ .World | upper }}",
 			want:    "Hello WORLD!",
 			wantErr: false,
 			vars: Vars{

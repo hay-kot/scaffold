@@ -1,4 +1,4 @@
-TEST_PROJECT:  (type=dir)
+TestProject:  (type=dir)
 	main.go:  (type=file)
 		package main
 		

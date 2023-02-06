@@ -1,140 +1,119 @@
 package scaffold
 
 import (
-	"fmt"
+	"bytes"
 	"io"
+	"io/fs"
 	"os"
-	"path/filepath"
+	"strings"
 
+	"github.com/bmatcuk/doublestar/v4"
+	"github.com/hay-kot/scaffold/internal/core/rwfs"
+	"github.com/hay-kot/scaffold/internal/engine"
 	"github.com/huandu/xstrings"
-	"github.com/rs/zerolog/log"
 )
 
-type RenderableNode interface {
-	GetTemplatePath() string
-	SetOutPath(string)
-	io.ReadWriter
+type RWFSArgs struct {
+	ReadFS  rwfs.ReadFS
+	WriteFS rwfs.WriteFS
+	Project *Project
 }
 
-// RenderNode renders a node and sets the outpath on the node while
-// processing it as a template.
-func RenderNode[T RenderableNode](s *Engine, n T, vars any) error {
-	outpath, err := s.TmplString(n.GetTemplatePath(), vars)
-	if err != nil {
-		return err
-	}
-
-	n.SetOutPath(outpath)
-
-	err = RenderReadWriter(s, n, vars)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// RenderReadWriter renders a io.ReadWriter as a template.
-//
-//   - The io.Reader is expected to be a template.
-//   - The io.Writer is expected to be a destination for the rendered template. (e.g. a file)
-func RenderReadWriter[T io.ReadWriter](s *Engine, rw T, vars any) error {
-	tmpl, err := s.TmplFactory(rw)
-	if err != nil {
-		return err
-	}
-
-	err = s.RenderTemplate(rw, tmpl, vars)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ProjectRenderOptions are options for rendering a project.
-type ProjectRenderOptions struct {
-	// OutDirectory is the directory to render the project to.
-	//
-	// Example: /home/user/projects
-	//
-	//  | /home/user/projects/my-project
-	//	|___ <- New project rendered here
-	OutDirectory string
-}
-
-// RenderProject renders an entire Project to the given out directory.
-//
-// It will also transforms the vars variable to be used in the templates
-// into a nested map of the following structure:
-//
-//   - Project: The project name
-//   - ProjectSnake: The project name in snake case
-//   - ProjectKebab: The project name in kebab case
-//   - ProjectCamel: The project name in camel case
-//   - Scaffold: The vars variable passed to this function
-func RenderProject(e *Engine, p *Project, vars any, opts ProjectRenderOptions) error {
-	iVars := Vars{
-		"Project":      p.qProject,
-		"ProjectSnake": xstrings.ToSnakeCase(p.qProject),
-		"ProjectKebab": xstrings.ToKebabCase(p.qProject),
-		"ProjectCamel": xstrings.ToCamelCase(p.qProject),
+// RenderRWFS renders a rwfs.RFS to a rwfs.WriteFS by compiling all files in the rwfs.ReadFS
+// and writing the compiled files to the WriteFS.
+func RenderRWFS(s *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
+	iVars := engine.Vars{
+		"Project":      args.Project.Name,
+		"ProjectSnake": xstrings.ToSnakeCase(args.Project.Name),
+		"ProjectKebab": xstrings.ToKebabCase(args.Project.Name),
+		"ProjectCamel": xstrings.ToCamelCase(args.Project.Name),
 		"Scaffold":     vars,
 	}
 
-	nodes := p.Tree.Flatten()
-	log.Debug().Int("nodes", len(nodes)).Msg("Rendering project")
+	return fs.WalkDir(args.ReadFS, args.Project.NameTemplate, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
 
-	projectName, err := e.TmplString(p.ProjectNameTemplate, iVars)
-	if err != nil {
-		return err
-	}
+		if args.Project.Conf != nil && len(args.Project.Conf.Skip) > 0 {
+			for _, pattern := range args.Project.Conf.Skip {
+				// Use relative path for matching so that the config writers don't have to
+				// specify every file as **/*.goreleaser.yml instead of just *.goreleaser.yml
+				// to match things at the root of the project file.
+				relativePath := strings.TrimPrefix(path, args.Project.NameTemplate+"/")
+				match, err := doublestar.PathMatch(pattern, relativePath)
+				if err != nil {
+					return err
+				}
 
-	projectPath := filepath.Join(opts.OutDirectory, projectName)
-	err = os.MkdirAll(projectPath, 0755)
-	if err != nil && !os.IsExist(err) {
-		return err
-	}
+				if !match {
+					continue
+				}
 
-	for _, node := range nodes {
-		if node.folder {
-			path := node.GetTemplatePath()
-			path, err := e.TmplString(path, iVars)
+				outpath, err := s.TmplString(path, iVars)
+				if err != nil {
+					return err
+				}
+
+				rf, err := args.ReadFS.Open(path)
+
+				if err != nil {
+					return err
+				}
+
+				bits, err := io.ReadAll(rf)
+				if err != nil {
+					return err
+				}
+
+				err = args.WriteFS.WriteFile(outpath, bits, os.ModePerm)
+				if err != nil {
+					return err
+				}
+
+				return nil
+			}
+		}
+
+		outpath, err := s.TmplString(path, iVars)
+		if err != nil {
+			return err
+		}
+
+		if d.IsDir() {
+			err = args.WriteFS.MkdirAll(outpath, os.ModePerm)
 			if err != nil {
 				return err
 			}
 
-			path = filepath.Join(projectPath, path)
-
-			err = os.Mkdir(path, 0755)
-			if err != nil && !os.IsExist(err) {
-				return err
-			}
-
-			continue
+			return nil
 		}
 
-		close, err := node.Open()
+		f, err := args.ReadFS.Open(path)
 		if err != nil {
-			return fmt.Errorf("failed to open node: %w", err)
+			return err
 		}
 
-		err = RenderNode(e, node, iVars)
+		tmpl, err := s.TmplFactory(f)
 		if err != nil {
-			close()
-			return fmt.Errorf("failed to render node: %w", err)
+			_ = f.Close()
+			return err
 		}
 
-		outpath := filepath.Join(projectPath, node.outpath)
+		buff := bytes.NewBuffer(nil)
 
-		err = os.WriteFile(outpath, node.outContent, 0644)
+		err = s.RenderTemplate(buff, tmpl, iVars)
 		if err != nil {
-			close()
-			return fmt.Errorf("failed to write to file: %w", err)
+			_ = f.Close()
+			return err
 		}
 
-		close()
-	}
+		err = args.WriteFS.WriteFile(outpath, buff.Bytes(), os.ModePerm)
+		if err != nil {
+			_ = f.Close()
+			return err
+		}
 
-	return nil
+		return f.Close()
+	})
 }

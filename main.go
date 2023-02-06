@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"os"
 
+	"github.com/hay-kot/scaffold/internal/core/rwfs"
+	"github.com/hay-kot/scaffold/internal/engine"
 	"github.com/hay-kot/scaffold/scaffold"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -45,15 +48,26 @@ func main() {
 				Usage: "log level (debug, info, warn, error, fatal, panic)",
 				Value: "panic",
 			},
+			&cli.StringSliceFlag{
+				Name:  "var",
+				Usage: "key/value pairs to use as variables in the scaffold (e.g. --var foo=bar)",
+			},
 		},
 		Before: func(ctx *cli.Context) error {
-			log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-
-			ctrl.engine = scaffold.NewEngine()
+			ctrl.engine = engine.New()
 
 			ctrl.cwd = ctx.String("cwd")
 			ctrl.logLevel = ctx.String("log-level")
 
+			varString := ctx.StringSlice("var")
+
+			ctrl.vars = make(map[string]string, len(varString))
+			for _, v := range varString {
+				kv := strings.Split(v, "=")
+				ctrl.vars[kv[0]] = kv[1]
+			}
+
+			log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 			switch ctrl.logLevel {
 			case "debug":
 				log.Logger = log.Level(zerolog.DebugLevel)
@@ -94,8 +108,9 @@ func main() {
 
 type controller struct {
 	cwd      string
+	vars     map[string]string
 	logLevel string
-	engine   *scaffold.Engine
+	engine   *engine.Engine
 }
 
 func (c *controller) Scaffold(ctx *cli.Context) error {
@@ -116,14 +131,18 @@ func (c *controller) Project(ctx *cli.Context) error {
 		return err
 	}
 
-	vars, err := p.AskQuestions()
+	vars, err := p.AskQuestions(c.vars)
 	if err != nil {
 		return err
 	}
 
-	err = scaffold.RenderProject(c.engine, p, vars, scaffold.ProjectRenderOptions{
-		OutDirectory: c.cwd,
-	})
+	args := &scaffold.RWFSArgs{
+		Project: p,
+		ReadFS:  pfs,
+		WriteFS: rwfs.NewOsWFS(c.cwd),
+	}
+
+	err = scaffold.RenderRWFS(c.engine, args, vars)
 
 	if err != nil {
 		return err

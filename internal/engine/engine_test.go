@@ -1,4 +1,4 @@
-package scaffold
+package engine
 
 import (
 	"io"
@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	tEngine = NewEngine()
+	tEngine = New()
 )
 
 func TestScaffold_TmplString(t *testing.T) {

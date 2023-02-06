@@ -1,12 +1,12 @@
+// Package scaffold provides a simple way to scaffold a project from a template
 package scaffold
 
 import (
 	"fmt"
-	"io"
 	"io/fs"
 
 	"github.com/AlecAivazis/survey/v2"
-	"gopkg.in/yaml.v3"
+	"github.com/hay-kot/scaffold/internal/core/rwfs"
 )
 
 var (
@@ -22,11 +22,10 @@ var (
 // Project structure hold the project templates file system and configuration for
 // rendering the project.
 type Project struct {
-	RootFS              fs.FS
-	Tree                *TemplateNode
-	ProjectNameTemplate string
-
-	qProject string
+	RootFS       rwfs.ReadFS
+	NameTemplate string
+	Name         string
+	Conf         *ProjectScaffoldFile
 }
 
 func LoadProject(fileSys fs.FS) (*Project, error) {
@@ -34,25 +33,12 @@ func LoadProject(fileSys fs.FS) (*Project, error) {
 		RootFS: fileSys,
 	}
 
-	pNameTemplate, err := p.validate()
+	var err error
+
+	p.NameTemplate, err = p.validate()
 	if err != nil {
 		return nil, err
 	}
-
-	p.ProjectNameTemplate = pNameTemplate
-
-	// Build Template Tree
-	projFS, err := fs.Sub(fileSys, p.ProjectNameTemplate)
-	if err != nil {
-		return nil, err
-	}
-
-	tree, err := parseTemplateNodeTree(projFS, ".")
-	if err != nil {
-		return nil, err
-	}
-
-	p.Tree = tree
 
 	return p, nil
 }
@@ -75,15 +61,19 @@ func (p *Project) validate() (str string, err error) {
 	return "", fmt.Errorf("{{ .Project }} directory does not exist")
 }
 
-func (p *Project) AskQuestions() (map[string]interface{}, error) {
-	qs := []*survey.Question{
-		{
+func (p *Project) AskQuestions(def map[string]string) (map[string]any, error) {
+	qs := []*survey.Question{}
+
+	if name, ok := def["Project"]; !ok {
+		qs = append(qs, &survey.Question{
 			Name: "Project",
 			Prompt: &survey.Input{
 				Message: "Project name",
 			},
 			Validate: survey.Required,
-		},
+		})
+	} else {
+		p.Name = name
 	}
 
 	// Read scaffold.yaml
@@ -97,98 +87,37 @@ func (p *Project) AskQuestions() (map[string]interface{}, error) {
 		return nil, err
 	}
 
+	p.Conf = scaffold
+
 	for _, q := range scaffold.Questions {
 		qs = append(qs, q.ToSurveyQuestion())
 	}
 
-	vars := map[string]any{}
+	// Filter out questions that have already been answered
+	// TODO: Types should be checked to ensure they are what's expected in the template
+	for i := 0; i < len(qs); i++ {
+		if _, ok := def[qs[i].Name]; ok {
+			qs = append(qs[:i], qs[i+1:]...)
+			i--
+		}
+	}
+
+	vars := make(map[string]any)
+	// Copy default values
+	for k, v := range def {
+		vars[k] = v
+	}
+
+	if len(qs) == 0 {
+		return vars, nil
+	}
 
 	err = survey.Ask(qs, &vars)
 	if err != nil {
 		return nil, err
 	}
 
-	p.qProject = vars["Project"].(string)
+	p.Name = vars["Project"].(string)
 
 	return vars, nil
-}
-
-type Question struct {
-	Name     string    `yaml:"name"`
-	Prompt   AnyPrompt `yaml:"prompt"`
-	Required bool      `yaml:"required"`
-}
-
-type AnyPrompt struct {
-	Message *string   `yaml:"message"`
-	Default string    `yaml:"default"`
-	Confirm *string   `yaml:"confirm"`
-	Multi   bool      `yaml:"multi"`
-	Options *[]string `yaml:"options"`
-}
-
-func (p AnyPrompt) IsSelect() bool {
-	return p.Message != nil && p.Options != nil
-}
-
-func (p AnyPrompt) IsConfirm() bool {
-	return p.Confirm != nil
-}
-
-func (p AnyPrompt) IsInput() bool {
-	return p.Message != nil
-}
-
-func (p AnyPrompt) IsMultiSelect() bool {
-	return p.IsSelect() && p.Multi
-}
-
-func (q Question) ToSurveyQuestion() *survey.Question {
-	out := &survey.Question{
-		Name: q.Name,
-	}
-
-	switch {
-	case q.Prompt.IsMultiSelect():
-		out.Prompt = &survey.MultiSelect{
-			Message: *q.Prompt.Message,
-			Options: *q.Prompt.Options,
-			Default: q.Prompt.Default,
-		}
-	case q.Prompt.IsSelect():
-		out.Prompt = &survey.Select{
-			Message: *q.Prompt.Message,
-			Options: *q.Prompt.Options,
-			Default: q.Prompt.Default,
-		}
-	case q.Prompt.IsConfirm():
-		out.Prompt = &survey.Confirm{
-			Message: *q.Prompt.Confirm,
-			Default: q.Prompt.Default == "true",
-		}
-	case q.Prompt.IsInput():
-		out.Prompt = &survey.Input{
-			Message: *q.Prompt.Message,
-			Default: q.Prompt.Default,
-		}
-	default:
-		panic("not implemented")
-	}
-
-	return out
-}
-
-type ProjectScaffoldFile struct {
-	Questions []Question `yaml:"questions"`
-}
-
-func readScaffoldFile(reader io.Reader) (*ProjectScaffoldFile, error) {
-	var out ProjectScaffoldFile
-
-	err := yaml.NewDecoder(reader).Decode(&out)
-	if err != nil {
-		return nil, err
-	}
-
-	return &out, nil
 }

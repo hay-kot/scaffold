@@ -6,10 +6,13 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hay-kot/scaffold/internal/engine"
 	"github.com/rs/zerolog"
 )
 
 var (
+	tEngine = engine.New()
+
 	//go:embed testdata/dynamic_files/*
 	dynamicFiles embed.FS
 

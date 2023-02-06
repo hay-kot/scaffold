@@ -1,3 +1,5 @@
+skip:
+  - "*.goreleaser.yaml"
 questions:
   - name: "Description"
     prompt:

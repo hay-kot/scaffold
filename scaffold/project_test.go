@@ -4,7 +4,6 @@ import (
 	"io/fs"
 	"testing"
 
-	"github.com/bradleyjkemp/cupaloy"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -39,11 +38,6 @@ func TestLoadProject(t *testing.T) {
 		},
 	}
 
-	snapshot := cupaloy.New(
-		cupaloy.SnapshotSubdirectory(".snapshots/project_tree"),
-		cupaloy.SnapshotFileExtension(".snapshot"),
-	)
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := LoadProject(tt.args.fs)
@@ -54,9 +48,6 @@ func TestLoadProject(t *testing.T) {
 			default:
 				require.NoError(t, err)
 				assert.NotNil(t, got)
-
-				assert.NotNil(t, got.Tree)
-				snapshot.SnapshotT(t, got.Tree)
 			}
 		})
 	}

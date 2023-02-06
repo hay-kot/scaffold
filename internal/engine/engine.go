@@ -1,5 +1,5 @@
-// Package scaffold provides a simple templating engine for scaffolding projects.
-package scaffold
+// Package engine provides a simple templating engine for scaffolding projects.
+package engine
 
 import (
 	"fmt"
@@ -17,7 +17,7 @@ type Engine struct {
 	baseTemplate *template.Template
 }
 
-func NewEngine() *Engine {
+func New() *Engine {
 	return &Engine{
 		baseTemplate: template.New("scaffold").Funcs(sprig.FuncMap()),
 	}

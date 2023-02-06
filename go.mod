@@ -5,8 +5,10 @@ go 1.19
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/Masterminds/sprig/v3 v3.2.3
+	github.com/bmatcuk/doublestar/v4 v4.6.0
 	github.com/bradleyjkemp/cupaloy v2.3.0+incompatible
 	github.com/huandu/xstrings v1.3.3
+	github.com/psanford/memfs v0.0.0-20230130182539-4dbf7e3e865e
 	github.com/rs/zerolog v1.29.0
 	github.com/stretchr/testify v1.6.1
 	github.com/urfave/cli/v2 v2.24.3

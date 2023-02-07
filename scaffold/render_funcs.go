@@ -11,6 +11,7 @@ import (
 	"github.com/hay-kot/scaffold/internal/core/rwfs"
 	"github.com/hay-kot/scaffold/internal/engine"
 	"github.com/huandu/xstrings"
+	"github.com/rs/zerolog/log"
 )
 
 type RWFSArgs struct {
@@ -46,6 +47,7 @@ func RenderRWFS(s *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 					return err
 				}
 
+				log.Debug().Str("path", path).Str("pattern", pattern).Bool("match", match).Msg("skip pattern match")
 				if !match {
 					continue
 				}

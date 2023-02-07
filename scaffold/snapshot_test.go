@@ -14,14 +14,17 @@ func Test_RenderRWFileSystem(t *testing.T) {
 	tests := []struct {
 		name string
 		fs   fs.FS
+		p    *Project
 	}{
 		{
 			name: "basic",
 			fs:   DynamicFiles(),
+			p:    DynamicFilesProject(),
 		},
 		{
 			name: "nested",
 			fs:   NestedFiles(),
+			p:    NestedFilesProject(),
 		},
 	}
 
@@ -42,10 +45,7 @@ func Test_RenderRWFileSystem(t *testing.T) {
 			args := &RWFSArgs{
 				ReadFS:  tt.fs,
 				WriteFS: memFS,
-				Project: &Project{
-					NameTemplate: "{{ .Project }}",
-					Name:         "NewProject",
-				},
+				Project: tt.p,
 			}
 
 			root := &AstNode{

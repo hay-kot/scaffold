@@ -1,0 +1,1 @@
+{{ notarealfunction | notarealfilter | this will crash if we try to render it }}

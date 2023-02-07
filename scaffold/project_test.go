@@ -20,7 +20,7 @@ func TestLoadProject(t *testing.T) {
 		{
 			name: "invalid project",
 			args: args{
-				fs: InvalidProject(),
+				fs: InvalidStructure(),
 			},
 			wantErr: true,
 		},

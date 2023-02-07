@@ -1,4 +1,6 @@
 NewProject:  (type=dir)
+	copy.txt:  (type=file)
+		{{ notarealfunction | notarealfilter | this will crash if we try to render it }}
 	main.go:  (type=file)
 		package main
 		

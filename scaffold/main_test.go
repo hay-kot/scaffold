@@ -8,38 +8,76 @@ import (
 
 	"github.com/hay-kot/scaffold/internal/engine"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 var (
 	tEngine = engine.New()
 
-	//go:embed testdata/dynamic_files/*
+	//go:embed testdata/projects/dynamic_files/*
+	// Validates That:
+	//  1. Files are created
+	//  2. Files are rendered
+	//  3. Files are skipped
 	dynamicFiles embed.FS
 
-	//go:embed testdata/nested_scaffold/*
+	//go:embed testdata/projects/nested_scaffold/*
+	// Validates That:
+	//  1. Nested directories are created
+	//  2. Nested files are created
+	//  3. Nested files are rendered
 	nestedFiles embed.FS
 
-	//go:embed testdata/invalid_project/*
+	//go:embed testdata/projects/invalid_project/*
+	// Validates That:
+	//  1. Invalid project structure is detected and error is returned
 	invalidProject embed.FS
 )
 
 func NestedFiles() fs.FS {
-	f, _ := fs.Sub(nestedFiles, "testdata/nested_scaffold")
+	f, _ := fs.Sub(nestedFiles, "testdata/projects/nested_scaffold")
 	return f
+}
+
+func NestedFilesProject() *Project {
+	return &Project{
+		NameTemplate: "{{ .Project }}",
+		Name:         "NewProject",
+	}
 }
 
 func DynamicFiles() fs.FS {
-	f, _ := fs.Sub(dynamicFiles, "testdata/dynamic_files")
+	f, _ := fs.Sub(dynamicFiles, "testdata/projects/dynamic_files")
 	return f
 }
 
-func InvalidProject() fs.FS {
-	f, _ := fs.Sub(invalidProject, "testdata/invalid_project")
+func DynamicFilesProject() *Project {
+	return &Project{
+		NameTemplate: "{{ .Project }}",
+		Name:         "NewProject",
+		Conf: &ProjectScaffoldFile{
+			Skip: []string{
+				"copy.txt",
+			},
+		},
+	}
+}
+
+func InvalidStructure() fs.FS {
+	f, _ := fs.Sub(invalidProject, "testdata/projects/invalid_project")
 	return f
+}
+
+func InvalidStructureProject() *Project {
+	return &Project{
+		NameTemplate: "{{ .Project }}",
+		Name:         "NewProject",
+	}
 }
 
 func TestMain(m *testing.M) {
-	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	log.Logger = log.With().Logger().Level(zerolog.DebugLevel)
 
 	os.Exit(m.Run())
 }

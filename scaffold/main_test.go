@@ -19,6 +19,7 @@ var (
 	//  1. Files are created
 	//  2. Files are rendered
 	//  3. Files are skipped
+	//  4. Empty files are ignored
 	dynamicFiles embed.FS
 
 	//go:embed testdata/projects/nested_scaffold/*

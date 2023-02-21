@@ -40,7 +40,7 @@ func TestLoadProject(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := LoadProject(tt.args.fs)
+			got, err := LoadProject(tt.args.fs, Options{})
 
 			switch {
 			case tt.wantErr:

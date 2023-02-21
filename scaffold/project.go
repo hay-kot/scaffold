@@ -25,11 +25,13 @@ type Project struct {
 	NameTemplate string
 	Name         string
 	Conf         *ProjectScaffoldFile
+	Options      Options
 }
 
-func LoadProject(fileSys fs.FS) (*Project, error) {
+func LoadProject(fileSys fs.FS, opts Options) (*Project, error) {
 	p := &Project{
-		RootFS: fileSys,
+		RootFS:  fileSys,
+		Options: opts,
 	}
 
 	var err error

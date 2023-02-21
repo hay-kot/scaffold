@@ -1,5 +1,5 @@
 package scaffold
 
-type Option struct {
+type Options struct {
 	NoClobber bool `yaml:"no_clobber"`
 }

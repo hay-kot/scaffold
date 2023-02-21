@@ -22,3 +22,5 @@ gen/
 
 # Go workspace file
 go.work
+
+*.venv

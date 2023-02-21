@@ -73,7 +73,7 @@ func TestScaffold_TmplFactory(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tmpl, err := tEngine.TmplFactory(tt.reader)
+			tmpl, err := tEngine.Factory(tt.reader)
 
 			switch {
 			case tt.wantErr:
@@ -116,11 +116,11 @@ func TestScaffold_RenderTemplate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tmpl, err := tEngine.TmplFactory(strings.NewReader(tt.tmpl))
+			tmpl, err := tEngine.Factory(strings.NewReader(tt.tmpl))
 			require.NoError(t, err, "failed to create template during render test setup")
 
 			strBuff := &strings.Builder{}
-			err = tEngine.RenderTemplate(strBuff, tmpl, tt.vars)
+			err = tEngine.Render(strBuff, tmpl, tt.vars)
 
 			switch {
 			case tt.wantErr:

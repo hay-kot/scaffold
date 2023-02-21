@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,6 +14,8 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/urfave/cli/v2"
+
+	"github.com/go-git/go-git/v5"
 )
 
 // TODO (hay-kot): add support for remote repositories with specific tags
@@ -90,6 +93,11 @@ func main() {
 				Usage:   "do not overwrite existing files (default: true)",
 				EnvVars: []string{"SCAFFOLD_NO_CLOBBER"},
 				Value:   true,
+			},
+			&cli.BoolFlag{
+				Name:    "force",
+				Usage:   "apply changes when git tree is dirty (default: false)",
+				EnvVars: []string{"SCAFFOLD_FORCE"},
 			},
 			&cli.StringFlag{
 				Name:    "out",
@@ -206,12 +214,21 @@ type controller struct {
 	noClobber  bool
 	scaffoldrc string
 	cache      string
+	force      bool
 }
 
 func (c *controller) Project(ctx *cli.Context) error {
 	argPath := ctx.Args().First()
 	if argPath == "" {
 		return fmt.Errorf("path is required")
+	}
+
+	if !c.force {
+		ok := checkWorkingTree(c.cwd)
+		if !ok {
+			log.Warn().Msg("working tree is dirty, use --force to apply changes")
+			return nil
+		}
 	}
 
 	resolver := pkgs.NewResolver(
@@ -227,7 +244,9 @@ func (c *controller) Project(ctx *cli.Context) error {
 
 	pfs := os.DirFS(path)
 
-	p, err := scaffold.LoadProject(pfs)
+	p, err := scaffold.LoadProject(pfs, scaffold.Options{
+		NoClobber: c.noClobber,
+	})
 	if err != nil {
 		return err
 	}
@@ -250,4 +269,27 @@ func (c *controller) Project(ctx *cli.Context) error {
 	}
 
 	return nil
+}
+
+func checkWorkingTree(dir string) bool {
+	repo, err := git.PlainOpen(dir)
+	if err != nil {
+		return !errors.Is(err, git.ErrRepositoryNotExists)
+	}
+
+	wt, err := repo.Worktree()
+	if err != nil {
+		return false
+	}
+
+	status, err := wt.Status()
+	if err != nil {
+		return false
+	}
+
+	if status.IsClean() {
+		return true
+	}
+
+	return false
 }

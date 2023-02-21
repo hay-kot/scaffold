@@ -11,6 +11,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// ErrTemplateIsEmpty is returned when a provided reader is empty.
+var ErrTemplateIsEmpty = fmt.Errorf("template is empty")
+
 type Vars map[string]interface{}
 
 type Engine struct {
@@ -40,7 +43,7 @@ func (e *Engine) TmplString(str string, vars any) (string, error) {
 
 	out := &strings.Builder{}
 
-	err = e.RenderTemplate(out, tmpl, vars)
+	err = e.Render(out, tmpl, vars)
 	if err != nil {
 		log.Err(err).Msg("failed to render template")
 		return "", err
@@ -49,7 +52,9 @@ func (e *Engine) TmplString(str string, vars any) (string, error) {
 	return out.String(), nil
 }
 
-func (e *Engine) TmplFactory(reader io.Reader) (*template.Template, error) {
+// Factory returns a new template from the provided reader.
+// if the reader is empty, an ErrTemplateIsEmpty is returned.
+func (e *Engine) Factory(reader io.Reader) (*template.Template, error) {
 	if reader == nil {
 		return nil, fmt.Errorf("reader is nil")
 	}
@@ -59,10 +64,14 @@ func (e *Engine) TmplFactory(reader io.Reader) (*template.Template, error) {
 		return nil, err
 	}
 
+	if len(out) == 0 {
+		return nil, ErrTemplateIsEmpty
+	}
+
 	return e.baseTemplate.Parse(string(out))
 }
 
-func (e *Engine) RenderTemplate(w io.Writer, tmpl *template.Template, vars any) error {
+func (e *Engine) Render(w io.Writer, tmpl *template.Template, vars any) error {
 	err := tmpl.Execute(w, vars)
 	if err != nil {
 		return err

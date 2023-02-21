@@ -1,7 +1,8 @@
 run:
 	rm -rf TEST_PROJECT
 	go run main.go \
-		--cwd=./gen \
+		--out=./gen \
+		--no-clobber=true \
 		--log-level=debug \
 		--var "Project=TEST_PROJECT" \
 		--var "Description=TEST_PROJECT" \

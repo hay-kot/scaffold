@@ -27,10 +27,6 @@ import (
 // remote repository and pull if needed. Allow for disabling this feature via
 // the CLI `--pull false` flag.
 
-// TODO (hay-kot): support new no-clobber options.
-// Template FS should use a no-clobber option to prevent overwriting existing
-// files. This should be configurable via the CLI.
-
 // TODO (hay-kot): merge defaults from scaffoldrc and command line args.
 // The scaffoldrc file should be merged with the command line arguments to
 // provide a single configuration for the scaffold command. allowing users to
@@ -173,13 +169,16 @@ func main() {
 
 			rc, err := scaffold.NewScaffoldRC(scaffoldrcFile)
 			if err != nil {
-				e := err.(scaffold.RcValidationErrors)
-
-				for _, err := range e {
-					log.Error().Str("key", err.Key).Msg(err.Cause.Error())
+				switch {
+				case errors.As(err, &scaffold.RcValidationErrors{}):
+					// I _know_ this is a valid cast, but the linter doesn't
+					e := err.(scaffold.RcValidationErrors) //nolint:errorlint
+					for _, err := range e {
+						log.Error().Str("key", err.Key).Msg(err.Cause.Error())
+					}
+				default:
+					return fmt.Errorf("failed to parse scaffoldrc file: %w", err)
 				}
-
-				return fmt.Errorf("failed to parse scaffoldrc file: %w", err)
 			}
 
 			ctrl.rc = rc

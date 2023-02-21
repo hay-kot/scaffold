@@ -43,6 +43,7 @@ func NestedFilesProject() *Project {
 	return &Project{
 		NameTemplate: "{{ .Project }}",
 		Name:         "NewProject",
+		Conf:         &ProjectScaffoldFile{},
 	}
 }
 
@@ -72,6 +73,7 @@ func InvalidStructureProject() *Project {
 	return &Project{
 		NameTemplate: "{{ .Project }}",
 		Name:         "NewProject",
+		Conf:         &ProjectScaffoldFile{},
 	}
 }
 

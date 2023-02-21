@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
@@ -77,15 +78,46 @@ func RenderRWFS(s *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 			}
 		}
 
-		outpath, err := s.TmplString(path, iVars)
+		var outpath string
+
+		// Check for rewrites
+		for _, rewrite := range args.Project.Conf.Rewrites {
+			match, err := doublestar.Match(rewrite.From, path)
+			log.Debug().Err(err).Str("path", path).Str("pattern", rewrite.From).Msg("rewrite pattern match")
+			if err != nil {
+				log.Debug().Err(err).Str("path", path).Str("pattern", rewrite.From).Msg("rewrite pattern match")
+				return err
+			}
+
+			if match {
+				outpath = rewrite.To
+				break
+			}
+		}
+
+		if outpath == "" {
+			outpath = path
+		}
+
+		log.Debug().Str("path", path).Str("outpath", outpath).Msg("")
+
+		outpath, err = s.TmplString(outpath, iVars)
 		if err != nil {
 			return err
 		}
 
 		if d.IsDir() {
+			// skip "/templates" directory
+			match, _ := filepath.Match("templates", path)
+			if match {
+				return nil
+			}
+
 			err = args.WriteFS.MkdirAll(outpath, os.ModePerm)
 			if err != nil {
-				return err
+				if !os.IsExist(err) {
+					return err
+				}
 			}
 
 			return nil
@@ -108,6 +140,16 @@ func RenderRWFS(s *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 		if err != nil {
 			_ = f.Close()
 			return err
+		}
+
+		// Ensure the directory exists
+		err = args.WriteFS.MkdirAll(filepath.Dir(outpath), os.ModePerm)
+		if err != nil {
+			if !os.IsExist(err) {
+
+				_ = f.Close()
+				return err
+			}
 		}
 
 		err = args.WriteFS.WriteFile(outpath, buff.Bytes(), os.ModePerm)

@@ -7,9 +7,15 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type Rewrite struct {
+	From string `yaml:"from"`
+	To   string `yaml:"to"`
+}
+
 type ProjectScaffoldFile struct {
 	Skip      []string   `yaml:"skip"`
 	Questions []Question `yaml:"questions"`
+	Rewrites  []Rewrite  `yaml:"rewrites"`
 }
 
 func readScaffoldFile(reader io.Reader) (*ProjectScaffoldFile, error) {

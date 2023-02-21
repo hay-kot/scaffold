@@ -16,6 +16,7 @@ var (
 		"{{ .ProjectSnake }}",
 		"{{ .ProjectKebab }}",
 		"{{ .ProjectCamel }}",
+		"templates",
 	}
 )
 

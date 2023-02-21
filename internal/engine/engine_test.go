@@ -9,9 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	tEngine = New()
-)
+var tEngine = New()
 
 func TestScaffold_TmplString(t *testing.T) {
 	tests := []struct {

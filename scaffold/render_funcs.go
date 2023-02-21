@@ -59,7 +59,6 @@ func RenderRWFS(s *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 				}
 
 				rf, err := args.ReadFS.Open(path)
-
 				if err != nil {
 					return err
 				}
@@ -146,7 +145,6 @@ func RenderRWFS(s *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 		err = args.WriteFS.MkdirAll(filepath.Dir(outpath), os.ModePerm)
 		if err != nil {
 			if !os.IsExist(err) {
-
 				_ = f.Close()
 				return err
 			}

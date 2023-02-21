@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
-
-	"os"
 
 	"github.com/hay-kot/scaffold/internal/core/rwfs"
 	"github.com/hay-kot/scaffold/internal/engine"
@@ -130,17 +129,17 @@ func main() {
 			scaffoldrc := ctx.String("scaffoldrc")
 
 			dir := filepath.Dir(scaffoldrc)
-			if err := os.MkdirAll(dir, 0755); err != nil {
+			if err := os.MkdirAll(dir, 0o755); err != nil {
 				return fmt.Errorf("failed to create scaffoldrc directory: %w", err)
 			}
 
 			if _, err := os.Stat(scaffoldrc); os.IsNotExist(err) {
-				if err := os.WriteFile(scaffoldrc, []byte{}, 0644); err != nil {
+				if err := os.WriteFile(scaffoldrc, []byte{}, 0o644); err != nil {
 					return fmt.Errorf("failed to create scaffoldrc file: %w", err)
 				}
 			}
 
-			if err := os.MkdirAll(ctx.String("cache"), 0755); err != nil {
+			if err := os.MkdirAll(ctx.String("cache"), 0o755); err != nil {
 				return fmt.Errorf("failed to create cache directory: %w", err)
 			}
 

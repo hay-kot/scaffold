@@ -64,7 +64,6 @@ func (e *Engine) TmplFactory(reader io.Reader) (*template.Template, error) {
 
 func (e *Engine) RenderTemplate(w io.Writer, tmpl *template.Template, vars any) error {
 	err := tmpl.Execute(w, vars)
-
 	if err != nil {
 		return err
 	}

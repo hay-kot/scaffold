@@ -6,8 +6,10 @@ import (
 	"github.com/psanford/memfs"
 )
 
-var _ WriteFS = &MemoryWFS{}
-var _ fs.FS = &MemoryWFS{}
+var (
+	_ WriteFS = &MemoryWFS{}
+	_ fs.FS   = &MemoryWFS{}
+)
 
 // MemoryWFS is a WFS implementation that uses a memory file system
 // from github.com/psanford/memfs

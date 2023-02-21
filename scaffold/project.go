@@ -9,16 +9,14 @@ import (
 	"github.com/hay-kot/scaffold/internal/core/rwfs"
 )
 
-var (
-	projectNames = [...]string{
-		"{{ .Project }}",
-		"{{ .ProjectSlug }}",
-		"{{ .ProjectSnake }}",
-		"{{ .ProjectKebab }}",
-		"{{ .ProjectCamel }}",
-		"templates",
-	}
-)
+var projectNames = [...]string{
+	"{{ .Project }}",
+	"{{ .ProjectSlug }}",
+	"{{ .ProjectSnake }}",
+	"{{ .ProjectKebab }}",
+	"{{ .ProjectCamel }}",
+	"templates",
+}
 
 // Project structure hold the project templates file system and configuration for
 // rendering the project.

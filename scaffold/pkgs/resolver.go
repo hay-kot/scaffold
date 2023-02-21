@@ -48,7 +48,6 @@ func (r *Resolver) Resolve(arg string) (path string, err error) {
 				URL:      remoteRef,
 				Progress: os.Stdout,
 			})
-
 			if err != nil {
 				return "", fmt.Errorf("failed to clone repository: %w", err)
 			}

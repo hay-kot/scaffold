@@ -18,6 +18,9 @@ var projectNames = [...]string{
 	"{{ .ProjectSnake }}",
 	"{{ .ProjectKebab }}",
 	"{{ .ProjectCamel }}",
+}
+
+var templateNames = [...]string{
 	"templates",
 }
 
@@ -67,8 +70,8 @@ func (p *Project) validate() (str string, err error) {
 		return "", fmt.Errorf("scaffold.yaml does not exist")
 	}
 
-	// Ensure {{ .Project }} directory exists
-	for _, dir := range projectNames {
+	// Ensure required directories exist
+	for _, dir := range append(projectNames[:], templateNames[:]...) {
 		_, err = p.RootFS.Open(dir)
 		if err == nil {
 			return dir, nil

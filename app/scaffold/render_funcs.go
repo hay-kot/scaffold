@@ -82,17 +82,18 @@ func guardDirectories(args *RWFSArgs) filepathGuard {
 			return outpath, nil
 		}
 
-		// skip "/templates" directory
-		match, _ := filepath.Match("templates", outpath)
-		if match {
-			return "", errSkipRender
-		}
-
-		err := args.WriteFS.MkdirAll(outpath, os.ModePerm)
-		if err != nil {
-			if !os.IsExist(err) {
-				log.Debug().Err(err).Str("path", outpath).Msg("failed to create directory")
-				return "", err
+		// if a directory matches a root level directory in the project
+		// it is created, otherwise it is skipped last entry is skipped
+		// because it is the "templates" directory
+		for _, s := range projectNames {
+			if outpath == s {
+				err := args.WriteFS.MkdirAll(outpath, os.ModePerm)
+				if err != nil {
+					if !os.IsExist(err) {
+						log.Debug().Err(err).Str("path", outpath).Msg("failed to create directory")
+						return "", err
+					}
+				}
 			}
 		}
 

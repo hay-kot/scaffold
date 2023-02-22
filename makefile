@@ -4,9 +4,9 @@ run:
 		--out=./gen \
 		--no-clobber=true \
 		--log-level=debug \
-		--var "Project=TEST_PROJECT" \
-		--var "Description=TEST_PROJECT" \
-		--var "License=MIT" \
-		--var "Colors=#000000" \
-		--var "Use Github Actions=true" \
-		new .scaffolds/cli
+		new .scaffolds/cli \
+		"Project=TEST_PROJECT" \
+		"Description=TEST_PROJECT" \
+		"License=MIT" \
+		"Colors=#000000" \
+		"Use Github Actions=true"

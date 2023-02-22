@@ -18,25 +18,6 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
-// TODO (hay-kot): add support for remote repositories with specific tags
-// Users should be able to provide url with @tag to scaffold a specific tag
-// from a remote repository.
-
-// TODO (hay-kot): check for changes on remote repository and pull if needed
-// When using a remote repository, scaffold should check for changes on the
-// remote repository and pull if needed. Allow for disabling this feature via
-// the CLI `--pull false` flag.
-
-// TODO (hay-kot): merge defaults from scaffoldrc and command line args.
-// The scaffoldrc file should be merged with the command line arguments to
-// provide a single configuration for the scaffold command. allowing users to
-// override the default configuration.
-
-// TODO (hay-kot): remove --vars and use args instead
-// User should be able to append key=value pairs to the scaffold command to
-// provide variables for the template. This will allow users to provide
-// variables without having to specify a flag.
-
 var (
 	// Build information. Populated at build-time via -ldflags flag.
 	version = "dev"
@@ -154,13 +135,6 @@ func main() {
 			ctrl.scaffoldrc = scaffoldrc
 			ctrl.cache = ctx.String("cache")
 
-			varString := ctx.StringSlice("var")
-			ctrl.vars = make(map[string]string, len(varString))
-			for _, v := range varString {
-				kv := strings.Split(v, "=")
-				ctrl.vars[kv[0]] = kv[1]
-			}
-
 			// Parse scaffoldrc file
 			scaffoldrcFile, err := os.Open(ctrl.scaffoldrc)
 			if err != nil {
@@ -239,6 +213,14 @@ func (c *controller) Project(ctx *cli.Context) error {
 	path, err := resolver.Resolve(argPath)
 	if err != nil {
 		return fmt.Errorf("failed to resolve path: %w", err)
+	}
+
+	rest := ctx.Args().Tail()
+
+	c.vars = make(map[string]string, len(rest))
+	for _, v := range rest {
+		kv := strings.Split(v, "=")
+		c.vars[kv[0]] = kv[1]
 	}
 
 	pfs := os.DirFS(path)

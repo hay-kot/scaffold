@@ -111,3 +111,18 @@ skip:
   - "*.goreleaser.yaml"
   - "**/*.gotmpl"
 ```
+
+## Computed Variables
+
+Computed variables are variables that are computed from the answers to the questions. The following example will compute the `shuffled` variable from the `Project` variable.
+
+```yaml
+computed:
+  shuffled: "{{ shuffle .Project }}"
+```
+
+You can reference computed variables like so
+
+```yaml
+{{ .Computed.shuffled }}
+```

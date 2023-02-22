@@ -44,7 +44,11 @@ func NestedFilesProject() *Project {
 	return &Project{
 		NameTemplate: "{{ .Project }}",
 		Name:         "NewProject",
-		Conf:         &ProjectScaffoldFile{},
+		Conf: &ProjectScaffoldFile{
+			Computed: map[string]string{
+				"snake_project": "{{ snakecase .Project }}",
+			},
+		},
 	}
 }
 

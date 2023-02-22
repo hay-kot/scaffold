@@ -13,9 +13,10 @@ type Rewrite struct {
 }
 
 type ProjectScaffoldFile struct {
-	Skip      []string   `yaml:"skip"`
-	Questions []Question `yaml:"questions"`
-	Rewrites  []Rewrite  `yaml:"rewrites"`
+	Skip      []string          `yaml:"skip"`
+	Questions []Question        `yaml:"questions"`
+	Rewrites  []Rewrite         `yaml:"rewrites"`
+	Computed  map[string]string `yaml:"computed"`
 }
 
 func readScaffoldFile(reader io.Reader) (*ProjectScaffoldFile, error) {

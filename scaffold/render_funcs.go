@@ -100,9 +100,9 @@ func guardDirectories(args *RWFSArgs) filepathGuard {
 	}
 }
 
-// RenderRWFS renders a rwfs.RFS to a rwfs.WriteFS by compiling all files in the rwfs.ReadFS
-// and writing the compiled files to the WriteFS.
-func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
+// BuildVars builds the vars for the engine by setting the provided vars
+// under the "Scaffold" key and adding the project name and computed vars.
+func BuildVars(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) (engine.Vars, error) {
 	iVars := engine.Vars{
 		"Project":      args.Project.Name,
 		"ProjectSnake": xstrings.ToSnakeCase(args.Project.Name),
@@ -115,7 +115,7 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 	for k, v := range args.Project.Conf.Computed {
 		out, err := eng.TmplString(v, iVars)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		mp[k] = out
@@ -123,9 +123,15 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 
 	iVars["Computed"] = mp
 
+	return iVars, nil
+}
+
+// RenderRWFS renders a rwfs.RFS to a rwfs.WriteFS by compiling all files in the rwfs.ReadFS
+// and writing the compiled files to the WriteFS.
+func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 	guards := []filepathGuard{
 		guardRewrite(args),
-		guardRenderPath(eng, iVars),
+		guardRenderPath(eng, vars),
 		guardNoClobber(args),
 		guardDirectories(args),
 	}
@@ -151,7 +157,7 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 					continue
 				}
 
-				outpath, err := eng.TmplString(path, iVars)
+				outpath, err := eng.TmplString(path, vars)
 				if err != nil {
 					return err
 				}
@@ -210,7 +216,7 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 
 		buff := bytes.NewBuffer(nil)
 
-		err = eng.Render(buff, tmpl, iVars)
+		err = eng.Render(buff, tmpl, vars)
 		if err != nil {
 			_ = f.Close()
 			return err

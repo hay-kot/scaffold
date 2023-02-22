@@ -18,6 +18,10 @@ type ProjectScaffoldFile struct {
 	Questions []Question        `yaml:"questions"`
 	Rewrites  []Rewrite         `yaml:"rewrites"`
 	Computed  map[string]string `yaml:"computed"`
+	Messages  struct {
+		Pre  string `yaml:"pre"`
+		Post string `yaml:"post"`
+	} `yaml:"messages"`
 }
 
 func readScaffoldFile(reader io.Reader) (*ProjectScaffoldFile, error) {

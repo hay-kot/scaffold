@@ -126,3 +126,26 @@ You can reference computed variables like so
 ```yaml
 {{ .Computed.shuffled }}
 ```
+
+## Messages
+
+You can specify messages to show the user that are rendered using the [glamour markdown renderer](https://github.com/charmbracelet/glamour/) to show pre and post messages to the user.
+
+```yaml
+messages:
+  pre: |
+    # Pre Message
+
+    This is a pre message that will be shown to the user before the scaffold is generated.
+
+    Template variables are _NOT_ available in this message.
+
+  post: |
+    # Post Message
+
+    This is a post message that will be shown to the user after the scaffold is generated.
+
+    You can use variables just as you would in your templates.
+
+    {{ .ProjectKebab }}
+```

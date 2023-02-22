@@ -44,6 +44,19 @@ func LoadProject(fileSys fs.FS, opts Options) (*Project, error) {
 		return nil, err
 	}
 
+	// Read scaffold.yaml
+	scaffoldFile, err := p.RootFS.Open("scaffold.yaml")
+	if err != nil {
+		return nil, err
+	}
+
+	scaffold, err := readScaffoldFile(scaffoldFile)
+	if err != nil {
+		return nil, err
+	}
+
+	p.Conf = scaffold
+
 	return p, nil
 }
 
@@ -87,20 +100,7 @@ func (p *Project) AskQuestions(def map[string]string) (map[string]any, error) {
 		}
 	}
 
-	// Read scaffold.yaml
-	scaffoldFile, err := p.RootFS.Open("scaffold.yaml")
-	if err != nil {
-		return nil, err
-	}
-
-	scaffold, err := readScaffoldFile(scaffoldFile)
-	if err != nil {
-		return nil, err
-	}
-
-	p.Conf = scaffold
-
-	for _, q := range scaffold.Questions {
+	for _, q := range p.Conf.Questions {
 		qs = append(qs, q.ToSurveyQuestion())
 	}
 
@@ -123,7 +123,7 @@ func (p *Project) AskQuestions(def map[string]string) (map[string]any, error) {
 		return vars, nil
 	}
 
-	err = survey.Ask(qs, &vars)
+	err := survey.Ask(qs, &vars)
 	if err != nil {
 		return nil, err
 	}

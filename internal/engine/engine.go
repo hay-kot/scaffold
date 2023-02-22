@@ -14,7 +14,7 @@ import (
 // ErrTemplateIsEmpty is returned when a provided reader is empty.
 var ErrTemplateIsEmpty = fmt.Errorf("template is empty")
 
-type Vars map[string]interface{}
+type Vars map[string]any
 
 type Engine struct {
 	baseTemplate *template.Template

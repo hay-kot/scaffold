@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/charmbracelet/glamour"
 	"github.com/hay-kot/scaffold/internal/core/rwfs"
 	"github.com/hay-kot/scaffold/internal/engine"
 	"github.com/hay-kot/scaffold/scaffold"
@@ -247,6 +248,15 @@ func (c *controller) Project(ctx *cli.Context) error {
 
 	defaults := scaffold.MergeMaps(c.vars, c.rc.Defaults)
 
+	if p.Conf.Messages.Pre != "" {
+		out, err := glamour.RenderWithEnvironmentConfig(p.Conf.Messages.Pre)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(out)
+	}
+
 	vars, err := p.AskQuestions(defaults)
 	if err != nil {
 		return err
@@ -258,10 +268,29 @@ func (c *controller) Project(ctx *cli.Context) error {
 		WriteFS: rwfs.NewOsWFS(c.outputDir),
 	}
 
+	vars, err = scaffold.BuildVars(c.engine, args, vars)
+	if err != nil {
+		return err
+	}
+
 	err = scaffold.RenderRWFS(c.engine, args, vars)
 
 	if err != nil {
 		return err
+	}
+
+	if p.Conf.Messages.Post != "" {
+		rendered, err := c.engine.TmplString(p.Conf.Messages.Post, vars)
+		if err != nil {
+			return err
+		}
+
+		out, err := glamour.RenderWithEnvironmentConfig(rendered)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(out)
 	}
 
 	return nil

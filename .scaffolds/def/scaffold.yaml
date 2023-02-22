@@ -1,3 +1,22 @@
+messages:
+  pre: |
+    # Def Project Generator
+
+    This generator will create a new Def project in the current directory.
+    lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+
+    quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+  post: |
+    # Project Generated!
+
+    To get started run the following commands:
+
+    ```sh
+    cd {{ .ProjectKebab }}
+    npm run dev
+    ```
+
 questions:
   - name: "name"
     prompt:

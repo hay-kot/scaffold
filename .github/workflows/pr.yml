@@ -1,0 +1,14 @@
+name: pr
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  backend-tests:
+    name: "Go Build/Test"
+    uses: ./.github/workflows/partial-tests.yml

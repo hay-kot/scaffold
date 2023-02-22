@@ -13,7 +13,8 @@ jobs:
     name: "Go Build/Test"
     uses: ./.github/workflows/partial-tests.yml
 
-  release:
+  tag:
+    name: "Publish Tag"
     runs-on: ubuntu-latest
     needs:
       - backend-tests
@@ -35,7 +36,7 @@ jobs:
           message: "${{ steps.bump-semver.outputs.new_version }}: PR #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}"
 
   goreleaser:
-    name: "Release"
+    name: "Publish Release"
     needs:
       - release
     runs-on: ubuntu-latest

@@ -57,7 +57,7 @@ func main() {
 				Name:    "scaffoldrc",
 				Usage:   "path to scaffoldrc file",
 				Value:   HomeDir(".scaffold/scaffoldrc.yml"),
-				EnvVars: []string{"SCAFFOLD_RC"},
+				EnvVars: []string{"SCAFFOLDRC"},
 			},
 			&cli.PathFlag{
 				Name:    "cache",

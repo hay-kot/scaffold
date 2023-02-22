@@ -6,7 +6,10 @@ import (
 	"io/fs"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/AlecAivazis/survey/v2/core"
 	"github.com/hay-kot/scaffold/internal/core/rwfs"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 var projectNames = [...]string{
@@ -65,16 +68,23 @@ func (p *Project) validate() (str string, err error) {
 func (p *Project) AskQuestions(def map[string]string) (map[string]any, error) {
 	qs := []*survey.Question{}
 
-	if name, ok := def["Project"]; !ok {
-		qs = append(qs, &survey.Question{
-			Name: "Project",
-			Prompt: &survey.Input{
-				Message: "Project name",
-			},
-			Validate: survey.Required,
-		})
-	} else {
-		p.Name = name
+	projectMode := p.NameTemplate != "templates"
+
+	if projectMode {
+		name, ok := def["Project"]
+
+		switch ok {
+		case false:
+			qs = append(qs, &survey.Question{
+				Name: "Project",
+				Prompt: &survey.Input{
+					Message: "Project name",
+				},
+				Validate: survey.Required,
+			})
+		case true:
+			p.Name = name
+		}
 	}
 
 	// Read scaffold.yaml
@@ -118,7 +128,37 @@ func (p *Project) AskQuestions(def map[string]string) (map[string]any, error) {
 		return nil, err
 	}
 
-	p.Name = vars["Project"].(string)
+	if projectMode {
+		p.Name = vars["Project"].(string)
+	} else {
+		p.Name = "templates"
+		vars["Project"] = "templates"
+	}
+
+	// Unwrap core.OptionAnswer types into their values
+	for k, v := range vars {
+		switch vt := v.(type) {
+		case core.OptionAnswer:
+			vars[k] = vt.Value
+		case []core.OptionAnswer:
+			values := make([]string, len(vt))
+			for i, v := range vt {
+				values[i] = v.Value
+			}
+
+			vars[k] = values
+		}
+	}
+
+	if log.Logger.GetLevel() == zerolog.DebugLevel {
+		for k, v := range vars {
+			log.Debug().
+				Str("key", k).
+				Type("type", v).
+				Interface("value", v).
+				Msg("question")
+		}
+	}
 
 	return vars, nil
 }

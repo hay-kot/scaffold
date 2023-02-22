@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 )
 
@@ -89,7 +90,9 @@ func (q Question) ToSurveyQuestion() *survey.Question {
 			Default: q.Prompt.Default,
 		}
 	default:
-		panic("not implemented")
+		log.Fatal().
+			Str("question", q.Name).
+			Msgf("Unknown prompt type")
 	}
 
 	return out

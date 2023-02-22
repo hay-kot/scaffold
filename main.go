@@ -77,7 +77,7 @@ func main() {
 				EnvVars: []string{"SCAFFOLD_FORCE"},
 			},
 			&cli.StringFlag{
-				Name:    "out",
+				Name:    "output-dir",
 				Usage:   "current working directory (where scaffold will be created)",
 				Value:   ".",
 				EnvVars: []string{"SCAFFOLD_OUT"},
@@ -125,7 +125,7 @@ func main() {
 			}
 
 			// Read Global Flags
-			ctrl.cwd = ctx.String("out")
+			ctrl.outputDir = ctx.String("output-dir")
 
 			ctrl.noClobber = ctx.Bool("no-clobber")
 			ctrl.force = ctx.Bool("force")
@@ -178,7 +178,7 @@ type controller struct {
 	// Global Flags
 
 	rc         *scaffold.ScaffoldRC
-	cwd        string
+	outputDir  string
 	vars       map[string]string
 	logLevel   string
 	noClobber  bool
@@ -194,7 +194,7 @@ func (c *controller) Project(ctx *cli.Context) error {
 	}
 
 	if !c.force {
-		ok := checkWorkingTree(c.cwd)
+		ok := checkWorkingTree(c.outputDir)
 		if !ok {
 			log.Warn().Msg("working tree is dirty, use --force to apply changes")
 			return nil
@@ -239,7 +239,7 @@ func (c *controller) Project(ctx *cli.Context) error {
 	args := &scaffold.RWFSArgs{
 		Project: p,
 		ReadFS:  pfs,
-		WriteFS: rwfs.NewOsWFS(c.cwd),
+		WriteFS: rwfs.NewOsWFS(c.outputDir),
 	}
 
 	err = scaffold.RenderRWFS(c.engine, args, vars)

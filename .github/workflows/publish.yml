@@ -38,7 +38,7 @@ jobs:
   goreleaser:
     name: "Publish Release"
     needs:
-      - release
+      - tag
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

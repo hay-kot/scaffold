@@ -1,0 +1,64 @@
+version: "3"
+
+env:
+  SCAFFOLD_LOG_LEVEL: "debug"
+  SCAFFOLD_NO_CLOBBER: true
+  SCAFFOLD_OUT: "gen"
+
+tasks:
+  run:
+    desc: Runs the main application and supports passing CLI args
+    cmds:
+      - go run *.go {{ .CLI_ARGS }}
+    silent: false
+
+  build:
+    desc: Builds the backend binary
+    cmds:
+      - goreleaser build --snapshot --rm-dist
+
+  test:
+    desc: Runs all go tests using gotestsum - supports passing gotestsum args
+    cmds:
+      - gotestsum {{ .CLI_ARGS }} ./...
+
+  test:watch:
+    desc: Runs all go tests using gotestsum in watch mode
+    cmds:
+      - gotestsum --watch -- -v ./...
+
+  coverage:
+    desc: Runs all go tests with -race flag and generates a coverage report
+    cmds:
+      - go test -race -coverprofile=coverage.out -covermode=atomic ./... -v -cover
+    silent: true
+
+  tidy:
+    desc: Runs go mod tidy on the backend
+    cmds:
+      - go mod tidy
+
+  lint:
+    desc: Runs golangci-lint
+    cmds:
+      - golangci-lint run ./...
+
+  pr:
+    desc: Runs all go test and lint related tasks for PRs
+    cmds:
+      - task: tidy
+      - task: lint
+      - task: test
+
+  do:cli:
+    desc: Runs the main.go program with the cli scaffold
+    cmds:
+      - rm -rf ./gen/*
+      - |
+        go run main.go \
+          new .scaffolds/cli \
+          "Project=TEST_PROJECT" \
+          "Description=TEST_PROJECT" \
+          "License=MIT" \
+          "Colors=#000000" \
+          "Use Github Actions=true"

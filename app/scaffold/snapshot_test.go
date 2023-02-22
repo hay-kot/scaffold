@@ -53,7 +53,10 @@ func Test_RenderRWFileSystem(t *testing.T) {
 				Path:     "ROOT_NODE",
 			}
 
-			err := RenderRWFS(tEngine, args, vars)
+			vars, err := BuildVars(tEngine, args, vars)
+			require.NoError(t, err)
+
+			err = RenderRWFS(tEngine, args, vars)
 			require.NoError(t, err)
 
 			err = buildNodeTree(memFS, root)

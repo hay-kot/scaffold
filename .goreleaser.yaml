@@ -4,8 +4,6 @@ before:
   hooks:
     # You may remove this if you don't use go modules.
     - go mod tidy
-    # you may remove this if you don't need go generate
-    - go generate ./...
 builds:
   - env:
       - CGO_ENABLED=0
@@ -38,7 +36,16 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
-# The lines beneath this are called `modelines`. See `:help modeline`
-# Feel free to remove those if you don't want/use them.
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+brews:
+  - tap:
+      owner: hay-kot
+      name: homebrew-scaffold-tap
+    description: "Scaffold is a tool for creating new projects from pre-defined templates."
+    license: MIT
+    dependencies:
+      - name: go
+        type: optional
+      - name: git
+    test: |
+      system "#{bin}/scaffold version"

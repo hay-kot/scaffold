@@ -12,6 +12,7 @@ jobs:
   backend-tests:
     name: "Go Build/Test"
     uses: ./.github/workflows/partial-tests.yml
+
   goreleaser:
     name: "Release"
     needs:

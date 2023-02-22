@@ -43,10 +43,16 @@ tasks:
     cmds:
       - golangci-lint run ./...
 
+  format:
+    desc: Runs gofmt on the backend
+    cmds:
+      - gofumpt -w ./
+
   pr:
     desc: Runs all go test and lint related tasks for PRs
     cmds:
       - task: tidy
+      - task: format
       - task: lint
       - task: test
 

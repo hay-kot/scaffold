@@ -24,9 +24,11 @@ type RWFSArgs struct {
 
 // errSkipRender is used to skip rendering a file when a guard returns it.
 // this should only be used in guards.
-var errSkipRender = errors.New("skip render")
-var errFileExists = errors.New("file exists and no-clobber is set to true")
-var errSkipWrite = errors.New("skip write")
+var (
+	errSkipRender = errors.New("skip render")
+	errFileExists = errors.New("file exists and no-clobber is set to true")
+	errSkipWrite  = errors.New("skip write")
+)
 
 type filepathGuard func(outpath string, f fs.DirEntry) (newOutpath string, err error)
 
@@ -158,12 +160,17 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 					continue
 				}
 
+				rf, err := args.ReadFS.Open(path)
+				if err != nil {
+					return err
+				}
+
 				outpath, err := eng.TmplString(path, vars)
 				if err != nil {
 					return err
 				}
 
-				rf, err := args.ReadFS.Open(path)
+				err = args.WriteFS.MkdirAll(filepath.Dir(outpath), os.ModePerm)
 				if err != nil {
 					return err
 				}

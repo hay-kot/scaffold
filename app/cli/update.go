@@ -19,7 +19,6 @@ func (ctrl *Controller) Update(ctx *cli.Context) error {
 
 	for _, s := range scaffolds {
 		updated, err := pkgs.Update(filepath.Join(ctrl.Flags.Cache, s))
-
 		if err != nil {
 			return err
 		}

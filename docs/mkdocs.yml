@@ -11,6 +11,22 @@ theme:
     - navigation.expand
     - navigation.sections
     - navigation.tabs.sticky
+    # Palette toggle for light mode
+  palette:
+    - scheme: default
+      primary: blue
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: blue
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
 
 plugins:
   - tags
@@ -29,3 +45,6 @@ markdown_extensions:
   - attr_list
   - pymdownx.tabbed
   - pymdownx.superfences
+
+extra_css:
+  - assets/css/extras.css

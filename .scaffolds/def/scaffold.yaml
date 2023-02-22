@@ -1,0 +1,10 @@
+questions:
+  - name: "name"
+    prompt:
+      message: "What is your name?"
+  - name: "github_username"
+    prompt:
+      message: "What is your GitHub username?"
+  - name: "github_email"
+    prompt:
+      message: "What is your GitHub email?"

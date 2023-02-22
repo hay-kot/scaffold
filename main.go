@@ -88,10 +88,6 @@ func main() {
 				Value:   "warn",
 				EnvVars: []string{"SCAFFOLD_LOG_LEVEL"},
 			},
-			&cli.StringSliceFlag{
-				Name:  "var",
-				Usage: "key/value pairs to use as variables in the scaffold (e.g. --var foo=bar)",
-			},
 		},
 		Before: func(ctx *cli.Context) error {
 			ctrl.logLevel = ctx.String("log-level")
@@ -132,6 +128,7 @@ func main() {
 			ctrl.cwd = ctx.String("out")
 
 			ctrl.noClobber = ctx.Bool("no-clobber")
+			ctrl.force = ctx.Bool("force")
 			ctrl.scaffoldrc = scaffoldrc
 			ctrl.cache = ctx.String("cache")
 
@@ -232,7 +229,9 @@ func (c *controller) Project(ctx *cli.Context) error {
 		return err
 	}
 
-	vars, err := p.AskQuestions(c.vars)
+	defaults := scaffold.MergeMaps(c.vars, c.rc.Defaults)
+
+	vars, err := p.AskQuestions(defaults)
 	if err != nil {
 		return err
 	}

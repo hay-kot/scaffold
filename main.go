@@ -219,6 +219,10 @@ func (c *controller) Project(ctx *cli.Context) error {
 		".",
 	)
 
+	if v, ok := c.rc.Aliases[argPath]; ok {
+		argPath = v
+	}
+
 	path, err := resolver.Resolve(argPath)
 	if err != nil {
 		return fmt.Errorf("failed to resolve path: %w", err)

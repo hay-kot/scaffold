@@ -26,7 +26,7 @@ func NewResolver(shorts map[string]string, cache, cwd string) *Resolver {
 }
 
 func (r *Resolver) Resolve(arg string) (path string, err error) {
-	remoteRef, isRemote := IsRemote(path, r.shorts)
+	remoteRef, isRemote := IsRemote(arg, r.shorts)
 
 	switch {
 	case isRemote:

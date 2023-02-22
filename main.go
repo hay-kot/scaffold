@@ -5,18 +5,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
-	"github.com/charmbracelet/glamour"
-	"github.com/hay-kot/scaffold/internal/core/rwfs"
-	"github.com/hay-kot/scaffold/internal/engine"
-	"github.com/hay-kot/scaffold/scaffold"
-	"github.com/hay-kot/scaffold/scaffold/pkgs"
+	scaffoldcli "github.com/hay-kot/scaffold/app/cli"
+	"github.com/hay-kot/scaffold/app/core/engine"
+	"github.com/hay-kot/scaffold/app/scaffold"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/urfave/cli/v2"
-
-	"github.com/go-git/go-git/v5"
 )
 
 var (
@@ -47,7 +42,7 @@ func HomeDir(s ...string) string {
 func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
-	ctrl := &controller{}
+	ctrl := &scaffoldcli.Controller{}
 
 	app := &cli.App{
 		Name:    "scaffold",
@@ -91,8 +86,15 @@ func main() {
 			},
 		},
 		Before: func(ctx *cli.Context) error {
-			ctrl.logLevel = ctx.String("log-level")
-			switch ctrl.logLevel {
+			ctrl.Flags = scaffoldcli.Flags{
+				NoClobber:      ctx.Bool("no-clobber"),
+				Force:          ctx.Bool("force"),
+				OutputDir:      ctx.String("output-dir"),
+				Cache:          ctx.String("cache"),
+				ScaffoldRCPath: ctx.String("scaffoldrc"),
+			}
+
+			switch ctx.String("log-level") {
 			case "debug":
 				log.Logger = log.Level(zerolog.DebugLevel)
 			case "info":
@@ -107,16 +109,13 @@ func main() {
 				log.Logger = log.Level(zerolog.PanicLevel)
 			}
 
-			// Creates scaffoldrc file if it doesn't exist
-			scaffoldrc := ctx.String("scaffoldrc")
-
-			dir := filepath.Dir(scaffoldrc)
+			dir := filepath.Dir(ctrl.Flags.ScaffoldRCPath)
 			if err := os.MkdirAll(dir, 0o755); err != nil {
 				return fmt.Errorf("failed to create scaffoldrc directory: %w", err)
 			}
 
-			if _, err := os.Stat(scaffoldrc); os.IsNotExist(err) {
-				if err := os.WriteFile(scaffoldrc, []byte{}, 0o644); err != nil {
+			if _, err := os.Stat(ctrl.Flags.ScaffoldRCPath); os.IsNotExist(err) {
+				if err := os.WriteFile(ctrl.Flags.ScaffoldRCPath, []byte{}, 0o644); err != nil {
 					return fmt.Errorf("failed to create scaffoldrc file: %w", err)
 				}
 			}
@@ -125,16 +124,8 @@ func main() {
 				return fmt.Errorf("failed to create cache directory: %w", err)
 			}
 
-			// Read Global Flags
-			ctrl.outputDir = ctx.String("output-dir")
-
-			ctrl.noClobber = ctx.Bool("no-clobber")
-			ctrl.force = ctx.Bool("force")
-			ctrl.scaffoldrc = scaffoldrc
-			ctrl.cache = ctx.String("cache")
-
 			// Parse scaffoldrc file
-			scaffoldrcFile, err := os.Open(ctrl.scaffoldrc)
+			scaffoldrcFile, err := os.Open(ctrl.Flags.ScaffoldRCPath)
 			if err != nil {
 				return fmt.Errorf("failed to open scaffoldrc file: %w", err)
 			}
@@ -153,9 +144,7 @@ func main() {
 				}
 			}
 
-			ctrl.rc = rc
-			ctrl.engine = engine.New()
-
+			ctrl.Prepare(engine.New(), rc)
 			return nil
 		},
 		Commands: []*cli.Command{
@@ -183,175 +172,4 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal().Err(err).Msg("failed to run scaffold")
 	}
-}
-
-type controller struct {
-	engine *engine.Engine
-
-	// Global Flags
-
-	rc         *scaffold.ScaffoldRC
-	outputDir  string
-	vars       map[string]string
-	logLevel   string
-	noClobber  bool
-	scaffoldrc string
-	cache      string
-	force      bool
-}
-
-func (c *controller) Project(ctx *cli.Context) error {
-	argPath := ctx.Args().First()
-	if argPath == "" {
-		return fmt.Errorf("path is required")
-	}
-
-	if !c.force {
-		ok := checkWorkingTree(c.outputDir)
-		if !ok {
-			log.Warn().Msg("working tree is dirty, use --force to apply changes")
-			return nil
-		}
-	}
-
-	resolver := pkgs.NewResolver(
-		c.rc.Shorts,
-		c.cache,
-		".",
-	)
-
-	if v, ok := c.rc.Aliases[argPath]; ok {
-		argPath = v
-	}
-
-	path, err := resolver.Resolve(argPath)
-	if err != nil {
-		return fmt.Errorf("failed to resolve path: %w", err)
-	}
-
-	rest := ctx.Args().Tail()
-
-	c.vars = make(map[string]string, len(rest))
-	for _, v := range rest {
-		kv := strings.Split(v, "=")
-		c.vars[kv[0]] = kv[1]
-	}
-
-	pfs := os.DirFS(path)
-
-	p, err := scaffold.LoadProject(pfs, scaffold.Options{
-		NoClobber: c.noClobber,
-	})
-	if err != nil {
-		return err
-	}
-
-	defaults := scaffold.MergeMaps(c.vars, c.rc.Defaults)
-
-	if p.Conf.Messages.Pre != "" {
-		out, err := glamour.RenderWithEnvironmentConfig(p.Conf.Messages.Pre)
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(out)
-	}
-
-	vars, err := p.AskQuestions(defaults)
-	if err != nil {
-		return err
-	}
-
-	args := &scaffold.RWFSArgs{
-		Project: p,
-		ReadFS:  pfs,
-		WriteFS: rwfs.NewOsWFS(c.outputDir),
-	}
-
-	vars, err = scaffold.BuildVars(c.engine, args, vars)
-	if err != nil {
-		return err
-	}
-
-	err = scaffold.RenderRWFS(c.engine, args, vars)
-
-	if err != nil {
-		return err
-	}
-
-	if p.Conf.Messages.Post != "" {
-		rendered, err := c.engine.TmplString(p.Conf.Messages.Post, vars)
-		if err != nil {
-			return err
-		}
-
-		out, err := glamour.RenderWithEnvironmentConfig(rendered)
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(out)
-	}
-
-	return nil
-}
-
-func (c *controller) Update(ctx *cli.Context) error {
-	scaffolds, err := pkgs.List(os.DirFS(c.cache))
-	if err != nil {
-		return err
-	}
-
-	for _, s := range scaffolds {
-		updated, err := pkgs.Update(filepath.Join(c.cache, s))
-
-		if err != nil {
-			return err
-		}
-
-		if updated {
-			fmt.Printf("updated %s\n", s)
-		}
-	}
-
-	fmt.Println("finished updating scaffolds")
-	return nil
-}
-
-func (c *controller) List(ctx *cli.Context) error {
-	scaffolds, err := pkgs.List(os.DirFS(c.cache))
-	if err != nil {
-		return err
-	}
-
-	for _, s := range scaffolds {
-		fmt.Println(s)
-	}
-	return nil
-}
-
-func checkWorkingTree(dir string) bool {
-	repo, err := git.PlainOpen(dir)
-	if err != nil {
-		log.Debug().Err(err).Msg("failed to open git repository")
-		return errors.Is(err, git.ErrRepositoryNotExists)
-	}
-
-	wt, err := repo.Worktree()
-	if err != nil {
-		log.Debug().Err(err).Msg("failed to open git worktree")
-		return false
-	}
-
-	status, err := wt.Status()
-	if err != nil {
-		log.Debug().Err(err).Msg("failed to get git status")
-		return false
-	}
-
-	if status.IsClean() {
-		return true
-	}
-
-	return false
 }

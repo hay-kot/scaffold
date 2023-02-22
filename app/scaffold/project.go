@@ -7,7 +7,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/core"
-	"github.com/hay-kot/scaffold/internal/core/rwfs"
+	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )

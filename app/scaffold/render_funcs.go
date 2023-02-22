@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
-	"github.com/hay-kot/scaffold/internal/core/rwfs"
-	"github.com/hay-kot/scaffold/internal/engine"
+	"github.com/hay-kot/scaffold/app/core/engine"
+	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/huandu/xstrings"
 	"github.com/rs/zerolog/log"
 )

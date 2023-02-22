@@ -21,8 +21,12 @@ type Engine struct {
 }
 
 func New() *Engine {
+	fm := sprig.FuncMap()
+
+	fm["wraptmpl"] = wraptmpl
+
 	return &Engine{
-		baseTemplate: template.New("scaffold").Funcs(sprig.FuncMap()),
+		baseTemplate: template.New("scaffold").Funcs(fm),
 	}
 }
 

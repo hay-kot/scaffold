@@ -28,6 +28,12 @@ func TestScaffold_TmplString(t *testing.T) {
 			},
 		},
 		{
+			name: "Test custom func 'wraptmpl'",
+			tmpl: "./path/to/file/{{ wraptmpl `Arg` }}",
+			want: "./path/to/file/{{ Arg }}",
+			vars: Vars{},
+		},
+		{
 			name:    "Empty template",
 			tmpl:    "./my/path/without/template",
 			want:    "./my/path/without/template",

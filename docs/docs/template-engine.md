@@ -12,7 +12,17 @@ Scaffold uses the Go template engine to generate files. The following variables 
 - `ProjectCamel` - The camel case version of the project name
 - `Scaffold` - a map of the scaffold questions and answers
 
-The templates also make available the `sprig` library of functions. See the [sprig documentation](http://masterminds.github.io/sprig/) for more information.
+The templates also make available the `sprig` library of functions. See the [sprig documentation](http://masterminds.github.io/sprig/) for more information. We also provide the following functions
+
+`wraptmpl`
+
+:    Wraps a string in `{{` and `}}` so it can be used as a template. This can also be accomplished by escaping the template syntax. For example, `{{ "{{ .Project }}" }}` will render as `{{ .Project }}`.
+
+    `{{ wraptmpl "docker_dir" }}` -> `{{ "docker_dir" }}`
+
+    vs
+
+    `{{ "{{ docker_dir }}" }}` -> `{{ docker_dir }}`
 
 ## Engine Rules
 

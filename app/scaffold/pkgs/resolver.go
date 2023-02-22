@@ -82,7 +82,6 @@ func (r *Resolver) Resolve(arg string) (path string, err error) {
 	}
 
 	_, err = os.Stat(path)
-	println(path)
 	if err != nil {
 		return "", ErrNoMatchingScaffold
 	}

@@ -5,10 +5,13 @@
 package pkgs
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"path/filepath"
 	"strings"
+
+	"github.com/go-git/go-git/v5"
 )
 
 // ParseRemote parses a URL and returns a filesystem path representing the
@@ -73,4 +76,27 @@ func IsRemote(str string, shorts map[string]string) (expanded string, ok bool) {
 	}
 
 	return "", false
+}
+
+// Update updates a git repository to the latest commit
+func Update(path string) (updated bool, err error) {
+	repo, err := git.PlainOpen(path)
+	if err != nil {
+		return false, err
+	}
+
+	w, err := repo.Worktree()
+	if err != nil {
+		return false, err
+	}
+
+	err = w.Pull(&git.PullOptions{})
+	if err != nil {
+		if errors.Is(err, git.NoErrAlreadyUpToDate) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
 }

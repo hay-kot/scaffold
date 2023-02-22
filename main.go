@@ -164,6 +164,18 @@ func main() {
 				UsageText: "scaffold new [scaffold (url | path)] [flags]",
 				Action:    ctrl.Project,
 			},
+			{
+				Name:      "list",
+				Usage:     "list available scaffolds",
+				UsageText: "scaffold list [flags]",
+				Action:    ctrl.List,
+			},
+			{
+				Name:      "update",
+				Usage:     "update the local cache of scaffolds",
+				UsageText: "scaffold update [flags]",
+				Action:    ctrl.Update,
+			},
 		},
 	}
 
@@ -248,6 +260,40 @@ func (c *controller) Project(ctx *cli.Context) error {
 		return err
 	}
 
+	return nil
+}
+
+func (c *controller) Update(ctx *cli.Context) error {
+	scaffolds, err := pkgs.List(os.DirFS(c.cache))
+	if err != nil {
+		return err
+	}
+
+	for _, s := range scaffolds {
+		updated, err := pkgs.Update(filepath.Join(c.cache, s))
+
+		if err != nil {
+			return err
+		}
+
+		if updated {
+			fmt.Printf("updated %s\n", s)
+		}
+	}
+
+	fmt.Println("finished updating scaffolds")
+	return nil
+}
+
+func (c *controller) List(ctx *cli.Context) error {
+	scaffolds, err := pkgs.List(os.DirFS(c.cache))
+	if err != nil {
+		return err
+	}
+
+	for _, s := range scaffolds {
+		fmt.Println(s)
+	}
 	return nil
 }
 

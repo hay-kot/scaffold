@@ -111,6 +111,18 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 		"Scaffold":     vars,
 	}
 
+	mp := make(map[string]any, len(args.Project.Conf.Computed))
+	for k, v := range args.Project.Conf.Computed {
+		out, err := eng.TmplString(v, iVars)
+		if err != nil {
+			return err
+		}
+
+		mp[k] = out
+	}
+
+	iVars["Computed"] = mp
+
 	guards := []filepathGuard{
 		guardRewrite(args),
 		guardRenderPath(eng, iVars),

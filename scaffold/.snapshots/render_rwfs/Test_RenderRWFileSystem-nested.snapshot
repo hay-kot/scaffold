@@ -10,4 +10,6 @@ NewProject:  (type=dir)
 			Multi Line Field
 		file_2.txt:  (type=file)
 			Your Name2
+	snake.txt:  (type=file)
+		new_project
 

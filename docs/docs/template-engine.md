@@ -29,4 +29,5 @@ The templates also make available the `sprig` library of functions. See the [spr
 The template process also uses the following rules for rendering:
 
 1. Empty files are skipped.
-2. Files that render to an empty string are skipped.
+2. Template files that are empty after rendering are not included in the generated project.
+3. Empty directories not included in the generated project

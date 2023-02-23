@@ -1,0 +1,18 @@
+messages:
+  pre: |
+    # Example Role scaffold
+
+    This is an example Role scaffold that can be used to generate a Role. It uses
+    the "template" feature to generate a Role within an exiting project.
+questions:
+  - name: "role_name"
+    prompt:
+      message: "What's The Role Name?"
+rewrites:
+  - from: templates/defaults.yaml
+    to: roles/{{ .Computed.snaked }}/defaults/main.yaml
+  - from: templates/task.yaml
+    to: roles/{{ .Computed.snaked }}/tasks/main.yaml
+computed:
+  snaked: "{{ snakecase .Scaffold.role_name }}"
+  static: false

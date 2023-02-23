@@ -30,7 +30,7 @@ func main() {
 
 	app := &cli.App{
 		Name:    "{{ .Project }}",
-		Usage:   "{{ .Scaffold.Description }}",
+		Usage:   "{{ .Scaffold.description }}",
 		Version: build(),
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -87,6 +87,6 @@ type controller struct {
 }
 
 func (c *controller) HelloWorld(ctx *cli.Context) error {
-	fmt.Println("Hello World!")
+	fmt.Println("Hello, your favorite colors are {{ .Scaffold.colors | join `, ` }}")
 	return nil
 }

@@ -1,0 +1,26 @@
+messages:
+  pre: |
+    # Example CLI scaffold
+
+    This is an example CLI scaffold that can be used to generate a CLI application.
+  post: |
+    # You've generated a CLI application!
+
+    You can now run the following commands:
+
+    - `go run main.go` - Runs the main application and supports passing CLI args
+
+questions:
+  - name: "description"
+    prompt:
+      message: "Description of the project"
+    required: true
+  - name: "colors"
+    prompt:
+      multi: true
+      message: "Colors of the project"
+      options:
+        - "red"
+        - "green"
+        - "blue"
+        - "yellow"

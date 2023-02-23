@@ -12,6 +12,7 @@ type Flags struct {
 	ScaffoldRCPath string
 	Cache          string
 	OutputDir      string
+	ScaffoldDirs   []string
 }
 
 type Controller struct {

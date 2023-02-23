@@ -1,0 +1,3 @@
+---
+task1: world
+task2: "{{ .Computed.static }}"

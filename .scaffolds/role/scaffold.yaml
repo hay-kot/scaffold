@@ -1,9 +1,0 @@
-questions:
-  - name: "do"
-    prompt:
-      confirm: "Do Thing?"
-rewrites:
-  - from: templates/defaults.yaml
-    to: roles/{{ .ProjectKebab }}/defaults/main.yaml
-  - from: templates/task.yaml
-    to: roles/{{ .ProjectKebab }}/tasks/main.yaml

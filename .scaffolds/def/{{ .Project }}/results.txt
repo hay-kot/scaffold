@@ -1,3 +1,0 @@
-name = "{{ .Scaffold.name }}"
-github_username = "{{ .Scaffold.github_username }}"
-github_email = "{{ .Scaffold.github_email }}"

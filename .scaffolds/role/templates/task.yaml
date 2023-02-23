@@ -1,3 +1,0 @@
----
-task1: world
-task2: "{{ .Scaffold.do }}"

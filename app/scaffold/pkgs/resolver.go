@@ -25,7 +25,7 @@ func NewResolver(shorts map[string]string, cache, cwd string) *Resolver {
 	}
 }
 
-func (r *Resolver) Resolve(arg string) (path string, err error) {
+func (r *Resolver) Resolve(arg string, checkDirs []string) (path string, err error) {
 	remoteRef, isRemote := IsRemote(arg, r.shorts)
 
 	switch {
@@ -65,19 +65,23 @@ func (r *Resolver) Resolve(arg string) (path string, err error) {
 
 	case filepath.IsAbs(arg):
 		path = arg
+	case strings.Contains(arg, "/"):
+		path = filepath.Join(r.cwd, arg)
 	default:
-		// if has slash then it is a relative path
-		if strings.Contains(arg, "/") {
-			path = filepath.Join(r.cwd, arg)
-			break
-		}
-
 		// Otherwise check local .scaffold directory for matching path
-		path = filepath.Join(r.cwd, ".scaffolds", arg)
+		for _, dir := range checkDirs {
+			absPath, err := filepath.Abs(filepath.Join(dir, arg))
+			if err != nil {
+				return "", fmt.Errorf("failed to get absolute path: %w", err)
+			}
 
-		path, err = filepath.Abs(path)
-		if err != nil {
-			return "", fmt.Errorf("failed to get absolute path: %w", err)
+			// Check if path exists
+			println("ABS PATH: ", absPath)
+			_, err = os.Stat(absPath)
+			if err == nil {
+				path = absPath
+				break
+			}
 		}
 	}
 

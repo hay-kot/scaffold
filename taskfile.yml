@@ -4,6 +4,7 @@ env:
   SCAFFOLD_LOG_LEVEL: "debug"
   SCAFFOLD_NO_CLOBBER: true
   SCAFFOLD_OUT: "gen"
+  SCAFFOLD_DIR: ".scaffold,.examples"
 
 tasks:
   run:
@@ -62,9 +63,16 @@ tasks:
       - rm -rf ./gen/*
       - |
         go run main.go \
-          new .scaffolds/cli \
-          "Project=TEST_PROJECT" \
-          "Description=TEST_PROJECT" \
-          "License=MIT" \
-          "Colors=#000000" \
+          new cli \
+          "project=TEST_PROJECT" \
+          "description"=TEST_PROJECT" \
+          "colors=red"
+
+  do:role:
+    desc: Runs the main.go program with the role scaffold
+    cmds:
+      - rm -rf ./gen/*
+      - |
+        go run main.go \
+          new role \
           "Use Github Actions=true"

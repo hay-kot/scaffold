@@ -55,6 +55,12 @@ func main() {
 				Value:   HomeDir(".scaffold/scaffoldrc.yml"),
 				EnvVars: []string{"SCAFFOLDRC"},
 			},
+			&cli.StringSliceFlag{
+				Name:    "scaffold-dir",
+				Usage:   "paths to directories containing scaffold templates",
+				Value:   cli.NewStringSlice("./.scaffold"),
+				EnvVars: []string{"SCAFFOLD_DIR"},
+			},
 			&cli.PathFlag{
 				Name:    "cache",
 				Usage:   "path to the local scaffold directory default",
@@ -92,6 +98,7 @@ func main() {
 				OutputDir:      ctx.String("output-dir"),
 				Cache:          ctx.String("cache"),
 				ScaffoldRCPath: ctx.String("scaffoldrc"),
+				ScaffoldDirs:   ctx.StringSlice("scaffold-dir"),
 			}
 
 			switch ctx.String("log-level") {

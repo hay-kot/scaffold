@@ -37,7 +37,7 @@ func (ctrl *Controller) Project(ctx *cli.Context) error {
 		argPath = v
 	}
 
-	path, err := resolver.Resolve(argPath)
+	path, err := resolver.Resolve(argPath, ctrl.Flags.ScaffoldDirs)
 	if err != nil {
 		return fmt.Errorf("failed to resolve path: %w", err)
 	}

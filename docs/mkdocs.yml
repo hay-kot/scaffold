@@ -38,13 +38,16 @@ markdown_extensions:
       emoji_generator: !!python/name:materialx.emoji.to_svg
   - def_list
   - pymdownx.highlight
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tasklist:
       custom_checkbox: true
   - admonition
   - attr_list
   - pymdownx.tabbed
-  - pymdownx.superfences
 
 extra_css:
   - assets/css/extras.css

@@ -4,12 +4,17 @@ title: Scaffold File
 
 ## Overview
 
-In general there are two _types_ of scaffolds that are supported
+There are two types of scaffolds you can define
 
-- Project Generation
-- Bootstraps
+### Project Scaffolds
 
-The Project generation scaffolds are used to generate a new project from a template. The file structure of this template is
+The Project generation scaffolds are used to generate a new project from a template directory. The file structure requires a root directory with one of the following names. All files within that directory will be copied to the destination directory and rendered as a template with the [template engine](./template-engine.md).
+
+- {{ .Project }}
+- {{ .ProjectSlug }}
+- {{ .ProjectSnake }}
+- {{ .ProjectKebab }}
+- {{ .ProjectCamel }}
 
 ```
 ├── scaffold # can be any name
@@ -18,25 +23,28 @@ The Project generation scaffolds are used to generate a new project from a templ
         └── any nested amount of files...
 ```
 
-The bootstrap scaffolds are used to generate files within an existing project. The file structure of this template is
+### Template Scaffolds
 
+The template scaffolds are used to generate files within an existing project. The file structure requires a `templates` file in the root directory. The `templates` directory is used to store files that should be rewritten using the [Rewrites](#rewrites) configuration in the `scaffold.yaml` file.
 ```
 ├── .scaffolds # in your project directory
-    └── scaffold # can be any name
+    └── my-scaffold # can be any name
         ├── scaffold.yaml
         └── templates
             └── any nested amount of files...
 ```
 
-The templates directory is _usually_ a flat directory structure, but can be nested as well. Note that the `templates` directory is skipped during the rewrite process and the files are copied to the corresponding [rewrite](#rewrites) paths defined in the configuration file.
+The templates directory is _usually_ a flat directory structure, but can be nested as well.
 
-## Questions and Prompts
+## File Reference
+
+### Questions and Prompts
 
 Questions are used to prompt the user for input when generating a scaffold. There are several types of questions that are available.
 
 Note: You can use the `required` flag to make a question required.
 
-### Text
+#### Text
 
 ```yaml
 questions:
@@ -46,7 +54,7 @@ questions:
     required: true
 ```
 
-### Boolean (Yes/No)
+#### Boolean (Yes/No)
 
 ```yaml
 questions:
@@ -55,7 +63,7 @@ questions:
       confirm: "Use Github Actions for CI/CD?"
 ```
 
-### Multi Select
+#### Multi Select
 
 ```yaml
 questions:
@@ -70,7 +78,7 @@ questions:
         - "yellow"
 ```
 
-### Single Select
+#### Single Select
 
 ```yaml
 questions:
@@ -86,7 +94,7 @@ questions:
         - "Unlicense"
 ```
 
-## Rewrites
+### Rewrites
 
 Rewrites working with the "bootstrap" scaffolds to perform a path rewrite to another directory. The following example defines a rewrite that will render the `templates/defaults.yaml` file to the `roles/{{ .ProjectKebab }}/defaults/main.yaml` path.
 
@@ -102,7 +110,7 @@ rewrite:
 
 This feature is not available for project scaffolds.
 
-## Skips
+### Skips
 
 Skip is a list of glob patterns that will be used to skip the template **rendering** process. This is useful is your file is itself a go template, or contains similar syntax that will cause the template engine to fail. The following example will skip the `templates/defaults.yaml` file from being rendered.
 
@@ -112,7 +120,7 @@ skip:
   - "**/*.gotmpl"
 ```
 
-## Computed Variables
+### Computed Variables
 
 Computed variables are variables that are computed from the answers to the questions. The following example will compute the `shuffled` variable from the `Project` variable.
 
@@ -127,7 +135,7 @@ You can reference computed variables like so
 {{ .Computed.shuffled }}
 ```
 
-## Messages
+### Messages
 
 You can specify messages to show the user that are rendered using the [glamour markdown renderer](https://github.com/charmbracelet/glamour/) to show pre and post messages to the user.
 

@@ -2,7 +2,7 @@
 title: Scaffold RC
 ---
 
-Scaffold RC is the runtime configuration file that can be used to bootstrap some default values and perform some basic enhancements to the scaffolding process. Your scaffoldrc path is defined by:
+Scaffold RC is the runtime configuration file that can be used to define some default values and perform some basic enhancements to the scaffolding process. Your scaffoldrc path is defined by:
 
 - The `--scaffoldrc` flag
 - the `SCAFFOLDRC` environment variable

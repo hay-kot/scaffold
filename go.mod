@@ -9,7 +9,7 @@ require (
 	github.com/bradleyjkemp/cupaloy v2.3.0+incompatible
 	github.com/charmbracelet/glamour v0.6.0
 	github.com/go-git/go-git/v5 v5.5.2
-	github.com/huandu/xstrings v1.3.3
+	github.com/huandu/xstrings v1.4.0
 	github.com/psanford/memfs v0.0.0-20230130182539-4dbf7e3e865e
 	github.com/rs/zerolog v1.29.0
 	github.com/stretchr/testify v1.7.0

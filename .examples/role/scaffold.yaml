@@ -8,6 +8,13 @@ questions:
   - name: "role_name"
     prompt:
       message: "What's The Role Name?"
+  - name: "toggle"
+    prompt:
+      confirm: "Do you want to toggle the next question?"
+  - name: "description"
+    when: "{{ .toggle }}"
+    prompt:
+      message: "What's The Role Description?"
 rewrites:
   - from: templates/defaults.yaml
     to: roles/{{ .Computed.snaked }}/defaults/main.yaml

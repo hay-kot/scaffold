@@ -4,9 +4,11 @@ package scaffold
 import (
 	"fmt"
 	"io/fs"
+	"strconv"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/core"
+	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -81,9 +83,7 @@ func (p *Project) validate() (str string, err error) {
 	return "", fmt.Errorf("{{ .Project }} directory does not exist")
 }
 
-func (p *Project) AskQuestions(def map[string]string) (map[string]any, error) {
-	qs := []*survey.Question{}
-
+func (p *Project) AskQuestions(def map[string]string, e *engine.Engine) (map[string]any, error) {
 	projectMode := p.NameTemplate != "templates"
 
 	if projectMode {
@@ -91,28 +91,21 @@ func (p *Project) AskQuestions(def map[string]string) (map[string]any, error) {
 
 		switch ok {
 		case false:
-			qs = append(qs, &survey.Question{
-				Name: "Project",
-				Prompt: &survey.Input{
-					Message: "Project name",
+			msg := "Project name"
+
+			pre := []Question{
+				{
+					Name: "Project",
+					Prompt: AnyPrompt{
+						Message: &msg,
+					},
+					Required: true,
 				},
-				Validate: survey.Required,
-			})
+			}
+
+			p.Conf.Questions = append(pre, p.Conf.Questions...)
 		case true:
 			p.Name = name
-		}
-	}
-
-	for _, q := range p.Conf.Questions {
-		qs = append(qs, q.ToSurveyQuestion())
-	}
-
-	// Filter out questions that have already been answered
-	// TODO: Types should be checked to ensure they are what's expected in the template
-	for i := 0; i < len(qs); i++ {
-		if _, ok := def[qs[i].Name]; ok {
-			qs = append(qs[:i], qs[i+1:]...)
-			i--
 		}
 	}
 
@@ -122,13 +115,30 @@ func (p *Project) AskQuestions(def map[string]string) (map[string]any, error) {
 		vars[k] = v
 	}
 
-	if len(qs) == 0 {
-		return vars, nil
-	}
+	for _, q := range p.Conf.Questions {
+		// Filter already answered questions
+		if _, ok := def[q.Name]; ok {
+			continue
+		}
 
-	err := survey.Ask(qs, &vars)
-	if err != nil {
-		return nil, err
+		if q.When != "" {
+			result, err := e.TmplString(q.When, vars)
+			if err != nil {
+				return nil, err
+			}
+
+			resultBool, _ := strconv.ParseBool(result)
+			if !resultBool {
+				continue
+			}
+		}
+
+		question := q.ToSurveyQuestion()
+
+		err := survey.Ask([]*survey.Question{question}, &vars)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if projectMode {

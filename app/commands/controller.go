@@ -1,5 +1,5 @@
-// Package handlers containers all the handlers for the application CLI commands
-package handlers
+// Package commands containers all the commands for the application CLI
+package commands
 
 import (
 	"github.com/hay-kot/scaffold/app/core/engine"
@@ -16,9 +16,10 @@ type Flags struct {
 }
 
 type Controller struct {
-	engine *engine.Engine
-	Flags  Flags
 	// Global Flags
+	Flags Flags
+
+	engine   *engine.Engine
 	rc       *scaffold.ScaffoldRC
 	vars     map[string]string
 	prepared bool

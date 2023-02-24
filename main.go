@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	scaffoldcli "github.com/hay-kot/scaffold/app/cli"
+	"github.com/hay-kot/scaffold/app/commands"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/scaffold"
 	"github.com/rs/zerolog"
@@ -42,7 +42,7 @@ func HomeDir(s ...string) string {
 func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
-	ctrl := &scaffoldcli.Controller{}
+	ctrl := &commands.Controller{}
 
 	app := &cli.App{
 		Name:    "scaffold",
@@ -92,7 +92,7 @@ func main() {
 			},
 		},
 		Before: func(ctx *cli.Context) error {
-			ctrl.Flags = scaffoldcli.Flags{
+			ctrl.Flags = commands.Flags{
 				NoClobber:      ctx.Bool("no-clobber"),
 				Force:          ctx.Bool("force"),
 				OutputDir:      ctx.String("output-dir"),

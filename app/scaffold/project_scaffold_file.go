@@ -38,6 +38,7 @@ func readScaffoldFile(reader io.Reader) (*ProjectScaffoldFile, error) {
 type Question struct {
 	Name     string    `yaml:"name"`
 	Prompt   AnyPrompt `yaml:"prompt"`
+	When     string    `yaml:"when"`
 	Required bool      `yaml:"required"`
 }
 

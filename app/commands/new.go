@@ -1,4 +1,4 @@
-package handlers
+package commands
 
 import (
 	"fmt"
@@ -70,7 +70,7 @@ func (ctrl *Controller) Project(ctx *cli.Context) error {
 		fmt.Println(out)
 	}
 
-	vars, err := p.AskQuestions(defaults)
+	vars, err := p.AskQuestions(defaults, ctrl.engine)
 	if err != nil {
 		return err
 	}

@@ -173,6 +173,12 @@ func main() {
 				UsageText: "scaffold update [flags]",
 				Action:    ctrl.Update,
 			},
+			{
+				Name:      "lint",
+				Usage:     "lint a scaffoldrc file",
+				UsageText: "scaffold lint [scaffold file]",
+				Action:    ctrl.Lint,
+			},
 		},
 	}
 

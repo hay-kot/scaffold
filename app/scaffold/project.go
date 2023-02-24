@@ -55,7 +55,7 @@ func LoadProject(fileSys fs.FS, opts Options) (*Project, error) {
 		return nil, err
 	}
 
-	scaffold, err := readScaffoldFile(scaffoldFile)
+	scaffold, err := ReadScaffoldFile(scaffoldFile)
 	if err != nil {
 		return nil, err
 	}

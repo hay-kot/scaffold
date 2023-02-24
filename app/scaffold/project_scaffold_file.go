@@ -33,7 +33,7 @@ type ProjectScaffoldFile struct {
 	Inject []Injectable `yaml:"inject"`
 }
 
-func readScaffoldFile(reader io.Reader) (*ProjectScaffoldFile, error) {
+func ReadScaffoldFile(reader io.Reader) (*ProjectScaffoldFile, error) {
 	var out ProjectScaffoldFile
 
 	err := yaml.NewDecoder(reader).Decode(&out)

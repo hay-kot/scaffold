@@ -6,6 +6,7 @@ import (
 	"io"
 	"strings"
 	"text/template"
+	"unicode"
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/rs/zerolog/log"
@@ -82,4 +83,13 @@ func (e *Engine) Render(w io.Writer, tmpl *template.Template, vars any) error {
 	}
 
 	return nil
+}
+
+func IsValidIdentifier(s string) bool {
+	for _, r := range s {
+		if !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '_' {
+			return false
+		}
+	}
+	return true
 }

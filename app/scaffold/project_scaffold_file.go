@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 )
@@ -44,7 +45,7 @@ type Question struct {
 
 type AnyPrompt struct {
 	Message *string   `yaml:"message"`
-	Default string    `yaml:"default"`
+	Default any       `yaml:"default"`
 	Confirm *string   `yaml:"confirm"`
 	Multi   bool      `yaml:"multi"`
 	Options *[]string `yaml:"options"`
@@ -66,38 +67,62 @@ func (p AnyPrompt) IsMultiSelect() bool {
 	return p.IsSelect() && p.Multi
 }
 
-func (q Question) ToSurveyQuestion() *survey.Question {
+// parseDefaults parses the default values in order of priority:
+// where the first argument has the highest priority. As soon as a
+// type match is found, the value is returned.
+//
+// If no match is found, the default value is returned.
+func parseDefaults[T any](v ...any) T {
+	for _, val := range v {
+		log.Debug().Type("val", val).Msg("parseDefaults")
+		switch val := val.(type) {
+		case T:
+			return val
+		}
+	}
+
+	var out T
+	return out
+}
+
+func (q Question) ToSurveyQuestion(defaults engine.Vars) *survey.Question {
 	out := &survey.Question{
 		Name: q.Name,
 	}
+
+	def := defaults[q.Name]
 
 	switch {
 	case q.Prompt.IsMultiSelect():
 		out.Prompt = &survey.MultiSelect{
 			Message: *q.Prompt.Message,
 			Options: *q.Prompt.Options,
-			Default: q.Prompt.Default,
+			Default: parseDefaults[[]any](def, q.Prompt.Default),
 		}
 	case q.Prompt.IsSelect():
 		out.Prompt = &survey.Select{
 			Message: *q.Prompt.Message,
 			Options: *q.Prompt.Options,
-			Default: q.Prompt.Default,
+			Default: parseDefaults[string](def, q.Prompt.Default),
 		}
 	case q.Prompt.IsConfirm():
 		out.Prompt = &survey.Confirm{
 			Message: *q.Prompt.Confirm,
-			Default: q.Prompt.Default == "true",
+			Default: parseDefaults[bool](def, q.Prompt.Default),
 		}
 	case q.Prompt.IsInput():
 		out.Prompt = &survey.Input{
 			Message: *q.Prompt.Message,
-			Default: q.Prompt.Default,
+			Default: parseDefaults[string](def, q.Prompt.Default),
 		}
 	default:
 		log.Fatal().
 			Str("question", q.Name).
 			Msgf("Unknown prompt type")
+	}
+
+	if q.Required {
+		out.Validate = survey.Required
 	}
 
 	return out

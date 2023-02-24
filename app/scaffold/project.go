@@ -116,11 +116,6 @@ func (p *Project) AskQuestions(def map[string]string, e *engine.Engine) (map[str
 	}
 
 	for _, q := range p.Conf.Questions {
-		// Filter already answered questions
-		if _, ok := def[q.Name]; ok {
-			continue
-		}
-
 		if q.When != "" {
 			result, err := e.TmplString(q.When, vars)
 			if err != nil {
@@ -133,7 +128,7 @@ func (p *Project) AskQuestions(def map[string]string, e *engine.Engine) (map[str
 			}
 		}
 
-		question := q.ToSurveyQuestion()
+		question := q.ToSurveyQuestion(vars)
 
 		err := survey.Ask([]*survey.Question{question}, &vars)
 		if err != nil {

@@ -30,7 +30,7 @@ See the [examples](https://github.com/hay-kot/scaffold/tree/main/.examples) fold
 - [x] Alias support for shortening common commands
 - [x] Shortcuts for common prefixes (e.g `gh:` for github.com)
 - [x] Conditional Prompting based on user input
-- [ ] Inject snippets into existing files with Scaffold Templates
+- [x] Inject snippets into existing files with Scaffold Templates
 
 ## Installation
 

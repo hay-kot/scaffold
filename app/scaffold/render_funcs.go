@@ -139,7 +139,7 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 		guardDirectories(args),
 	}
 
-	return fs.WalkDir(args.ReadFS, args.Project.NameTemplate, func(path string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(args.ReadFS, args.Project.NameTemplate, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -253,4 +253,33 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 
 		return f.Close()
 	})
+	if err != nil {
+		return err
+	}
+
+	// Do Injection Jobs
+
+	for _, injection := range args.Project.Conf.Inject {
+		f, err := args.WriteFS.Open(injection.Path)
+		if err != nil {
+			return err
+		}
+
+		out, err := eng.TmplString(injection.Template, vars)
+		if err != nil {
+			return err
+		}
+
+		outbytes, err := Inject(f, out, injection.At)
+		if err != nil {
+			return err
+		}
+
+		err = args.WriteFS.WriteFile(injection.Path, outbytes, os.ModePerm)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

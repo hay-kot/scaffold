@@ -14,6 +14,13 @@ type Rewrite struct {
 	To   string `yaml:"to"`
 }
 
+type Injectable struct {
+	Name     string `yaml:"name"`
+	Path     string `yaml:"path"`
+	At       string `yaml:"at"`
+	Template string `yaml:"template"`
+}
+
 type ProjectScaffoldFile struct {
 	Skip      []string          `yaml:"skip"`
 	Questions []Question        `yaml:"questions"`
@@ -23,6 +30,7 @@ type ProjectScaffoldFile struct {
 		Pre  string `yaml:"pre"`
 		Post string `yaml:"post"`
 	} `yaml:"messages"`
+	Inject []Injectable `yaml:"inject"`
 }
 
 func readScaffoldFile(reader io.Reader) (*ProjectScaffoldFile, error) {

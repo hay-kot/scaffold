@@ -23,3 +23,10 @@ rewrites:
 computed:
   snaked: "{{ snakecase .Scaffold.role_name }}"
   static: false
+inject:
+  - name: "add role to site.yaml"
+    path: site.yaml
+    at: "# $Scaffold.role_name"
+    template: |
+      - name: {{ .Scaffold.role_name }}
+        role: {{ .Computed.snaked }}

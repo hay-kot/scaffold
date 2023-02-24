@@ -159,7 +159,37 @@ skip:
   - "*.goreleaser.yaml"
   - "**/*.gotmpl"
 ```
+### Inject
 
+`inject` is a list of code/text injections to perform on a given file. This is to be used in conjunction with `scaffold templates` and is not supported within a `scaffold project`.
+
+The following example will inject a role into the `site.yaml` file at the output directory.
+
+`name`
+
+:   The name of the injection
+
+`path`
+
+:   The relative path to the file to inject into from the output directory
+
+`at`
+
+:  The location to inject the code/text. This is evaluated using the strings.Contains function. Note that ALL matches will be replaced.
+
+`template`
+
+:   The template to inject into the file. These work the same as scaffold templates.
+
+```yaml
+inject:
+  - name: "add role to site.yaml"
+    path: site.yaml
+    at: "# $Scaffold.role_name"
+    template: |
+      - name: {{ .Scaffold.role_name }}
+        role: {{ .Computed.snaked }}
+```
 
 ### Messages
 

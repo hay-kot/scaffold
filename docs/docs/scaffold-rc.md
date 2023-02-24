@@ -20,6 +20,9 @@ defaults:
   email: joebags@donus.gonuts
 ```
 
+!!! tip
+    Note that defaults are only used for text type questions at this time.
+
 ## Aliases
 
 The `aliases` section allows you to define key/value pairs as shortcuts for a scaffold path. This is useful to shorten a reference for a specific scaffold.
@@ -36,7 +39,7 @@ Then you can use the alias in the `scaffold` command
 scaffold new api
 ```
 
-## shorts
+## Shorts
 
 The `shorts` section allows you to define expandable text snippets. Commonly these would be used to prefix a URL or path.
 

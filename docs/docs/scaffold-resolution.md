@@ -18,7 +18,7 @@ graph TD;
 
   F --> |No| G{Contains '/'};
   G --> |Yes| H(Assume Relative Path);
-  H --> |Yes| Z;
+  H --> Z;
 
   G --> |No| I(Search Scaffold Dirs for Match);
   I --> |Found| Z;

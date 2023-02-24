@@ -40,34 +40,75 @@ The templates directory is _usually_ a flat directory structure, but can be nest
 
 ### Questions and Prompts
 
-Questions are used to prompt the user for input when generating a scaffold. There are several types of questions that are available.
+Questions are used to prompt the user for input when generating a scaffold. We support the following types of questions
 
-Note: You can use the `required` flag to make a question required.
+- Text
+- Confirm (Yes/No)
+- Select One
+- Multi Select
 
-#### Text
+They share a base type of question with the following fields
+
+`name`
+
+:    The name of the variable that will be used in the template. {{ .Scaffold.<name> }}
+
+`required`
+
+:    Whether or not the question is required.
+
+`when`
+
+:    A go template will will be evaluated with the previous context to conditionally render the questions. If the template evaluates to `false` the question will not be rendered, otherwise it will be. This is done by using the `strconv.ParseBool` function to parse the result of the template. **Previous question variables are available at the root level {{ .previous_name }} instead of inside a .Scaffold container.**
+
+`prompt`
+
+:    Prompt configured the type of questions to display to the user. See the examples below for more details.
+
+     `message`
+
+     :    The message field is the message that will be displayed to the user. If only this field is specified, the user will be prompted for a text input.
+
+     `confirm`
+
+     :   The confirm field is the message that will be displayed to the user. If only this field is specified, the user will be prompted for a yes/no input.
+
+     `options`
+
+     :   The options field is a list of options that will be displayed to the user. This requires the message field to be specified as well.
+
+     `multi`
+
+     :   The multi field is a boolean that will allow the user to select multiple options. This requires the message and options fields to be specified as well.
+
+     `default`
+
+     :    The default field is the default value that will be used if the user does not provide an answer. Currently this is only supported for text questions.
+
+
+#### Question Examples
 
 ```yaml
 questions:
-  - name: "Description"
+  - name: "description"
     prompt:
       message: "Description of the project"
     required: true
-```
-
-#### Boolean (Yes/No)
-
-```yaml
-questions:
-  - name: "Use Github Actions"
+  - name: "license"
+    prompt:
+      message: "License of the project"
+      default: "MIT"
+      options:
+        - "MIT"
+        - "Apache-2.0"
+        - "GPL-3.0"
+        - "BSD-3-Clause"
+        - "Unlicense"
+  - name: "use_github_actions"
     prompt:
       confirm: "Use Github Actions for CI/CD?"
-```
-
-#### Multi Select
-
-```yaml
-questions:
-  - name: "Colors"
+  - name: "colors"
+    when: {{ .use_github_actions }}
     prompt:
       multi: true
       message: "Colors of the project"
@@ -78,20 +119,19 @@ questions:
         - "yellow"
 ```
 
-#### Single Select
+### Computed Variables
+
+Computed variables are variables that are computed from the answers to the questions. The following example will compute the `shuffled` variable from the `Project` variable.
 
 ```yaml
-questions:
-  - name: "License"
-    prompt:
-      message: "License of the project"
-      default: "MIT"
-      options:
-        - "MIT"
-        - "Apache-2.0"
-        - "GPL-3.0"
-        - "BSD-3-Clause"
-        - "Unlicense"
+computed:
+  shuffled: "{{ shuffle .Project }}"
+```
+
+You can reference computed variables like so
+
+```yaml
+{{ .Computed.shuffled }}
 ```
 
 ### Rewrites
@@ -120,20 +160,6 @@ skip:
   - "**/*.gotmpl"
 ```
 
-### Computed Variables
-
-Computed variables are variables that are computed from the answers to the questions. The following example will compute the `shuffled` variable from the `Project` variable.
-
-```yaml
-computed:
-  shuffled: "{{ shuffle .Project }}"
-```
-
-You can reference computed variables like so
-
-```yaml
-{{ .Computed.shuffled }}
-```
 
 ### Messages
 

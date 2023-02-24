@@ -14,6 +14,7 @@ You're able to use a `.scaffolds` directory within a project to define a scaffol
 - React/Vue/Angular/... components
 - Ansible Roles
 - CRUD API endpoint stubs
+- Other commonly structured code folders
 
 See the [examples](https://github.com/hay-kot/scaffold/tree/main/.examples) folder for some examples of how to use Scaffold.
 
@@ -28,9 +29,26 @@ See the [examples](https://github.com/hay-kot/scaffold/tree/main/.examples) fold
 - [x] Pre/Post Messages defined in the scaffold (supports markdown)
 - [x] Alias support for shortening common commands
 - [x] Shortcuts for common prefixes (e.g `gh:` for github.com)
+- [x] Conditional Prompting based on user input
 - [ ] Inject snippets into existing files with Scaffold Templates
 
 ## Installation
+
+### Homebrew
+
+```sh
+brew tap hay-kot/scaffold-tap
+
+brew install scaffold
+```
+
+### Go
+
+```sh
+go install github.com/hay-kot/scaffold@latest
+```
+
+## Usage
 
 ```sh
 scaffold new <scaffold> [flags]

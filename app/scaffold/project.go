@@ -36,6 +36,17 @@ type Project struct {
 	Options      Options
 }
 
+func readFirst(fsys fs.FS, names ...string) (fs.File, error) {
+	for _, name := range names {
+		file, err := fsys.Open(name)
+		if err == nil {
+			return file, nil
+		}
+	}
+
+	return nil, fmt.Errorf("file not found")
+}
+
 func LoadProject(fileSys fs.FS, opts Options) (*Project, error) {
 	p := &Project{
 		RootFS:  fileSys,
@@ -50,7 +61,7 @@ func LoadProject(fileSys fs.FS, opts Options) (*Project, error) {
 	}
 
 	// Read scaffold.yaml
-	scaffoldFile, err := p.RootFS.Open("scaffold.yaml")
+	scaffoldFile, err := readFirst(p.RootFS, "scaffold.yaml", "scaffold.yml")
 	if err != nil {
 		return nil, err
 	}
@@ -67,9 +78,9 @@ func LoadProject(fileSys fs.FS, opts Options) (*Project, error) {
 
 func (p *Project) validate() (str string, err error) {
 	// Ensure there is a scaffold.yaml file
-	_, err = p.RootFS.Open("scaffold.yaml")
+	_, err = readFirst(p.RootFS, "scaffold.yaml", "scaffold.yml")
 	if err != nil {
-		return "", fmt.Errorf("scaffold.yaml does not exist")
+		return "", fmt.Errorf("scaffold.{yml,yaml} does not exist")
 	}
 
 	// Ensure required directories exist

@@ -179,6 +179,12 @@ func main() {
 				UsageText: "scaffold lint [scaffold file]",
 				Action:    ctrl.Lint,
 			},
+			{
+				Name:      "init",
+				Usage:     "initialize a new scaffold in the current directory for template scaffolds",
+				UsageText: "scaffold init [flags]",
+				Action:    ctrl.Init,
+			},
 		},
 	}
 

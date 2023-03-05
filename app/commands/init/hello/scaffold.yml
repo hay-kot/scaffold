@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://hay-kot.github.io/scaffold/schema.json
+messages:
+  pre: |
+    # Hello Scaffold
+
+    This is a scaffold for the `hello` command.
+
+  post: |
+    # Hello {{ .Scaffold.name }}
+
+    Check the .scaffold/.temp directory for the generated files.
+
+questions:
+  - name: name
+    prompt:
+      message: What is your name?
+
+rewrites:
+  - from: "templates/hello.txt"
+    to: ".scaffold/.temp/hello.txt"

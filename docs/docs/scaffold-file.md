@@ -26,6 +26,7 @@ The Project generation scaffolds are used to generate a new project from a templ
 ### Template Scaffolds
 
 The template scaffolds are used to generate files within an existing project. The file structure requires a `templates` file in the root directory. The `templates` directory is used to store files that should be rewritten using the [Rewrites](#rewrites) configuration in the `scaffold.yaml` file.
+
 ```
 ├── .scaffolds # in your project directory
     └── my-scaffold # can be any name
@@ -139,7 +140,7 @@ You can reference computed variables like so
 Rewrites working with the "bootstrap" scaffolds to perform a path rewrite to another directory. The following example defines a rewrite that will render the `templates/defaults.yaml` file to the `roles/{{ .ProjectKebab }}/defaults/main.yaml` path.
 
 ```yaml
-rewrite:
+rewrites:
   - from: templates/defaults.yaml
     to: roles/{{ .ProjectKebab }}/defaults/main.yaml
 ```

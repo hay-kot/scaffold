@@ -63,7 +63,7 @@ Some of the terms used in the documentation and project can be somewhat general,
 
 `scaffold`
 
-:   a generic term for a repository or directory that has a `scaffold.yaml` file in it.
+:   a generic term for a repository or directory that has a `scaffold.{yml,yaml}` file in it.
 
 `project`
 

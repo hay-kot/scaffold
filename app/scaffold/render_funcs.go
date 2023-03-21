@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
@@ -103,6 +104,34 @@ func guardDirectories(args *RWFSArgs) filepathGuard {
 	}
 }
 
+func guardFeatureFlag(e *engine.Engine, args *RWFSArgs, vars engine.Vars) filepathGuard {
+	return func(outpath string, f fs.DirEntry) (newOutpath string, err error) {
+		for _, feature := range args.Project.Conf.Features {
+			render, err := e.TmplString(feature.Value, vars)
+			if err != nil {
+				return "", err
+			}
+
+			booly, _ := strconv.ParseBool(render)
+			if !booly {
+				for _, pattern := range feature.Globs {
+					match, err := doublestar.Match(pattern, outpath)
+					if err != nil {
+						log.Debug().Err(err).Str("path", outpath).Str("pattern", pattern).Msg("feature pattern match")
+						return "", err
+					}
+
+					if match {
+						return "", errSkipRender
+					}
+				}
+			}
+		}
+
+		return outpath, nil
+	}
+}
+
 // BuildVars builds the vars for the engine by setting the provided vars
 // under the "Scaffold" key and adding the project name and computed vars.
 func BuildVars(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) (engine.Vars, error) {
@@ -137,6 +166,7 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 		guardRenderPath(eng, vars),
 		guardNoClobber(args),
 		guardDirectories(args),
+		guardFeatureFlag(eng, args, vars),
 	}
 
 	err := fs.WalkDir(args.ReadFS, args.Project.NameTemplate, func(path string, d fs.DirEntry, err error) error {

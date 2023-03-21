@@ -15,6 +15,7 @@ func Test_RenderRWFileSystem(t *testing.T) {
 		name string
 		fs   fs.FS
 		p    *Project
+		vars engine.Vars
 	}{
 		{
 			name: "basic",
@@ -25,6 +26,19 @@ func Test_RenderRWFileSystem(t *testing.T) {
 			name: "nested",
 			fs:   NestedFiles(),
 			p:    NestedFilesProject(),
+		},
+		{
+			name: "feature flag (off)",
+			fs:   FeatureFlagFiles(),
+			p:    FeatureFlagProject(),
+		},
+		{
+			name: "feature flag (on)",
+			fs:   FeatureFlagFiles(),
+			p:    FeatureFlagProject(),
+			vars: engine.Vars{
+				"feature": "true",
+			},
 		},
 	}
 
@@ -39,6 +53,12 @@ func Test_RenderRWFileSystem(t *testing.T) {
 	)
 
 	for _, tt := range tests {
+		if tt.vars != nil {
+			for k, v := range tt.vars {
+				vars[k] = v
+			}
+		}
+
 		t.Run(tt.name, func(t *testing.T) {
 			memFS := rwfs.NewMemoryWFS()
 

@@ -33,7 +33,34 @@ var (
 	// Validates That:
 	//  1. Invalid project structure is detected and error is returned
 	invalidProject embed.FS
+
+	//go:embed testdata/projects/feature_flag/*
+	// Validates That:
+	//  1. Conditional feature flags block files from being rendered
+	featureFlag embed.FS
 )
+
+func FeatureFlagFiles() fs.FS {
+	f, _ := fs.Sub(featureFlag, "testdata/projects/feature_flag")
+	return f
+}
+
+func FeatureFlagProject() *Project {
+	return &Project{
+		NameTemplate: "{{ .ProjectKebab }}",
+		Name:         "NewProject",
+		Conf: &ProjectScaffoldFile{
+			Features: []Feature{
+				{
+					Value: "{{ .Scaffold.feature }}",
+					Globs: []string{
+						"**/feature/**/*",
+					},
+				},
+			},
+		},
+	}
+}
 
 func NestedFiles() fs.FS {
 	f, _ := fs.Sub(nestedFiles, "testdata/projects/nested_scaffold")

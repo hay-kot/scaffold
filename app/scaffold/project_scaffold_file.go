@@ -21,6 +21,11 @@ type Injectable struct {
 	Template string `yaml:"template"`
 }
 
+type Feature struct {
+	Value string   `yaml:"value"`
+	Globs []string `yaml:"globs"`
+}
+
 type ProjectScaffoldFile struct {
 	Skip      []string          `yaml:"skip"`
 	Questions []Question        `yaml:"questions"`
@@ -30,7 +35,8 @@ type ProjectScaffoldFile struct {
 		Pre  string `yaml:"pre"`
 		Post string `yaml:"post"`
 	} `yaml:"messages"`
-	Inject []Injectable `yaml:"inject"`
+	Inject   []Injectable `yaml:"inject"`
+	Features []Feature    `yaml:"features"`
 }
 
 func ReadScaffoldFile(reader io.Reader) (*ProjectScaffoldFile, error) {

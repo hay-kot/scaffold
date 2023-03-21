@@ -1,0 +1,17 @@
+new-project:  (type=dir)
+	feature:  (type=dir)
+		feature-file.txt:  (type=file)
+			I Should Render
+		nested:  (type=dir)
+			feature-nested.txt:  (type=file)
+				Hello World
+	main.go:  (type=file)
+		package main
+		
+		import "os"
+		
+		func main() {
+			os.Exit(0)
+		}
+		
+

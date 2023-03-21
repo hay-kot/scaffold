@@ -39,3 +39,4 @@ See the [examples](https://github.com/hay-kot/scaffold/tree/main/.examples) fold
 - [x] Shortcuts for common prefixes (e.g `gh:` for github.com)
 - [x] Conditional Prompting based on user input
 - [x] Inject snippets into existing files with Scaffold Templates
+- [x] Feature flag support for blocking/enabling rendering of entire directories/glob matches

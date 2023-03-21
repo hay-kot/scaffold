@@ -29,7 +29,7 @@ func (ctrl *Controller) Init(ctx *cli.Context) error {
 	}
 
 	// Create directory
-	if err := os.Mkdir(scaffoldDir, 0755); err != nil {
+	if err := os.Mkdir(scaffoldDir, 0o755); err != nil {
 		return err
 	}
 
@@ -55,7 +55,7 @@ func (ctrl *Controller) Init(ctx *cli.Context) error {
 		fileName := strings.TrimPrefix(file, "init/")
 
 		if finfo.IsDir() {
-			err := os.Mkdir(filepath.Join(scaffoldDir, fileName), 0755)
+			err := os.Mkdir(filepath.Join(scaffoldDir, fileName), 0o755)
 			if err != nil {
 				return err
 			}

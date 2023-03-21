@@ -214,3 +214,16 @@ messages:
 
     {{ .ProjectKebab }}
 ```
+
+### Features
+
+Scaffold support the concept of "feature flags" that can be used to conditionally render entire directories/glob matches of files. This is useful if you want to provide a scaffold that can have wide-reaching optional features, like a database, CI pipeline, etc.
+
+Features are lists of globs that will be evaluated against the `value` field. If the value is parsed to `true` the glob will be rendered, otherwise it will be skipped.
+
+```yaml
+features:
+  - value: "{{ .Scaffold.database }}"
+    globs:
+      - "**/core/database/**/*"
+```

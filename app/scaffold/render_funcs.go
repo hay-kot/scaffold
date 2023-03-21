@@ -33,7 +33,15 @@ var (
 
 type filepathGuard func(outpath string, f fs.DirEntry) (newOutpath string, err error)
 
+func guardNoOp(outpath string, f fs.DirEntry) (string, error) {
+	return outpath, nil
+}
+
 func guardRewrite(args *RWFSArgs) filepathGuard {
+	if len(args.Project.Conf.Rewrites) == 0 {
+		return guardNoOp
+	}
+
 	return func(path string, f fs.DirEntry) (string, error) {
 		for _, rewrite := range args.Project.Conf.Rewrites {
 			match, err := doublestar.Match(rewrite.From, path)
@@ -64,6 +72,10 @@ func guardRenderPath(s *engine.Engine, vars any) filepathGuard {
 }
 
 func guardNoClobber(args *RWFSArgs) filepathGuard {
+	if !args.Project.Options.NoClobber {
+		return guardNoOp
+	}
+
 	return func(outpath string, f fs.DirEntry) (string, error) {
 		wf, err := args.WriteFS.Open(outpath)
 
@@ -105,6 +117,10 @@ func guardDirectories(args *RWFSArgs) filepathGuard {
 }
 
 func guardFeatureFlag(e *engine.Engine, args *RWFSArgs, vars engine.Vars) filepathGuard {
+	if len(args.Project.Conf.Features) == 0 {
+		return guardNoOp
+	}
+
 	return func(outpath string, f fs.DirEntry) (newOutpath string, err error) {
 		for _, feature := range args.Project.Conf.Features {
 			render, err := e.TmplString(feature.Value, vars)

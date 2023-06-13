@@ -3,7 +3,7 @@ module github.com/hay-kot/scaffold
 go 1.19
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.3.6
+	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/bmatcuk/doublestar/v4 v4.6.0
 	github.com/bradleyjkemp/cupaloy v2.3.0+incompatible

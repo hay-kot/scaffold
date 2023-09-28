@@ -5,9 +5,44 @@ import (
 	"path/filepath"
 )
 
-// List traverses the filesystem and returns a list of all the package paths
-// and references
-func List(f fs.FS) ([]string, error) {
+func ListLocal(f fs.FS) ([]string, error) {
+	// .scaffold
+	// └── model
+	//     └── scaffold.yaml
+	// └── controller
+	//     └── scaffold.yaml
+
+	outpaths := []string{}
+
+	// Ensure that the .scaffold directory exists
+	// If it doesn't, return an empty slice
+	if _, err := fs.Stat(f, ".scaffold"); err != nil {
+		return outpaths, nil
+	}
+
+	err := fs.WalkDir(f, ".scaffold", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if d.Name() == "scaffold.yaml" || d.Name() == "scaffold.yml" {
+			outpaths = append(outpaths, filepath.Base(filepath.Dir(path)))
+			return filepath.SkipDir
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return outpaths, nil
+}
+
+// ListSystem traverses the filesystem and returns a list of all the package paths
+// and references. This lists only the system scaffolds, and not the ones in the local
+// .scaffold directory.
+func ListSystem(f fs.FS) ([]string, error) {
 	// Example Structure
 	// Root
 	// └── github.com

@@ -13,6 +13,7 @@ type Flags struct {
 	Cache          string
 	OutputDir      string
 	ScaffoldDirs   []string
+  Cwd            string
 }
 
 type Controller struct {

@@ -12,7 +12,7 @@ import (
 func (ctrl *Controller) Update(ctx *cli.Context) error {
 	ctrl.ready()
 
-	scaffolds, err := pkgs.List(os.DirFS(ctrl.Flags.Cache))
+	scaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))
 	if err != nil {
 		return err
 	}

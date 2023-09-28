@@ -30,7 +30,7 @@ func (ctrl *Controller) List(ctx *cli.Context) error {
 			bldr.WriteString(fmt.Sprintf("  - %s\n", s))
 		}
 
-    bldr.WriteString("\n")
+		bldr.WriteString("\n")
 	}
 
 	if len(systemScaffolds) > 0 {
@@ -40,7 +40,6 @@ func (ctrl *Controller) List(ctx *cli.Context) error {
 			bldr.WriteString(fmt.Sprintf("  - %s\n", s))
 		}
 	}
-
 
 	our, err := glamour.RenderWithEnvironmentConfig(bldr.String())
 	if err != nil {

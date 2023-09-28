@@ -14,6 +14,12 @@ func ListLocal(f fs.FS) ([]string, error) {
 
 	outpaths := []string{}
 
+	// Ensure that the .scaffold directory exists
+	// If it doesn't, return an empty slice
+	if _, err := fs.Stat(f, ".scaffold"); err != nil {
+		return outpaths, nil
+	}
+
 	err := fs.WalkDir(f, ".scaffold", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err

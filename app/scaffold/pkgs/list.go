@@ -14,7 +14,7 @@ func ListLocal(f fs.FS) ([]string, error) {
 
 	outpaths := []string{}
 
-	err := fs.WalkDir(f, ".", func(path string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(f, ".scaffold", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}

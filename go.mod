@@ -9,9 +9,11 @@ require (
 	github.com/bradleyjkemp/cupaloy v2.3.0+incompatible
 	github.com/charmbracelet/glamour v0.6.0
 	github.com/go-git/go-git/v5 v5.10.0
+	github.com/charmbracelet/lipgloss v0.9.1
 	github.com/huandu/xstrings v1.4.0
 	github.com/psanford/memfs v0.0.0-20230130182539-4dbf7e3e865e
 	github.com/rs/zerolog v1.31.0
+	github.com/sahilm/fuzzy v0.1.0
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.25.7
 	gopkg.in/yaml.v3 v3.0.1
@@ -42,10 +44,11 @@ require (
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
+	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
-	github.com/mattn/go-runewidth v0.0.14 // indirect
+	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/microcosm-cc/bluemonday v1.0.25 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect

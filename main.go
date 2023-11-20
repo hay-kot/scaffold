@@ -69,13 +69,14 @@ func main() {
 			},
 			&cli.BoolFlag{
 				Name:    "no-clobber",
-				Usage:   "do not overwrite existing files (default: true)",
+				Usage:   "do not overwrite existing files",
 				EnvVars: []string{"SCAFFOLD_NO_CLOBBER"},
 				Value:   true,
 			},
 			&cli.BoolFlag{
 				Name:    "force",
-				Usage:   "apply changes when git tree is dirty (default: false)",
+				Usage:   "apply changes when git tree is dirty",
+				Value:   true,
 				EnvVars: []string{"SCAFFOLD_FORCE"},
 			},
 			&cli.StringFlag{

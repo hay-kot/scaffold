@@ -41,12 +41,12 @@ func (ctrl *Controller) List(ctx *cli.Context) error {
 		}
 	}
 
-	our, err := glamour.RenderWithEnvironmentConfig(bldr.String())
+	out, err := glamour.RenderWithEnvironmentConfig(bldr.String())
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(our)
+	fmt.Println(out)
 
 	return nil
 }

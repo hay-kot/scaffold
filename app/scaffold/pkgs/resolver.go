@@ -76,7 +76,6 @@ func (r *Resolver) Resolve(arg string, checkDirs []string) (path string, err err
 			}
 
 			// Check if path exists
-			println("ABS PATH: ", absPath)
 			_, err = os.Stat(absPath)
 			if err == nil {
 				path = absPath

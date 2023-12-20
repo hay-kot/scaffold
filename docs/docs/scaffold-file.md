@@ -137,7 +137,7 @@ You can reference computed variables like so
 
 ### Rewrites
 
-Rewrites working with the "bootstrap" scaffolds to perform a path rewrite to another directory. The following example defines a rewrite that will render the `templates/defaults.yaml` file to the `roles/{{ .ProjectKebab }}/defaults/main.yaml` path.
+Rewrites working with the [template scaffolds](./index.md#terminology) to perform a path rewrite to another directory. The following example defines a rewrite that will render the `templates/defaults.yaml` file to the `roles/{{ .ProjectKebab }}/defaults/main.yaml` path.
 
 ```yaml
 rewrites:

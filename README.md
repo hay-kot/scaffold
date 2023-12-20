@@ -17,7 +17,7 @@
 
 Scaffold is a project generation tool similar to [cookiecutter](https://github.com/cookiecutter/cookiecutter) written in Go that leverages the Go template engine to generate projects from a template. It is designed to be used with git or the local file system with a built in "scaffold" management system for versions and templates.
 
-What set's Scaffold apart from projects like cookiecutter is the ability to define reusable scaffolds called `template scaffolds` within a project to help bootstrap code changes in new projects.
+What set's Scaffold apart from projects like cookiecutter is the ability to define reusable scaffolds called `template scaffolds` within a project to help bootstrap code changes in existing projects.
 
 You're able to use a `.scaffolds` directory within a project to define a scaffold that can generate files in multiple locations around your project. This is useful for generating boilerplate starter code for:
 
@@ -34,7 +34,7 @@ See the [examples](https://github.com/hay-kot/scaffold/tree/main/.examples) fold
 - [ ] Git based scaffolds
     - [x] Update scaffolds with `scaffold update`
     - [x] List scaffolds with `scaffold list`
-    - [ ] Pull specific tag or branch
+    - [ ] Pull specific tag or branch (currently always pulls latest)
 - [x] Generate files in multiple locations within an existing project
 - [x] Pre/Post Messages defined in the scaffold (supports markdown)
 - [x] Alias support for shortening common commands
@@ -42,7 +42,6 @@ See the [examples](https://github.com/hay-kot/scaffold/tree/main/.examples) fold
 - [x] Conditional Prompting based on user input
 - [x] Inject snippets into existing files with Scaffold Templates
 - [x] Feature flag support for blocking/enabling rendering of entire directories/glob matches
-
 
 ## Credits
 

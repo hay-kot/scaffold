@@ -1,16 +1,16 @@
 <div>
   <img src="/docs/docs/assets/imgs/scaffold-gopher.webp">
-  <h1 align="center">
+  <h1 align="center" style="margin-bottom: 0px;">
     Scaffold
   </h1>
-  <p align="center">
-    Project Generation Tool
+  <p align="center" style="margin-top: -10px;">
+    A Project Generation Tool
   </p>
-  <a href="https://hay-kot.github.io/scaffold/">
-    <h2 align="center">
+  <div align="center" style="padding-bottom: 1rem;">
+    <a href="https://hay-kot.github.io/scaffold/">
       Read The Docs
-    </h2>
-  </a>
+    </a>
+  </div>
 </div>
 
 

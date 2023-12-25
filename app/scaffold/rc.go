@@ -1,6 +1,7 @@
 package scaffold
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -52,10 +53,10 @@ func NewScaffoldRC(r io.Reader) (*ScaffoldRC, error) {
 
 	err := yaml.NewDecoder(r).Decode(&out)
 	if err != nil {
-    if err == io.EOF {
-      // Asssume empty file and return empty struct
-      return &out, nil
-    }
+		if errors.Is(err, io.EOF) {
+			// Asssume empty file and return empty struct
+			return &out, nil
+		}
 		return nil, err
 	}
 

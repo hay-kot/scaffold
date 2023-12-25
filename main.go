@@ -135,20 +135,25 @@ func main() {
 			// Parse scaffoldrc file
 			scaffoldrcFile, err := os.Open(ctrl.Flags.ScaffoldRCPath)
 			if err != nil {
-				return fmt.Errorf("failed to open scaffoldrc file: %w", err)
+				if !errors.Is(err, os.ErrNotExist) {
+					return fmt.Errorf("failed to open scaffoldrc file: %w", err)
+				}
+				log.Debug().Msg("scaffoldrc file does not exist, skipping")
 			}
 
-			rc, err := scaffold.NewScaffoldRC(scaffoldrcFile)
-			if err != nil {
-				switch {
-				case errors.As(err, &scaffold.RcValidationErrors{}):
-					// I _know_ this is a valid cast, but the linter doesn't
-					e := err.(scaffold.RcValidationErrors) //nolint:errorlint
-					for _, err := range e {
-						log.Error().Str("key", err.Key).Msg(err.Cause.Error())
+			rc := &scaffold.ScaffoldRC{}
+			if scaffoldrcFile != nil {
+				rc, err = scaffold.NewScaffoldRC(scaffoldrcFile)
+				if err != nil {
+					scaferrs := scaffold.RcValidationErrors{}
+					switch {
+					case errors.As(err, &scaferrs):
+						for _, err := range scaferrs {
+							log.Error().Str("key", err.Key).Msg(err.Cause.Error())
+						}
+					default:
+						return fmt.Errorf("failed to parse scaffoldrc file: %w", err)
 					}
-				default:
-					return fmt.Errorf("failed to parse scaffoldrc file: %w", err)
 				}
 			}
 

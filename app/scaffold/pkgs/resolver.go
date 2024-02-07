@@ -1,12 +1,16 @@
 package pkgs
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 )
 
 var ErrNoMatchingScaffold = fmt.Errorf("no matching scaffold")
@@ -49,7 +53,24 @@ func (r *Resolver) Resolve(arg string, checkDirs []string) (path string, err err
 				Progress: os.Stdout,
 			})
 			if err != nil {
-				return "", fmt.Errorf("failed to clone repository: %w", err)
+				if errors.Is(err, transport.ErrAuthenticationRequired) {
+					username, password, err := promptHTTPAuth()
+					if err == nil {
+						r, err = git.PlainClone(dir, false, &git.CloneOptions{
+							URL:      remoteRef,
+							Progress: os.Stdout,
+							Auth: &http.BasicAuth{
+								Username: username,
+								Password: password,
+							},
+						})
+					}
+					if err != nil {
+						return "", fmt.Errorf("failed to clone repository: %w", err)
+					}
+				} else {
+					return "", fmt.Errorf("failed to clone repository: %w", err)
+				}
 			}
 
 			// Get cloned repository path
@@ -90,4 +111,32 @@ func (r *Resolver) Resolve(arg string, checkDirs []string) (path string, err err
 	}
 
 	return path, nil
+}
+
+var qs = []*survey.Question{
+	{
+		Name:     "username",
+		Prompt:   &survey.Input{Message: "Username:"},
+		Validate: survey.Required,
+	},
+	{
+		Name: "password",
+		Prompt: &survey.Password{
+			Message: "Password/personal access token:",
+		},
+	},
+}
+
+func promptHTTPAuth() (string, string, error) {
+	answers := struct {
+		Username string
+		Password string
+	}{}
+
+	err := survey.Ask(qs, &answers)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to parse http auth input: %w", err)
+	}
+
+	return answers.Username, answers.Password, nil
 }

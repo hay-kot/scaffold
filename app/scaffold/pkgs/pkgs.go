@@ -11,10 +11,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	pkgurl "github.com/hay-kot/scaffold/app/scaffold/pkgs/url"
+
 	"github.com/go-git/go-git/v5"
 )
 
-// ParseRemote parses a URL and returns a filesystem path representing the
+// ParseRemote parses a remote endpoint and returns a filesystem path representing the
 // repository.
 //
 // Examples:
@@ -25,9 +27,32 @@ import (
 //	    └── scaffold-go-cli
 //			└── repository files
 func ParseRemote(urlStr string) (string, error) {
+	var host string
+	var user string
+	var repo string
+	var err error
+
+	if pkgurl.MatchesScheme(urlStr) {
+		host, user, repo, err = parseRemoteURL(urlStr)
+	} else if pkgurl.MatchesScpLike(urlStr) {
+		host, user, repo, err = parseRemoteScpLike(urlStr)
+	} else {
+		return "", fmt.Errorf("failed to parse url: matches neither scheme nor scp-like url structure")
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(host, user, repo), nil
+}
+
+// Parses a remote URL endpoint into its host, user, and repo name
+// parts
+func parseRemoteURL(urlStr string) (string, string, string, error) {
 	url, err := url.ParseRequestURI(urlStr)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse url: %w", err)
+		return "", "", "", fmt.Errorf("failed to parse url: %w", err)
 	}
 
 	host := url.Host
@@ -37,13 +62,21 @@ func ParseRemote(urlStr string) (string, error) {
 	split[len(split)-1] = strings.Replace(split[len(split)-1], ".git", "", 1)
 
 	if len(split) < 3 {
-		return "", fmt.Errorf("invalid url")
+		return "", "", "", fmt.Errorf("invalid url")
 	}
 
 	user := split[1]
 	repo := split[2]
 
-	return filepath.Join(host, user, repo), nil
+	return host, user, repo, nil
+}
+
+// Parses a remote SCP-like endpoint into its host, user, and repo name
+// parts
+func parseRemoteScpLike(urlStr string) (string, string, string, error) {
+	user, host, _, path := pkgurl.FindScpLikeComponents(urlStr)
+
+	return host, user, strings.TrimSuffix(path, ".git"), nil
 }
 
 // IsRemote checks if the string is a remote url or an alias for a remote url
@@ -54,10 +87,6 @@ func ParseRemote(urlStr string) (string, error) {
 //
 //	isRemote(gh:foo/bar) -> https://github.com/foo/bar, true
 func IsRemote(str string, shorts map[string]string) (expanded string, ok bool) {
-	if strings.HasPrefix(str, "http") {
-		return str, true
-	}
-
 	split := strings.Split(str, ":")
 
 	if len(split) == 2 {
@@ -70,9 +99,13 @@ func IsRemote(str string, shorts map[string]string) (expanded string, ok bool) {
 					return "", false
 				}
 
-				return out, true
+				return out, pkgurl.IsRemoteEndpoint(out)
 			}
 		}
+	}
+
+	if pkgurl.IsRemoteEndpoint(str) {
+		return str, true
 	}
 
 	return "", false

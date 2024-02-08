@@ -101,7 +101,7 @@ func (ctrl *Controller) Project(ctx *cli.Context) error {
 		argPath = v
 	}
 
-	path, err := resolver.Resolve(argPath, ctrl.Flags.ScaffoldDirs)
+	path, err := resolver.Resolve(argPath, ctrl.Flags.ScaffoldDirs, ctrl.rc)
 	if err != nil {
 		orgErr := err
 		systemMatches, localMatches, err := ctrl.fuzzyFallBack(argPath)
@@ -129,7 +129,7 @@ func (ctrl *Controller) Project(ctx *cli.Context) error {
 					first = "https://" + first
 				}
 
-				resolved, err := resolver.Resolve(first, ctrl.Flags.ScaffoldDirs)
+				resolved, err := resolver.Resolve(first, ctrl.Flags.ScaffoldDirs, ctrl.rc)
 				if err != nil {
 					return err
 				}

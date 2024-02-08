@@ -6,8 +6,11 @@ import (
 	"io"
 	"net/url"
 	"path/filepath"
+	"regexp"
 	"strings"
 
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"gopkg.in/yaml.v3"
 )
 
@@ -35,6 +38,21 @@ type ScaffoldRC struct {
 	// This will allow you to use the short name in the scaffold
 	//   gh:myorg/myrepo
 	Shorts map[string]string `yaml:"shorts"`
+
+	// Auth defines a list of auth entries that can be used to
+	// authenticate with a remote SCM.
+	Auth []AuthEntry `yaml:"auth"`
+}
+
+type AuthEntry struct {
+	Match regexp.Regexp `yaml:"match"`
+	Basic BasicAuth     `yaml:"basic"`
+	Token string        `yaml:"token"`
+}
+
+type BasicAuth struct {
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
 }
 
 type RCValidationError struct {
@@ -54,7 +72,7 @@ func NewScaffoldRC(r io.Reader) (*ScaffoldRC, error) {
 	err := yaml.NewDecoder(r).Decode(&out)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
-			// Asssume empty file and return empty struct
+			// Assume empty file and return empty struct
 			return &out, nil
 		}
 		return nil, err
@@ -90,4 +108,23 @@ func NewScaffoldRC(r io.Reader) (*ScaffoldRC, error) {
 	}
 
 	return &out, nil
+}
+
+func (rc *ScaffoldRC) Authenticator(pkgurl string) (transport.AuthMethod, bool) {
+	for _, auth := range rc.Auth {
+		if auth.Match.MatchString(pkgurl) {
+			if auth.Basic.Username != "" {
+				return &githttp.BasicAuth{
+					Username: auth.Basic.Username,
+					Password: auth.Basic.Password,
+				}, true
+			}
+
+			if auth.Token != "" {
+				return &githttp.TokenAuth{Token: auth.Token}, true
+			}
+		}
+	}
+
+	return nil, false
 }

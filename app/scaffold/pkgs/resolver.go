@@ -11,9 +11,14 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/rs/zerolog/log"
 )
 
 var ErrNoMatchingScaffold = fmt.Errorf("no matching scaffold")
+
+type AuthProvider interface {
+	Authenticator(pkgurl string) (auth transport.AuthMethod, ok bool)
+}
 
 type Resolver struct {
 	shorts map[string]string
@@ -29,7 +34,7 @@ func NewResolver(shorts map[string]string, cache, cwd string) *Resolver {
 	}
 }
 
-func (r *Resolver) Resolve(arg string, checkDirs []string) (path string, err error) {
+func (r *Resolver) Resolve(arg string, checkDirs []string, authstore AuthProvider) (path string, err error) {
 	remoteRef, isRemote := IsRemote(arg, r.shorts)
 
 	switch {
@@ -47,11 +52,20 @@ func (r *Resolver) Resolve(arg string, checkDirs []string) (path string, err err
 		case err == nil:
 			path = dir
 		case os.IsNotExist(err):
-			// Close Repository to cache and set path to cache path
-			r, err := git.PlainClone(dir, false, &git.CloneOptions{
+			cfg := &git.CloneOptions{
 				URL:      remoteRef,
 				Progress: os.Stdout,
-			})
+				Auth:     nil,
+			}
+
+			auth, ok := authstore.Authenticator(remoteRef)
+			if ok {
+				log.Debug().Msg("matching auth provider found")
+				cfg.Auth = auth
+			}
+
+			// Clone Repository to cache and set path to cache path
+			r, err := git.PlainClone(dir, false, cfg)
 			if err != nil {
 				if errors.Is(err, transport.ErrAuthenticationRequired) {
 					username, password, err := promptHTTPAuth()

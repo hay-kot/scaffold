@@ -1,12 +1,16 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/hay-kot/scaffold/app/scaffold"
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
@@ -79,6 +83,25 @@ func didYouMeanPrompt(given, suggestion string) bool {
 	return resp == "y"
 }
 
+type AuthorizerFunc func(url string) (transport.AuthMethod, bool)
+
+func (f AuthorizerFunc) Authenticator(pkgurl string) (auth transport.AuthMethod, ok bool) {
+	return f(pkgurl)
+}
+
+func basicAuthAuthorizer(pkgurl, username, password string) AuthorizerFunc {
+	return func(url string) (transport.AuthMethod, bool) {
+		if url != pkgurl {
+			return nil, false
+		}
+
+		return &http.BasicAuth{
+			Username: username,
+			Password: password,
+		}, true
+	}
+}
+
 func (ctrl *Controller) Project(ctx *cli.Context) error {
 	argPath := ctx.Args().First()
 	if argPath == "" {
@@ -104,37 +127,51 @@ func (ctrl *Controller) Project(ctx *cli.Context) error {
 	path, err := resolver.Resolve(argPath, ctrl.Flags.ScaffoldDirs, ctrl.rc)
 	if err != nil {
 		orgErr := err
-		systemMatches, localMatches, err := ctrl.fuzzyFallBack(argPath)
-		if err != nil {
-			return err
-		}
 
-		var first string
-		var isSystemMatch bool
-		if len(systemMatches) > 0 {
-			first = systemMatches[0]
-			isSystemMatch = true
-		}
+		switch {
+		case errors.Is(err, transport.ErrAuthenticationRequired):
+			username, password, err := httpAuthPrompt()
+			if err != nil {
+				return err
+			}
 
-		if len(localMatches) > 0 {
-			first = localMatches[0]
-		}
+			path, err = resolver.Resolve(argPath, ctrl.Flags.ScaffoldDirs, basicAuthAuthorizer(argPath, username, password))
+			if err != nil {
+				return err
+			}
+		default:
+			systemMatches, localMatches, err := ctrl.fuzzyFallBack(argPath)
+			if err != nil {
+				return err
+			}
 
-		if first != "" {
-			useMatch := didYouMeanPrompt(argPath, first)
+			var first string
+			var isSystemMatch bool
+			if len(systemMatches) > 0 {
+				first = systemMatches[0]
+				isSystemMatch = true
+			}
 
-			if useMatch {
-				if isSystemMatch {
-					// prepend https:// so it resolves to the correct path
-					first = "https://" + first
+			if len(localMatches) > 0 {
+				first = localMatches[0]
+			}
+
+			if first != "" {
+				useMatch := didYouMeanPrompt(argPath, first)
+
+				if useMatch {
+					if isSystemMatch {
+						// prepend https:// so it resolves to the correct path
+						first = "https://" + first
+					}
+
+					resolved, err := resolver.Resolve(first, ctrl.Flags.ScaffoldDirs, ctrl.rc)
+					if err != nil {
+						return err
+					}
+
+					path = resolved
 				}
-
-				resolved, err := resolver.Resolve(first, ctrl.Flags.ScaffoldDirs, ctrl.rc)
-				if err != nil {
-					return err
-				}
-
-				path = resolved
 			}
 		}
 
@@ -188,7 +225,6 @@ func (ctrl *Controller) Project(ctx *cli.Context) error {
 	}
 
 	err = scaffold.RenderRWFS(ctrl.engine, args, vars)
-
 	if err != nil {
 		return err
 	}
@@ -208,4 +244,32 @@ func (ctrl *Controller) Project(ctx *cli.Context) error {
 	}
 
 	return nil
+}
+
+func httpAuthPrompt() (username string, password string, err error) {
+	qs := []*survey.Question{
+		{
+			Name:     "username",
+			Prompt:   &survey.Input{Message: "Username:"},
+			Validate: survey.Required,
+		},
+		{
+			Name: "password",
+			Prompt: &survey.Password{
+				Message: "Password/Access Token:",
+			},
+		},
+	}
+
+	answers := struct {
+		Username string
+		Password string
+	}{}
+
+	err = survey.Ask(qs, &answers)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to parse http auth input: %w", err)
+	}
+
+	return answers.Username, answers.Password, nil
 }

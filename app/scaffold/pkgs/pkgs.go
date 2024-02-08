@@ -1,7 +1,5 @@
 // Package pkgs contains functions for parsing remote urls and checking if a
 // directory is a git repository.
-//
-// TODO: pkgs name should be changed to something more descriptive
 package pkgs
 
 import (

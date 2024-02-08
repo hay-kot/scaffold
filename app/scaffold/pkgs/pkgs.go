@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	pkgurl "github.com/hay-kot/scaffold/app/scaffold/pkgs/url"
+	"github.com/hay-kot/scaffold/app/scaffold/pkgs/pkgurl"
 
 	"github.com/go-git/go-git/v5"
 )

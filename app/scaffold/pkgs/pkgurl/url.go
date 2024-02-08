@@ -1,4 +1,4 @@
-// Package url contains functions for parsing remote urls
+// Package pkgurl contains functions for parsing remote urls
 package pkgurl
 
 import (

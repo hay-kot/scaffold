@@ -31,7 +31,7 @@ func NewResolver(shorts map[string]string, cache, cwd string) *Resolver {
 	}
 }
 
-func (r *Resolver) Resolve(arg string, checkDirs []string, authstore AuthProvider) (path string, err error) {
+func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProvider) (path string, err error) {
 	remoteRef, isRemote := IsRemote(arg, r.shorts)
 
 	switch {
@@ -55,7 +55,7 @@ func (r *Resolver) Resolve(arg string, checkDirs []string, authstore AuthProvide
 				Auth:     nil,
 			}
 
-			auth, ok := authstore.Authenticator(remoteRef)
+			auth, ok := authprovider.Authenticator(remoteRef)
 			if ok {
 				log.Debug().Msg("matching auth provider found")
 				cfg.Auth = auth

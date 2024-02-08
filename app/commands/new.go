@@ -83,13 +83,7 @@ func didYouMeanPrompt(given, suggestion string) bool {
 	return resp == "y"
 }
 
-type AuthorizerFunc func(url string) (transport.AuthMethod, bool)
-
-func (f AuthorizerFunc) Authenticator(pkgurl string) (auth transport.AuthMethod, ok bool) {
-	return f(pkgurl)
-}
-
-func basicAuthAuthorizer(pkgurl, username, password string) AuthorizerFunc {
+func basicAuthAuthorizer(pkgurl, username, password string) pkgs.AuthProviderFunc {
 	return func(url string) (transport.AuthMethod, bool) {
 		if url != pkgurl {
 			return nil, false

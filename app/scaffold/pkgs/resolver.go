@@ -7,15 +7,10 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/rs/zerolog/log"
 )
 
 var ErrNoMatchingScaffold = fmt.Errorf("no matching scaffold")
-
-type AuthProvider interface {
-	Authenticator(pkgurl string) (auth transport.AuthMethod, ok bool)
-}
 
 type Resolver struct {
 	shorts map[string]string

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -110,18 +111,28 @@ func NewScaffoldRC(r io.Reader) (*ScaffoldRC, error) {
 	return &out, nil
 }
 
+func expandEnvVars(s string) string {
+	if !strings.HasPrefix(s, "${") && !strings.HasSuffix(s, "}") {
+		return s
+	}
+
+	return os.Getenv(s[2 : len(s)-1])
+}
+
 func (rc *ScaffoldRC) Authenticator(pkgurl string) (transport.AuthMethod, bool) {
 	for _, auth := range rc.Auth {
 		if auth.Match.MatchString(pkgurl) {
 			if auth.Basic.Username != "" {
 				return &githttp.BasicAuth{
-					Username: auth.Basic.Username,
-					Password: auth.Basic.Password,
+					Username: expandEnvVars(auth.Basic.Username),
+					Password: expandEnvVars(auth.Basic.Password),
 				}, true
 			}
 
 			if auth.Token != "" {
-				return &githttp.TokenAuth{Token: auth.Token}, true
+				return &githttp.TokenAuth{
+					Token: expandEnvVars(auth.Token),
+				}, true
 			}
 		}
 	}

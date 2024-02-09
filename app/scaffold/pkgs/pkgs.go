@@ -1,7 +1,5 @@
 // Package pkgs contains functions for parsing remote urls and checking if a
 // directory is a git repository.
-//
-// TODO: pkgs name should be changed to something more descriptive
 package pkgs
 
 import (
@@ -11,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	pkgurl "github.com/hay-kot/scaffold/app/scaffold/pkgs/url"
+	"github.com/hay-kot/scaffold/app/scaffold/pkgs/pkgurl"
 
 	"github.com/go-git/go-git/v5"
 )

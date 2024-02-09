@@ -1,5 +1,5 @@
-// Package url contains functions for parsing remote urls
-package url
+// Package pkgurl contains functions for parsing remote urls
+package pkgurl
 
 import (
 	"regexp"

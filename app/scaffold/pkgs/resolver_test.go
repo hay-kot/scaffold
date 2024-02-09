@@ -26,7 +26,7 @@ func TestResolver_Resolve_Remote(t *testing.T) {
 	clonefn := ClonerFunc(func(path string, isBare bool, cfg *git.CloneOptions) (string, error) {
 		t.Helper()
 
-		err := os.MkdirAll(packagepath, 0755)
+		err := os.MkdirAll(packagepath, 0o755)
 		require.NoError(t, err)
 
 		return packagepath, nil
@@ -53,7 +53,7 @@ func TestResolver_Resolve_FilePaths(t *testing.T) {
 
 	// Setup .scaffold directory
 	{
-		err := os.MkdirAll(filepath.Join(tempcwd, ".scaffold", "new"), 0755)
+		err := os.MkdirAll(filepath.Join(tempcwd, ".scaffold", "new"), 0o755)
 		require.NoError(t, err)
 
 		// Create new/scaffold.yml file and new/templates dir
@@ -63,11 +63,11 @@ func TestResolver_Resolve_FilePaths(t *testing.T) {
 		_, _ = f.Write([]byte("---"))
 		_ = f.Close()
 
-		err = os.MkdirAll(filepath.Join(tempcwd, ".scaffold", "new", "templates"), 0755)
+		err = os.MkdirAll(filepath.Join(tempcwd, ".scaffold", "new", "templates"), 0o755)
 		require.NoError(t, err)
 	}
 
-	err := os.MkdirAll(packagepath, 0755)
+	err := os.MkdirAll(packagepath, 0o755)
 	require.NoError(t, err)
 
 	resolver := NewResolver(nil, tempcache, tempcwd)

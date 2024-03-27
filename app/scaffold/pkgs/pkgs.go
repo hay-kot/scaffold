@@ -25,16 +25,19 @@ import (
 //	    └── scaffold-go-cli
 //			└── repository files
 func ParseRemote(urlStr string) (string, error) {
-	var host string
-	var user string
-	var repo string
-	var err error
+	var (
+		host string
+		user string
+		repo string
+		err  error
+	)
 
-	if pkgurl.MatchesScheme(urlStr) {
+	switch {
+	case pkgurl.MatchesScheme(urlStr):
 		host, user, repo, err = parseRemoteURL(urlStr)
-	} else if pkgurl.MatchesScpLike(urlStr) {
+	case pkgurl.MatchesScpLike(urlStr):
 		host, user, repo, err = parseRemoteScpLike(urlStr)
-	} else {
+	default:
 		return "", fmt.Errorf("failed to parse url: matches neither scheme nor scp-like url structure")
 	}
 

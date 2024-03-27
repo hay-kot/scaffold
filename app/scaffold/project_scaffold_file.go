@@ -89,8 +89,8 @@ func (p AnyPrompt) IsMultiSelect() bool {
 func parseDefaults[T any](v ...any) T {
 	for _, val := range v {
 		log.Debug().Type("val", val).Msg("parseDefaults")
-		switch val := val.(type) {
-		case T:
+		val, ok := val.(T)
+		if ok {
 			return val
 		}
 	}

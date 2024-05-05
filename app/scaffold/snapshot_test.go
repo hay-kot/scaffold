@@ -4,7 +4,7 @@ import (
 	"io/fs"
 	"testing"
 
-	"github.com/bradleyjkemp/cupaloy"
+	"github.com/bradleyjkemp/cupaloy/v2"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/stretchr/testify/require"

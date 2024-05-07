@@ -29,7 +29,7 @@ jobs:
 
       - name: Test 'cli' example
         run: |
-          go run main.go new --test hello
+          go run main.go new --test cli
           go run ./gen/main.go hello
 
           # Run the command and store the output in a variable

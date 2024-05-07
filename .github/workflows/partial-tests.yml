@@ -37,7 +37,7 @@ jobs:
           go run ./gen/main.go hello
 
           # Run the command and store the output in a variable
-          output=$(gen run ./gen/main.go hello)
+          output=$(go run ./gen/main.go hello)
 
           # Define the expected output
           expected_output="Hello, your favorite colors are red, green"

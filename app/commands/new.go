@@ -19,84 +19,9 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func (ctrl *Controller) fuzzyFallBack(str string) ([]string, []string, error) {
-	systemScaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))
-	if err != nil {
-		return nil, nil, err
-	}
+func (ctrl *Controller) New(ctx *cli.Context) error {
+	isTest := ctx.Bool("test")
 
-	localScaffolds, err := pkgs.ListLocal(os.DirFS(ctrl.Flags.OutputDir))
-	if err != nil {
-		return nil, nil, err
-	}
-
-	systemMatches := fuzzy.Find(str, systemScaffolds)
-	systemMatchesOutput := make([]string, len(systemMatches))
-	for i, match := range systemMatches {
-		systemMatchesOutput[i] = match.Str
-	}
-
-	localMatches := fuzzy.Find(str, localScaffolds)
-	localMatchesOutput := make([]string, len(localMatches))
-	for i, match := range localMatches {
-		localMatchesOutput[i] = match.Str
-	}
-
-	return systemMatchesOutput, localMatchesOutput, nil
-}
-
-var (
-	bold     = lipgloss.NewStyle().Bold(true)
-	colorRed = lipgloss.NewStyle().Foreground(lipgloss.Color("#dc2626"))
-)
-
-func didYouMeanPrompt(given, suggestion string) bool {
-	bldr := strings.Builder{}
-
-	// Couldn't find a scaffold named:
-	//   'foo'
-	//
-	// Did you mean:
-	//   'bar'?
-	//
-	// [y/n]:
-
-	bldr.WriteString("\n ")
-	bldr.WriteString(bold.Render(colorRed.Render("could not find a scaffold named")))
-	bldr.WriteString("\n    ")
-	bldr.WriteString(given)
-	bldr.WriteString("\n\n")
-	bldr.WriteString(" ")
-	bldr.WriteString(bold.Render("did you mean"))
-	bldr.WriteString("\n    ")
-	bldr.WriteString(suggestion)
-	bldr.WriteString("?\n\n ")
-	bldr.WriteString("[y/n]: ")
-
-	out := bldr.String()
-
-	var resp string
-
-	fmt.Print(out)
-	fmt.Scanln(&resp)
-
-	return resp == "y"
-}
-
-func basicAuthAuthorizer(pkgurl, username, password string) pkgs.AuthProviderFunc {
-	return func(url string) (transport.AuthMethod, bool) {
-		if url != pkgurl {
-			return nil, false
-		}
-
-		return &http.BasicAuth{
-			Username: username,
-			Password: password,
-		}, true
-	}
-}
-
-func (ctrl *Controller) Project(ctx *cli.Context) error {
 	argPath := ctx.Args().First()
 	if argPath == "" {
 		return fmt.Errorf("path is required")
@@ -176,22 +101,22 @@ func (ctrl *Controller) Project(ctx *cli.Context) error {
 
 	rest := ctx.Args().Tail()
 
-	ctrl.vars = make(map[string]string, len(rest))
 	for _, v := range rest {
+		if !strings.Contains(v, "=") {
+			return fmt.Errorf("variable %s is not in the form of key=value", v)
+		}
+
 		kv := strings.Split(v, "=")
 		ctrl.vars[kv[0]] = kv[1]
 	}
 
 	pfs := os.DirFS(path)
-
 	p, err := scaffold.LoadProject(pfs, scaffold.Options{
 		NoClobber: ctrl.Flags.NoClobber,
 	})
 	if err != nil {
 		return err
 	}
-
-	defaults := scaffold.MergeMaps(ctrl.vars, ctrl.rc.Defaults)
 
 	if p.Conf.Messages.Pre != "" {
 		out, err := glamour.RenderWithEnvironmentConfig(p.Conf.Messages.Pre)
@@ -202,9 +127,15 @@ func (ctrl *Controller) Project(ctx *cli.Context) error {
 		fmt.Println(out)
 	}
 
-	vars, err := p.AskQuestions(defaults, ctrl.engine)
-	if err != nil {
-		return err
+	vars := scaffold.MergeMaps(ctrl.vars, ctrl.rc.Defaults)
+	if isTest {
+		// explicitly ignore rc.Defaults here
+		vars = scaffold.MergeMaps(ctrl.vars, p.Conf.Test)
+	} else {
+		vars, err = p.AskQuestions(vars, ctrl.engine)
+		if err != nil {
+			return err
+		}
 	}
 
 	args := &scaffold.RWFSArgs{
@@ -266,4 +197,81 @@ func httpAuthPrompt() (username string, password string, err error) {
 	}
 
 	return answers.Username, answers.Password, nil
+}
+
+func (ctrl *Controller) fuzzyFallBack(str string) ([]string, []string, error) {
+	systemScaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	localScaffolds, err := pkgs.ListLocal(os.DirFS(ctrl.Flags.OutputDir))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	systemMatches := fuzzy.Find(str, systemScaffolds)
+	systemMatchesOutput := make([]string, len(systemMatches))
+	for i, match := range systemMatches {
+		systemMatchesOutput[i] = match.Str
+	}
+
+	localMatches := fuzzy.Find(str, localScaffolds)
+	localMatchesOutput := make([]string, len(localMatches))
+	for i, match := range localMatches {
+		localMatchesOutput[i] = match.Str
+	}
+
+	return systemMatchesOutput, localMatchesOutput, nil
+}
+
+var (
+	bold     = lipgloss.NewStyle().Bold(true)
+	colorRed = lipgloss.NewStyle().Foreground(lipgloss.Color("#dc2626"))
+)
+
+func didYouMeanPrompt(given, suggestion string) bool {
+	bldr := strings.Builder{}
+
+	// Couldn't find a scaffold named:
+	//   'foo'
+	//
+	// Did you mean:
+	//   'bar'?
+	//
+	// [y/n]:
+
+	bldr.WriteString("\n ")
+	bldr.WriteString(bold.Render(colorRed.Render("could not find a scaffold named")))
+	bldr.WriteString("\n    ")
+	bldr.WriteString(given)
+	bldr.WriteString("\n\n")
+	bldr.WriteString(" ")
+	bldr.WriteString(bold.Render("did you mean"))
+	bldr.WriteString("\n    ")
+	bldr.WriteString(suggestion)
+	bldr.WriteString("?\n\n ")
+	bldr.WriteString("[y/n]: ")
+
+	out := bldr.String()
+
+	var resp string
+
+	fmt.Print(out)
+	fmt.Scanln(&resp)
+
+	return resp == "y"
+}
+
+func basicAuthAuthorizer(pkgurl, username, password string) pkgs.AuthProviderFunc {
+	return func(url string) (transport.AuthMethod, bool) {
+		if url != pkgurl {
+			return nil, false
+		}
+
+		return &http.BasicAuth{
+			Username: username,
+			Password: password,
+		}, true
+	}
 }

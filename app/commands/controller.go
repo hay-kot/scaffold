@@ -14,6 +14,7 @@ type Flags struct {
 	OutputDir      string
 	ScaffoldDirs   []string
 	Cwd            string
+	NoInteractive  bool
 }
 
 type Controller struct {
@@ -22,7 +23,7 @@ type Controller struct {
 
 	engine   *engine.Engine
 	rc       *scaffold.ScaffoldRC
-	vars     map[string]string
+	vars     map[string]any
 	prepared bool
 }
 

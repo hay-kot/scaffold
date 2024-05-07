@@ -24,3 +24,7 @@ questions:
         - "green"
         - "blue"
         - "yellow"
+
+test:
+  description: "Ths is a test description"
+  colors: ["red", "green"]

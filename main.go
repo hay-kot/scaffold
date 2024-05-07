@@ -165,7 +165,13 @@ func main() {
 				Name:      "new",
 				Usage:     "create a new project from a scaffold",
 				UsageText: "scaffold new [scaffold (url | path)] [flags]",
-				Action:    ctrl.Project,
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:  "test",
+						Usage: "no prompts for user input and use test data from scaffold file",
+					},
+				},
+				Action: ctrl.New,
 			},
 			{
 				Name:      "list",

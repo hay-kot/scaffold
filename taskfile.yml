@@ -67,7 +67,7 @@ tasks:
     cmds:
       - rm -rf ./gen/*
       - go run main.go new cli
-      - go run ./gen/main.go
+      - go run ./gen/*/main.go
 
   do:role:
     desc: Runs the main.go program with the role scaffold

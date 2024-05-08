@@ -8,16 +8,17 @@ The `test` command can also output an AST of the rendered scaffold to stdout.
 
 ```bash
 scaffold test --log-level="panic" --case="default" --memfs --ast <scaffold-name>
-main.go:  (type=file)
-        package main
+scaffold-test-3811:  (type=dir)
+        main.go:  (type=file)
+                package main
 
-        import (
-                "fmt"
-        )
+                import (
+                        "fmt"
+                )
 
-        func main() {
-                fmt.Println("Hello, World!")
-        }
+                func main() {
+                        fmt.Println("Hello, World!")
+                }
 ```
 
 ## Test Cases

@@ -13,7 +13,7 @@ output=$(go run ./gen/scaffold-test*/main.go hello)
 
 echo "Output: '$output'"  
 # Define the expected output
-expected_output="Hello, your favorite colors are red, green"
+expected_output="colors=red, green description=This is a test description"
 
 # Compare the actual output with the expected output
 if [ "$output" = "$expected_output" ]; then

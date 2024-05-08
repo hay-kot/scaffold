@@ -27,5 +27,5 @@ questions:
 
 presets:
   default:
-    description: "Ths is a test description"
+    description: "This is a test description"
     colors: ["red", "green"]

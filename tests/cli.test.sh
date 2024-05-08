@@ -1,14 +1,17 @@
 #!/bin/bash 
+set -euo pipefail 
 export SCAFFOLD_NO_CLOBBER="true" 
 export SCAFFOLD_OUT="gen" 
 export SCAFFOLD_DIR=".scaffold,.examples" 
 
-go run main.go new --test cli
-go run ./gen/main.go hello
+rm -rf gen/*
+
+go run main.go --log-level="error" test --case="default" --memfs="false" --ast="true" cli
 
 # Run the command and store the output in a variable
-output=$(go run ./gen/main.go hello)
+output=$(go run ./gen/scaffold-test*/main.go hello)
 
+echo "Output: '$output'"  
 # Define the expected output
 expected_output="Hello, your favorite colors are red, green"
 

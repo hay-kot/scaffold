@@ -18,9 +18,9 @@ type ProjectScaffoldFile struct {
 		Pre  string `yaml:"pre"`
 		Post string `yaml:"post"`
 	} `yaml:"messages"`
-	Inject   []Injectable   `yaml:"inject"`
-	Features []Feature      `yaml:"features"`
-	Test     map[string]any `yaml:"test"`
+	Inject   []Injectable              `yaml:"inject"`
+	Features []Feature                 `yaml:"features"`
+	Tests    map[string]map[string]any `yaml:"tests"`
 }
 
 type Rewrite struct {

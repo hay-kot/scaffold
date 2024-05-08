@@ -102,20 +102,12 @@ func main() {
 				ScaffoldDirs:   ctx.StringSlice("scaffold-dir"),
 			}
 
-			switch ctx.String("log-level") {
-			case "debug":
-				log.Logger = log.Level(zerolog.DebugLevel)
-			case "info":
-				log.Logger = log.Level(zerolog.InfoLevel)
-			case "warn":
-				log.Logger = log.Level(zerolog.WarnLevel)
-			case "error":
-				log.Logger = log.Level(zerolog.ErrorLevel)
-			case "fatal":
-				log.Logger = log.Level(zerolog.FatalLevel)
-			default:
-				log.Logger = log.Level(zerolog.PanicLevel)
+			level, err := zerolog.ParseLevel(ctx.String("log-level"))
+			if err != nil {
+				return fmt.Errorf("failed to parse log level: %w", err)
 			}
+
+			log.Logger = log.Level(level)
 
 			dir := filepath.Dir(ctrl.Flags.ScaffoldRCPath)
 			if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -165,13 +157,36 @@ func main() {
 				Name:      "new",
 				Usage:     "create a new project from a scaffold",
 				UsageText: "scaffold new [scaffold (url | path)] [flags]",
+				Action:    ctrl.New,
+			},
+			{
+				Name:      "test",
+				Usage:     "test a scaffold",
+				UsageText: "scaffold test [scaffold (url | path)] [flags]",
 				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "case",
+						Usage: "test case from scaffoldrc to run",
+						Value: "default",
+					},
 					&cli.BoolFlag{
-						Name:  "test",
-						Usage: "no prompts for user input and use test data from scaffold file",
+						Name:  "memfs",
+						Usage: "use memory filesystem for testing",
+						Value: true,
+					},
+					&cli.BoolFlag{
+						Name:  "ast",
+						Usage: "print the ast of the scaffold",
+						Value: false,
 					},
 				},
-				Action: ctrl.New,
+				Action: func(ctx *cli.Context) error {
+					return ctrl.Test(ctx.Args().Slice(), commands.FlagsTest{
+						Case:  ctx.String("case"),
+						MemFS: ctx.Bool("memfs"),
+						Ast:   ctx.Bool("ast"),
+					})
+				},
 			},
 			{
 				Name:      "list",

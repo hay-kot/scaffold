@@ -2,16 +2,33 @@
 title: Testing Scaffolds
 ---
 
-Scaffold has some built-in support for testing scaffolds. This is done through with the `--test` flag when running the `scaffold new --test <template>` command, this will bypass the Q/A step of the scaffold and instead use the `test` property from the scaffold file.
+The Scaffold CLI has built in support for testing scaffold. The `scaffold test` command will run a case provided with the `--case` flag and render the templates as if those arguments were provided via the interactive interface. If a 'Project' key is not provided in the test case one will be generated in the pattern `scaffold-test-*`.
 
-## Scaffold Test Property
+The `test` command can also output an AST of the rendered scaffold to stdout.
 
-The `test` property is a map of key-value pairs that will be used to fill in the values of the scaffold. The key is the name of the variable in the scaffold file and the value is the value that will be used to fill in the variable.
+```bash
+scaffold test --log-level="panic" --case="default" --memfs --ast <scaffold-name>
+main.go:  (type=file)
+        package main
+
+        import (
+                "fmt"
+        )
+
+        func main() {
+                fmt.Println("Hello, World!")
+        }
+```
+
+## Test Cases
+
+Test cases can be defined in the `scaffold.yaml` file under the `tests` key.
 
 ```yaml
-test:
-  Var1: "Value1"
-  Val:
-    - "Value1"
-    - "Value2"
+tests:
+  default:
+    Var1: "Hello, World!"
+    Var2: "Hello, World!"
 ```
+
+The `default` key is the name of the test case. The values under the test case key are the values that will be passed to the scaffold when running the test case.

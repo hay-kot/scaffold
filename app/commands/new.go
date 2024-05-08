@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
@@ -19,12 +18,9 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func (ctrl *Controller) New(ctx *cli.Context) error {
-	isTest := ctx.Bool("test")
-
-	argPath := ctx.Args().First()
+func (ctrl *Controller) resolve(argPath string) (string, error) {
 	if argPath == "" {
-		return fmt.Errorf("path is required")
+		return "", fmt.Errorf("path is required")
 	}
 
 	// Status() call for go-git is too slow to be used here
@@ -33,7 +29,7 @@ func (ctrl *Controller) New(ctx *cli.Context) error {
 		ok := checkWorkingTree(ctrl.Flags.OutputDir)
 		if !ok {
 			log.Warn().Msg("working tree is dirty, use --force to apply changes")
-			return nil
+			return "", nil
 		}
 	}
 
@@ -51,17 +47,17 @@ func (ctrl *Controller) New(ctx *cli.Context) error {
 		case errors.Is(err, transport.ErrAuthenticationRequired):
 			username, password, err := httpAuthPrompt()
 			if err != nil {
-				return err
+				return "", err
 			}
 
 			path, err = resolver.Resolve(argPath, ctrl.Flags.ScaffoldDirs, basicAuthAuthorizer(argPath, username, password))
 			if err != nil {
-				return err
+				return "", err
 			}
 		default:
 			systemMatches, localMatches, err := ctrl.fuzzyFallBack(argPath)
 			if err != nil {
-				return err
+				return "", err
 			}
 
 			var first string
@@ -86,7 +82,7 @@ func (ctrl *Controller) New(ctx *cli.Context) error {
 
 					resolved, err := resolver.Resolve(first, ctrl.Flags.ScaffoldDirs, ctrl.rc)
 					if err != nil {
-						return err
+						return "", err
 					}
 
 					path = resolved
@@ -95,77 +91,56 @@ func (ctrl *Controller) New(ctx *cli.Context) error {
 		}
 
 		if path == "" {
-			return fmt.Errorf("failed to resolve path: %w", orgErr)
+			return "", fmt.Errorf("failed to resolve path: %w", orgErr)
 		}
 	}
 
-	rest := ctx.Args().Tail()
+	return path, nil
+}
 
-	for _, v := range rest {
+func parseArgVars(args []string) (map[string]any, error) {
+	vars := make(map[string]any, len(args))
+
+	for _, v := range args {
 		if !strings.Contains(v, "=") {
-			return fmt.Errorf("variable %s is not in the form of key=value", v)
+			return nil, fmt.Errorf("variable %s is not in the form of key=value", v)
 		}
 
 		kv := strings.Split(v, "=")
-		ctrl.vars[kv[0]] = kv[1]
+		vars[kv[0]] = kv[1]
 	}
 
-	pfs := os.DirFS(path)
-	p, err := scaffold.LoadProject(pfs, scaffold.Options{
-		NoClobber: ctrl.Flags.NoClobber,
+	return vars, nil
+}
+
+func (ctrl *Controller) New(ctx *cli.Context) error {
+	path, err := ctrl.resolve(ctx.Args().First())
+	if err != nil {
+		return err
+	}
+
+	rest := ctx.Args().Tail()
+	argvars, err := parseArgVars(rest)
+	if err != nil {
+		return err
+	}
+
+	err = ctrl.runscaffold(runconf{
+		scaffolddir:  path,
+		showMessages: true,
+		varfunc: func(p *scaffold.Project) (map[string]any, error) {
+			vars := scaffold.MergeMaps(ctrl.vars, argvars, ctrl.rc.Defaults)
+			vars, err = p.AskQuestions(vars, ctrl.engine)
+			if err != nil {
+				return nil, err
+			}
+
+			return vars, nil
+		},
+		outputfs: rwfs.NewOsWFS(ctrl.Flags.OutputDir),
 	})
 	if err != nil {
 		return err
-	}
-
-	if p.Conf.Messages.Pre != "" {
-		out, err := glamour.RenderWithEnvironmentConfig(p.Conf.Messages.Pre)
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(out)
-	}
-
-	vars := scaffold.MergeMaps(ctrl.vars, ctrl.rc.Defaults)
-	if isTest {
-		// explicitly ignore rc.Defaults here
-		vars = scaffold.MergeMaps(ctrl.vars, p.Conf.Test)
-	} else {
-		vars, err = p.AskQuestions(vars, ctrl.engine)
-		if err != nil {
-			return err
-		}
-	}
-
-	args := &scaffold.RWFSArgs{
-		Project: p,
-		ReadFS:  pfs,
-		WriteFS: rwfs.NewOsWFS(ctrl.Flags.OutputDir),
-	}
-
-	vars, err = scaffold.BuildVars(ctrl.engine, args, vars)
-	if err != nil {
-		return err
-	}
-
-	err = scaffold.RenderRWFS(ctrl.engine, args, vars)
-	if err != nil {
-		return err
-	}
-
-	if p.Conf.Messages.Post != "" {
-		rendered, err := ctrl.engine.TmplString(p.Conf.Messages.Post, vars)
-		if err != nil {
-			return err
-		}
-
-		out, err := glamour.RenderWithEnvironmentConfig(rendered)
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(out)
 	}
 
 	return nil

@@ -16,6 +16,10 @@ type FlagsTest struct {
 }
 
 func (ctrl *Controller) Test(args []string, flags FlagsTest) error {
+	if len(args) == 0 {
+		return fmt.Errorf("missing scaffold path")
+	}
+
 	path, err := ctrl.resolve(args[0])
 	if err != nil {
 		return err

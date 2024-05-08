@@ -14,25 +14,14 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func parseArgVars(args []string) (map[string]any, error) {
-	vars := make(map[string]any, len(args))
-
-	for _, v := range args {
-		if !strings.Contains(v, "=") {
-			return nil, fmt.Errorf("variable %s is not in the form of key=value", v)
-		}
-
-		kv := strings.Split(v, "=")
-		vars[kv[0]] = kv[1]
-	}
-
-	return vars, nil
-}
-
 func (ctrl *Controller) New(ctx *cli.Context) error {
 	path, err := ctrl.resolve(ctx.Args().First())
 	if err != nil {
 		return err
+	}
+
+	if path == "" {
+		return fmt.Errorf("missing scaffold path")
 	}
 
 	rest := ctx.Args().Tail()
@@ -99,4 +88,19 @@ func basicAuthAuthorizer(pkgurl, username, password string) pkgs.AuthProviderFun
 			Password: password,
 		}, true
 	}
+}
+
+func parseArgVars(args []string) (map[string]any, error) {
+	vars := make(map[string]any, len(args))
+
+	for _, v := range args {
+		if !strings.Contains(v, "=") {
+			return nil, fmt.Errorf("variable %s is not in the form of key=value", v)
+		}
+
+		kv := strings.Split(v, "=")
+		vars[kv[0]] = kv[1]
+	}
+
+	return vars, nil
 }

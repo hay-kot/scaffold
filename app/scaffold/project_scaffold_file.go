@@ -20,7 +20,7 @@ type ProjectScaffoldFile struct {
 	} `yaml:"messages"`
 	Inject   []Injectable              `yaml:"inject"`
 	Features []Feature                 `yaml:"features"`
-	Presets    map[string]map[string]any `yaml:"presets"`
+	Presets  map[string]map[string]any `yaml:"presets"`
 }
 
 type Rewrite struct {

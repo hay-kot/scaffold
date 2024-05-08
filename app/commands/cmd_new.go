@@ -100,7 +100,7 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 				return err
 			}
 
-			defer file.Close()
+			_ = file.Close()
 
 			_, err = file.WriteString(ast.String())
 			if err != nil {

@@ -3,6 +3,7 @@ package commands
 
 import (
 	"github.com/hay-kot/scaffold/app/core/engine"
+	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/hay-kot/scaffold/app/scaffold"
 )
 
@@ -13,17 +14,24 @@ type Flags struct {
 	Cache          string
 	OutputDir      string
 	ScaffoldDirs   []string
-	Cwd            string
-	NoInteractive  bool
+}
+
+// OutputFS returns a WriteFS based on the OutputDir flag
+func (f Flags) OutputFS() rwfs.WriteFS {
+	if f.OutputDir == ":memory:" {
+		return rwfs.NewMemoryWFS()
+	}
+
+	return rwfs.NewOsWFS(f.OutputDir)
 }
 
 type Controller struct {
-	// Global Flags
+	// Flags contains the CLI flags
+	// that are from the root command
 	Flags Flags
 
 	engine   *engine.Engine
 	rc       *scaffold.ScaffoldRC
-	vars     map[string]any
 	prepared bool
 }
 

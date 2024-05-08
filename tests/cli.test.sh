@@ -6,7 +6,7 @@ export SCAFFOLD_DIR=".scaffold,.examples"
 
 rm -rf gen/*
 
-go run main.go --log-level="error" test --case="default" --memfs="false" --ast="true" cli
+go run main.go --log-level="error" new --preset="default" --no-prompt --snapshot="stdout" cli
 
 # Run the command and store the output in a variable
 output=$(go run ./gen/scaffold-test*/main.go hello)

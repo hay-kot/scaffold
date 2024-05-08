@@ -2,20 +2,30 @@ package commands
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
-	"github.com/hay-kot/scaffold/app/core/rwfs"
+	"github.com/hay-kot/scaffold/app/core/fsast"
 	"github.com/hay-kot/scaffold/app/scaffold"
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
 	"github.com/sahilm/fuzzy"
-	"github.com/urfave/cli/v2"
 )
 
-func (ctrl *Controller) New(ctx *cli.Context) error {
-	path, err := ctrl.resolve(ctx.Args().First())
+type FlagsNew struct {
+	NoPrompt bool
+	Preset   string
+	Snapshot string
+}
+
+func (ctrl *Controller) New(args []string, flags FlagsNew) error {
+	if len(args) == 0 {
+		return fmt.Errorf("missing scaffold name")
+	}
+
+	path, err := ctrl.resolve(args[0], flags.NoPrompt)
 	if err != nil {
 		return err
 	}
@@ -24,28 +34,79 @@ func (ctrl *Controller) New(ctx *cli.Context) error {
 		return fmt.Errorf("missing scaffold path")
 	}
 
-	rest := ctx.Args().Tail()
+	rest := args[1:]
 	argvars, err := parseArgVars(rest)
 	if err != nil {
 		return err
 	}
 
-	err = ctrl.runscaffold(runconf{
-		scaffolddir:  path,
-		showMessages: true,
-		varfunc: func(p *scaffold.Project) (map[string]any, error) {
-			vars := scaffold.MergeMaps(ctrl.vars, argvars, ctrl.rc.Defaults)
+	var varfunc func(*scaffold.Project) (map[string]any, error)
+	switch {
+	case flags.NoPrompt:
+		varfunc = func(p *scaffold.Project) (map[string]any, error) {
+			caseVars, ok := p.Conf.Presets[flags.Preset]
+			if !ok {
+				return nil, fmt.Errorf("case %s not found", flags.Preset)
+			}
+
+			project, ok := caseVars["Project"].(string)
+			if !ok || project == "" {
+				// Generate 4 random digits
+				name := fmt.Sprintf("scaffold-test-%04d", rand.Intn(10000))
+				p.Name = name
+				caseVars["Project"] = name
+			}
+
+			// Test cases do not use rc.Defaults
+			vars := scaffold.MergeMaps(caseVars, argvars)
+			return vars, nil
+		}
+
+	default:
+		varfunc = func(p *scaffold.Project) (map[string]any, error) {
+			vars := scaffold.MergeMaps(argvars, ctrl.rc.Defaults)
 			vars, err = p.AskQuestions(vars, ctrl.engine)
 			if err != nil {
 				return nil, err
 			}
 
 			return vars, nil
-		},
-		outputfs: rwfs.NewOsWFS(ctrl.Flags.OutputDir),
+		}
+	}
+
+	outfs := ctrl.Flags.OutputFS()
+
+	err = ctrl.runscaffold(runconf{
+		scaffolddir:  path,
+		showMessages: !flags.NoPrompt,
+		varfunc:      varfunc,
+		outputfs:     outfs,
 	})
 	if err != nil {
 		return err
+	}
+
+	if flags.Snapshot != "" {
+		ast, err := fsast.New(outfs)
+		if err != nil {
+			return err
+		}
+
+		if flags.Snapshot == "stdout" {
+			fmt.Println(ast.String())
+		} else {
+			file, err := os.Create(flags.Snapshot)
+			if err != nil {
+				return err
+			}
+
+			defer file.Close()
+
+			_, err = file.WriteString(ast.String())
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil

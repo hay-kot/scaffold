@@ -25,7 +25,7 @@ questions:
         - "blue"
         - "yellow"
 
-tests:
+presets:
   default:
     description: "Ths is a test description"
     colors: ["red", "green"]

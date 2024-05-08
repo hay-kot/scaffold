@@ -9,7 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (ctrl *Controller) resolve(argPath string) (string, error) {
+func (ctrl *Controller) resolve(argPath string, noPrompt bool) (string, error) {
 	if argPath == "" {
 		return "", fmt.Errorf("path is required")
 	}
@@ -36,6 +36,10 @@ func (ctrl *Controller) resolve(argPath string) (string, error) {
 
 		switch {
 		case errors.Is(err, transport.ErrAuthenticationRequired):
+			if noPrompt {
+				return "", err
+			}
+
 			username, password, err := httpAuthPrompt()
 			if err != nil {
 				return "", err
@@ -46,6 +50,10 @@ func (ctrl *Controller) resolve(argPath string) (string, error) {
 				return "", err
 			}
 		default:
+			if noPrompt {
+				return "", err
+			}
+
 			systemMatches, localMatches, err := ctrl.fuzzyFallBack(argPath)
 			if err != nil {
 				return "", err

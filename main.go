@@ -81,7 +81,7 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name:    "output-dir",
-				Usage:   "current working directory (where scaffold will be created)",
+				Usage:   "scaffold output directory (use ':memory:' for in-memory filesystem)",
 				Value:   ".",
 				EnvVars: []string{"SCAFFOLD_OUT"},
 			},
@@ -157,34 +157,28 @@ func main() {
 				Name:      "new",
 				Usage:     "create a new project from a scaffold",
 				UsageText: "scaffold new [scaffold (url | path)] [flags]",
-				Action:    ctrl.New,
-			},
-			{
-				Name:      "test",
-				Usage:     "test a scaffold",
-				UsageText: "scaffold test [scaffold (url | path)] [flags]",
 				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:  "case",
-						Usage: "test case from scaffoldrc to run",
-						Value: "default",
-					},
 					&cli.BoolFlag{
-						Name:  "memfs",
-						Usage: "use memory filesystem for testing",
-						Value: true,
-					},
-					&cli.BoolFlag{
-						Name:  "ast",
-						Usage: "print the ast of the scaffold",
+						Name:  "no-prompt",
+						Usage: "disable interactive mode",
 						Value: false,
+					},
+					&cli.StringFlag{
+						Name:  "preset",
+						Usage: "preset to use for the scaffold",
+						Value: "",
+					},
+					&cli.StringFlag{
+						Name:  "snapshot",
+						Usage: "path or `stdout` to save the output ast",
+						Value: "",
 					},
 				},
 				Action: func(ctx *cli.Context) error {
-					return ctrl.Test(ctx.Args().Slice(), commands.FlagsTest{
-						Case:  ctx.String("case"),
-						MemFS: ctx.Bool("memfs"),
-						Ast:   ctx.Bool("ast"),
+					return ctrl.New(ctx.Args().Slice(), commands.FlagsNew{
+						NoPrompt: ctx.Bool("no-prompt"),
+						Preset:   ctx.String("preset"),
+						Snapshot: ctx.String("snapshot"),
 					})
 				},
 			},

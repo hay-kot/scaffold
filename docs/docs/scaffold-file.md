@@ -227,3 +227,19 @@ features:
     globs:
       - "**/core/database/**/*"
 ```
+
+### Presets
+
+Presets are a way to define a set of default values for a scaffold. These can be overridden by the user when running the scaffold.
+
+```yaml
+presets:
+  default:
+    description: "A description of the project"
+    license: "MIT"
+    use_github_actions: true
+    colors: ["red", "green"]
+```
+
+!!! tip "Presets and Testing"
+    Presets can be used in conjunction with the `new` command for testing purposes. See [Testing Scaffolds](./testing-scaffolds.md) for more information.

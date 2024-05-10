@@ -60,7 +60,7 @@ tasks:
   test:scripts:
     desc: Runs all go tests for the scripts
     cmds:
-      - ./tests/cli.test.sh
+      - ./tests/runner.sh
 
   do:cli:
     desc: Runs the main.go program with the cli scaffold

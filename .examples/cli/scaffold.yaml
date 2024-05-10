@@ -24,3 +24,9 @@ questions:
         - "green"
         - "blue"
         - "yellow"
+
+presets:
+  default:
+    Project: "scaffold-test-default"
+    description: "This is a test description"
+    colors: ["red", "green"]

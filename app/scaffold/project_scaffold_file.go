@@ -9,6 +9,20 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type ProjectScaffoldFile struct {
+	Skip      []string          `yaml:"skip"`
+	Questions []Question        `yaml:"questions"`
+	Rewrites  []Rewrite         `yaml:"rewrites"`
+	Computed  map[string]string `yaml:"computed"`
+	Messages  struct {
+		Pre  string `yaml:"pre"`
+		Post string `yaml:"post"`
+	} `yaml:"messages"`
+	Inject   []Injectable              `yaml:"inject"`
+	Features []Feature                 `yaml:"features"`
+	Presets  map[string]map[string]any `yaml:"presets"`
+}
+
 type Rewrite struct {
 	From string `yaml:"from"`
 	To   string `yaml:"to"`
@@ -24,19 +38,6 @@ type Injectable struct {
 type Feature struct {
 	Value string   `yaml:"value"`
 	Globs []string `yaml:"globs"`
-}
-
-type ProjectScaffoldFile struct {
-	Skip      []string          `yaml:"skip"`
-	Questions []Question        `yaml:"questions"`
-	Rewrites  []Rewrite         `yaml:"rewrites"`
-	Computed  map[string]string `yaml:"computed"`
-	Messages  struct {
-		Pre  string `yaml:"pre"`
-		Post string `yaml:"post"`
-	} `yaml:"messages"`
-	Inject   []Injectable `yaml:"inject"`
-	Features []Feature    `yaml:"features"`
 }
 
 func ReadScaffoldFile(reader io.Reader) (*ProjectScaffoldFile, error) {

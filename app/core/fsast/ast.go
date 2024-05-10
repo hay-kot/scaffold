@@ -1,4 +1,5 @@
-package scaffold
+// Package fsast provides a way to build an abstract syntax tree (AST) of a file system.
+package fsast
 
 import (
 	"bytes"
@@ -45,7 +46,16 @@ func (n *AstNode) String() string {
 	return n.string(0)
 }
 
-func buildNodeTree(subFs fs.FS, root *AstNode) error {
+func New(subFs fs.FS) (*AstNode, error) {
+	root := &AstNode{
+		NodeType: DirNodeType,
+		Path:     "ROOT_NODE",
+	}
+
+	return root, Build(subFs, root)
+}
+
+func Build(subFs fs.FS, root *AstNode) error {
 	files, err := fs.ReadDir(subFs, ".")
 	if err != nil {
 		return err
@@ -60,7 +70,7 @@ func buildNodeTree(subFs fs.FS, root *AstNode) error {
 			node.NodeType = DirNodeType
 			subsubFS, _ := fs.Sub(subFs, file.Name())
 
-			err = buildNodeTree(subsubFS, node)
+			err = Build(subsubFS, node)
 			if err != nil {
 				return err
 			}

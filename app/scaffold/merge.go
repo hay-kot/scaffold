@@ -11,3 +11,12 @@ func MergeMaps[T any](maps ...map[string]T) map[string]T {
 	}
 	return out
 }
+
+// CastMap casts a map[string]T to a man[string]any map.
+func CastMap[T any](m map[string]T) map[string]any {
+	out := map[string]any{}
+	for k, v := range m {
+		out[k] = v
+	}
+	return out
+}

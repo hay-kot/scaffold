@@ -22,7 +22,7 @@ type ScaffoldRC struct {
 	//
 	// These are injected into the template as variables for
 	// every scaffold.
-	Defaults map[string]string `yaml:"defaults"`
+	Defaults map[string]any `yaml:"defaults"`
 
 	// Aliases define a alias for a repository.
 	// or filepath.

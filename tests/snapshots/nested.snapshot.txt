@@ -1,0 +1,12 @@
+nested-defaults:  (type=dir)
+	child:  (type=dir)
+		child_1.txt:  (type=file)
+			Answer 2
+		subchild:  (type=dir)
+			child_2.txt:  (type=file)
+				Answer 3
+			subsubchild:  (type=dir)
+				child_3.txt:  (type=file)
+					Answer 4
+	root.txt:  (type=file)
+		Answer 1

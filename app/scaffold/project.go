@@ -4,6 +4,7 @@ package scaffold
 import (
 	"fmt"
 	"io/fs"
+	"maps"
 	"strconv"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -94,7 +95,7 @@ func (p *Project) validate() (str string, err error) {
 	return "", fmt.Errorf("{{ .Project }} directory does not exist")
 }
 
-func (p *Project) AskQuestions(def map[string]string, e *engine.Engine) (map[string]any, error) {
+func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string]any, error) {
 	projectMode := p.NameTemplate != "templates"
 
 	if projectMode {
@@ -116,15 +117,16 @@ func (p *Project) AskQuestions(def map[string]string, e *engine.Engine) (map[str
 
 			p.Conf.Questions = append(pre, p.Conf.Questions...)
 		case true:
-			p.Name = name
+			nameStr, ok := name.(string)
+			if !ok {
+				return nil, fmt.Errorf("Project name must be a string")
+			}
+
+			p.Name = nameStr
 		}
 	}
 
-	vars := make(map[string]any)
-	// Copy default values
-	for k, v := range def {
-		vars[k] = v
-	}
+	vars := maps.Clone(def)
 
 	for _, q := range p.Conf.Questions {
 		if q.When != "" {

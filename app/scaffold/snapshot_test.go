@@ -6,6 +6,7 @@ import (
 
 	"github.com/bradleyjkemp/cupaloy/v2"
 	"github.com/hay-kot/scaffold/app/core/engine"
+	"github.com/hay-kot/scaffold/app/core/fsast"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/stretchr/testify/require"
 )
@@ -68,8 +69,8 @@ func Test_RenderRWFileSystem(t *testing.T) {
 				Project: tt.p,
 			}
 
-			root := &AstNode{
-				NodeType: DirNodeType,
+			root := &fsast.AstNode{
+				NodeType: fsast.DirNodeType,
 				Path:     "ROOT_NODE",
 			}
 
@@ -79,7 +80,7 @@ func Test_RenderRWFileSystem(t *testing.T) {
 			err = RenderRWFS(tEngine, args, vars)
 			require.NoError(t, err)
 
-			err = buildNodeTree(memFS, root)
+			err = fsast.Build(memFS, root)
 			require.NoError(t, err)
 
 			snapshot.SnapshotT(t, root.String())

@@ -140,7 +140,7 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 			}
 		}
 
-		question := q.ToHuhQuestion(vars)
+		question := q.ToAskable(vars)
 
 		if err := question.Ask(vars); err != nil {
 			return nil, err

@@ -87,83 +87,40 @@ func (p AnyPrompt) IsMultiSelect() bool {
 	return p.IsSelect() && p.Multi
 }
 
-type Askable interface {
-	Ask(vars engine.Vars) error
+func toHuhOptions(opts *[]string) []huh.Option[string] {
+	out := make([]huh.Option[string], len(*opts))
+	for i, opt := range *opts {
+		out[i] = huh.NewOption(opt, opt)
+	}
+	return out
 }
 
-type AskableFunc func(vars engine.Vars) error
-
-func (a AskableFunc) Ask(vars engine.Vars) error {
-	return a(vars)
-}
-
-func (q Question) ToHuhQuestion(defaults engine.Vars) Askable {
+func (q Question) ToAskable(defaults engine.Vars) Askable {
 	def := defaults[q.Name]
 
 	switch {
 	case q.Prompt.IsMultiSelect():
-		opts := make([]huh.Option[string], 0, len(*q.Prompt.Options))
-		for _, option := range *q.Prompt.Options {
-			opts = append(opts, huh.NewOption(option, option))
-		}
-
 		defValue := parseDefaultStrings(def, q.Prompt.Default)
 
-		return AskableFunc(func(vars engine.Vars) error {
-			ask := huh.NewMultiSelect[string]().
-				Title(*q.Prompt.Message).
-				Options(opts...).
-				Value(&defValue)
-
-			err := ask.Run()
-			if err != nil {
-				return err
-			}
-
-			vars[q.Name] = def
-			return nil
-		})
+		return HuhToAskable[[]string](q.Name, huh.NewMultiSelect[string]().
+			Title(*q.Prompt.Message).
+			Options(toHuhOptions(q.Prompt.Options)...).
+			Value(&defValue))
 
 	case q.Prompt.IsSelect():
-		opts := make([]huh.Option[string], 0, len(*q.Prompt.Options))
-		for _, option := range *q.Prompt.Options {
-			opts = append(opts, huh.NewOption(option, option))
-		}
-
 		defValue := parseDefaultString(def, q.Prompt.Default)
 
-		return AskableFunc(func(vars engine.Vars) error {
-			ask := huh.NewSelect[string]().
-				Title(*q.Prompt.Message).
-				Options(opts...).
-				Value(&defValue)
-
-			err := ask.Run()
-			if err != nil {
-				return err
-			}
-
-			vars[q.Name] = def
-			return nil
-		})
+		return HuhToAskable[string](q.Name, huh.NewSelect[string]().
+			Title(*q.Prompt.Message).
+			Options(toHuhOptions(q.Prompt.Options)...).
+			Value(&defValue))
 	case q.Prompt.IsConfirm():
 		defValue := parseDefaultBool(def, q.Prompt.Default)
-		return AskableFunc(func(vars engine.Vars) error {
-			ask := huh.NewConfirm().
-				Title(*q.Prompt.Confirm).
-				Value(&defValue)
-
-			err := ask.Run()
-			if err != nil {
-				return nil
-			}
-
-			vars[q.Name] = def
-			return nil
-		})
+		return HuhToAskable[bool](q.Name, huh.NewConfirm().
+			Title(*q.Prompt.Message).
+			Value(&defValue))
 	case q.Prompt.IsInputLoop():
 		var out []string
-
 		return AskableFunc(func(vars engine.Vars) error {
 			for {
 				ref := ""
@@ -191,19 +148,9 @@ func (q Question) ToHuhQuestion(defaults engine.Vars) Askable {
 	case q.Prompt.IsInput():
 		defValue := parseDefaultString(def, q.Prompt.Default)
 
-		return AskableFunc(func(vars engine.Vars) error {
-			ask := huh.NewInput().
-				Title(q.Name).
-				Value(&defValue)
-
-			err := ask.Run()
-			if err != nil {
-				return nil
-			}
-
-			vars[q.Name] = def
-			return nil
-		})
+		return HuhToAskable[string](q.Name, huh.NewInput().
+			Title(*q.Prompt.Message).
+			Value(&defValue))
 	default:
 		log.Fatal().
 			Str("question", q.Name).

@@ -9,7 +9,7 @@ output=$(go run main.go --log-level="error" \
     --preset="default" \
     --no-prompt \
     --snapshot="stdout" \
-    cli)
+    nested)
 
 # Call the function to assert the snapshot
-assert_snapshot "cli.snapshot.txt" "$output"
+assert_snapshot "nested.snapshot.txt" "$output"

@@ -1,0 +1,25 @@
+questions:
+  - name: "question_1"
+    prompt:
+      message: "Question 1"
+    required: true
+  - name: "question_2"
+    prompt:
+      message: "Question 2"
+    required: true
+  - name: "question_3"
+    prompt:
+      message: "Question 3"
+    required: true
+  - name: "question_4"
+    prompt:
+      message: "Question 4"
+    required: true
+
+presets:
+  default:
+    Project: "nested-defaults"
+    question_1: "Answer 1"
+    question_2: "Answer 2"
+    question_3: "Answer 3"
+    question_4: "Answer 4"

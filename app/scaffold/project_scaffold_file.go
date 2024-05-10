@@ -3,7 +3,7 @@ package scaffold
 import (
 	"io"
 
-	"github.com/AlecAivazis/survey/v2"
+	"github.com/charmbracelet/huh"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
@@ -60,6 +60,7 @@ type Question struct {
 
 type AnyPrompt struct {
 	Message *string   `yaml:"message"`
+	Loop    bool      `yaml:"loop"`
 	Default any       `yaml:"default"`
 	Confirm *string   `yaml:"confirm"`
 	Multi   bool      `yaml:"multi"`
@@ -78,67 +79,136 @@ func (p AnyPrompt) IsInput() bool {
 	return p.Message != nil
 }
 
+func (p AnyPrompt) IsInputLoop() bool {
+	return p.IsInput() && p.Loop
+}
+
 func (p AnyPrompt) IsMultiSelect() bool {
 	return p.IsSelect() && p.Multi
 }
 
-// parseDefaults parses the default values in order of priority:
-// where the first argument has the highest priority. As soon as a
-// type match is found, the value is returned.
-//
-// If no match is found, the default value is returned.
-func parseDefaults[T any](v ...any) T {
-	for _, val := range v {
-		log.Debug().Type("val", val).Msg("parseDefaults")
-		val, ok := val.(T)
-		if ok {
-			return val
-		}
-	}
-
-	var out T
-	return out
+type Askable interface {
+	Ask(vars engine.Vars) error
 }
 
-func (q Question) ToSurveyQuestion(defaults engine.Vars) *survey.Question {
-	out := &survey.Question{
-		Name: q.Name,
-	}
+type AskableFunc func(vars engine.Vars) error
 
+func (a AskableFunc) Ask(vars engine.Vars) error {
+	return a(vars)
+}
+
+func (q Question) ToHuhQuestion(defaults engine.Vars) Askable {
 	def := defaults[q.Name]
 
 	switch {
 	case q.Prompt.IsMultiSelect():
-		out.Prompt = &survey.MultiSelect{
-			Message: *q.Prompt.Message,
-			Options: *q.Prompt.Options,
-			Default: parseDefaults[[]any](def, q.Prompt.Default),
+		opts := make([]huh.Option[string], 0, len(*q.Prompt.Options))
+		for _, option := range *q.Prompt.Options {
+			opts = append(opts, huh.NewOption(option, option))
 		}
+
+		defValue := parseDefaultStrings(def, q.Prompt.Default)
+
+		return AskableFunc(func(vars engine.Vars) error {
+			ask := huh.NewMultiSelect[string]().
+				Title(*q.Prompt.Message).
+				Options(opts...).
+				Value(&defValue)
+
+			err := ask.Run()
+			if err != nil {
+				return err
+			}
+
+			vars[q.Name] = def
+			return nil
+		})
+
 	case q.Prompt.IsSelect():
-		out.Prompt = &survey.Select{
-			Message: *q.Prompt.Message,
-			Options: *q.Prompt.Options,
-			Default: parseDefaults[string](def, q.Prompt.Default),
+		opts := make([]huh.Option[string], 0, len(*q.Prompt.Options))
+		for _, option := range *q.Prompt.Options {
+			opts = append(opts, huh.NewOption(option, option))
 		}
+
+		defValue := parseDefaultString(def, q.Prompt.Default)
+
+		return AskableFunc(func(vars engine.Vars) error {
+			ask := huh.NewSelect[string]().
+				Title(*q.Prompt.Message).
+				Options(opts...).
+				Value(&defValue)
+
+			err := ask.Run()
+			if err != nil {
+				return err
+			}
+
+			vars[q.Name] = def
+			return nil
+		})
 	case q.Prompt.IsConfirm():
-		out.Prompt = &survey.Confirm{
-			Message: *q.Prompt.Confirm,
-			Default: parseDefaults[bool](def, q.Prompt.Default),
-		}
+		defValue := parseDefaultBool(def, q.Prompt.Default)
+		return AskableFunc(func(vars engine.Vars) error {
+			ask := huh.NewConfirm().
+				Title(*q.Prompt.Confirm).
+				Value(&defValue)
+
+			err := ask.Run()
+			if err != nil {
+				return nil
+			}
+
+			vars[q.Name] = def
+			return nil
+		})
+	case q.Prompt.IsInputLoop():
+		var out []string
+
+		return AskableFunc(func(vars engine.Vars) error {
+			for {
+				ref := ""
+
+				ask := huh.NewInput().
+					Title(q.Name).
+					Value(&ref)
+
+				err := ask.Run()
+				if err != nil {
+					return nil
+				}
+
+				if ref == "" {
+					break
+				}
+
+				out = append(out, ref)
+			}
+
+			vars[q.Name] = out
+			return nil
+		})
+
 	case q.Prompt.IsInput():
-		out.Prompt = &survey.Input{
-			Message: *q.Prompt.Message,
-			Default: parseDefaults[string](def, q.Prompt.Default),
-		}
+		defValue := parseDefaultString(def, q.Prompt.Default)
+
+		return AskableFunc(func(vars engine.Vars) error {
+			ask := huh.NewInput().
+				Title(q.Name).
+				Value(&defValue)
+
+			err := ask.Run()
+			if err != nil {
+				return nil
+			}
+
+			vars[q.Name] = def
+			return nil
+		})
 	default:
 		log.Fatal().
 			Str("question", q.Name).
 			Msgf("Unknown prompt type")
-	}
 
-	if q.Required {
-		out.Validate = survey.Required
+		return nil
 	}
-
-	return out
 }

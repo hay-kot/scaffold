@@ -15,15 +15,33 @@ questions:
     prompt:
       message: "Description of the project"
     required: true
+  - name: "loop"
+    prompt:
+      message: "How many times should we loop?"
+      loop: true
+    required: true
   - name: "colors"
     prompt:
       multi: true
       message: "Colors of the project"
+      default: ["red", "green"]  
       options:
         - "red"
         - "green"
         - "blue"
         - "yellow"
+  - name: "single_color"
+    prompt:
+      message: "Single color of the project"
+      options:
+        - "red"
+        - "green"
+        - "blue"
+        - "yellow"  
+  - name: "confirmed"
+    prompt:
+      message: "Are you sure you want to generate this project?"
+      confirm: true 
 
 presets:
   default:

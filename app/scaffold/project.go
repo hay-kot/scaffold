@@ -7,7 +7,6 @@ import (
 	"maps"
 	"strconv"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/AlecAivazis/survey/v2/core"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
@@ -141,10 +140,9 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 			}
 		}
 
-		question := q.ToSurveyQuestion(vars)
+		question := q.ToHuhQuestion(vars)
 
-		err := survey.Ask([]*survey.Question{question}, &vars)
-		if err != nil {
+		if err := question.Ask(vars); err != nil {
 			return nil, err
 		}
 	}

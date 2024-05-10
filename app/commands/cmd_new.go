@@ -53,9 +53,10 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 			if !ok || project == "" {
 				// Generate 4 random digits
 				name := fmt.Sprintf("scaffold-test-%04d", rand.Intn(10000))
-				p.Name = name
 				caseVars["Project"] = name
+				project = name
 			}
+			p.Name = project
 
 			// Test cases do not use rc.Defaults
 			vars := scaffold.MergeMaps(caseVars, argvars)

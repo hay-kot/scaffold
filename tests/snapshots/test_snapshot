@@ -1,0 +1,12 @@
+scaffold-test-default:  (type=dir)
+	main.go:  (type=file)
+		package main
+		
+		import (
+			"fmt"
+		)
+		
+		func main() {
+			fmt.Println("colors=red, green description=This is a test description")
+		}
+		

@@ -7,7 +7,6 @@ import (
 	"maps"
 	"strconv"
 
-	"github.com/AlecAivazis/survey/v2/core"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/rs/zerolog"
@@ -103,12 +102,14 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 		switch ok {
 		case false:
 			msg := "Project name"
+			decs := "The project name for the new project."
 
 			pre := []Question{
 				{
 					Name: "Project",
 					Prompt: AnyPrompt{
-						Message: &msg,
+						Message:    &msg,
+						Desciption: &decs,
 					},
 					Required: true,
 				},
@@ -147,26 +148,13 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 		}
 	}
 
+	// Grab the project name from the vars/answers to ensure that
+	// it's set.
 	if projectMode {
 		p.Name = vars["Project"].(string)
 	} else {
 		p.Name = "templates"
 		vars["Project"] = "templates"
-	}
-
-	// Unwrap core.OptionAnswer types into their values
-	for k, v := range vars {
-		switch vt := v.(type) {
-		case core.OptionAnswer:
-			vars[k] = vt.Value
-		case []core.OptionAnswer:
-			values := make([]string, len(vt))
-			for i, v := range vt {
-				values[i] = v.Value
-			}
-
-			vars[k] = values
-		}
 	}
 
 	if log.Logger.GetLevel() == zerolog.DebugLevel {

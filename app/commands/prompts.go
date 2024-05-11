@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
+	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -14,31 +14,26 @@ var (
 )
 
 func httpAuthPrompt() (username string, password string, err error) {
-	qs := []*survey.Question{
-		{
-			Name:     "username",
-			Prompt:   &survey.Input{Message: "Username:"},
-			Validate: survey.Required,
-		},
-		{
-			Name: "password",
-			Prompt: &survey.Password{
-				Message: "Password/Access Token:",
-			},
-		},
-	}
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Username").
+				Description("Enter your username").
+				Value(&username),
+			huh.NewInput().
+				Title("Password").
+				Description("Enter your password (or token)").
+				Value(&password).
+				Password(true),
+		),
+	)
 
-	answers := struct {
-		Username string
-		Password string
-	}{}
-
-	err = survey.Ask(qs, &answers)
+	err = form.Run()
 	if err != nil {
-		return "", "", fmt.Errorf("failed to parse http auth input: %w", err)
+		return "", "", err
 	}
 
-	return answers.Username, answers.Password, nil
+	return username, password, nil
 }
 
 func didYouMeanPrompt(given, suggestion string) bool {

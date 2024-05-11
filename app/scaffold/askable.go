@@ -1,6 +1,8 @@
 package scaffold
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/huh"
 	"github.com/hay-kot/scaffold/app/core/engine"
 )
@@ -27,6 +29,9 @@ func HuhToAskable[T any](name string, h huh.Field) Askable {
 		if err != nil {
 			return err
 		}
+
+		fmt.Println(h.View())
+		fmt.Print("\n")
 
 		vars[name] = h.GetValue().(T)
 		return nil

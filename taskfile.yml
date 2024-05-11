@@ -74,3 +74,9 @@ tasks:
     cmds:
       - rm -rf ./gen/*
       - go run main.go new role
+
+  do:prompt:
+    desc: Runs the main.go program with the prompt scaffold
+    cmds:
+      - rm -rf ./gen/*
+      - go run main.go --output-dir=":memory:" new prompts

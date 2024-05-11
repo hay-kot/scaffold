@@ -52,23 +52,31 @@ They share a base type of question with the following fields
 
 `name`
 
-:    The name of the variable that will be used in the template. {{ .Scaffold.<name> }}
+: The name of the variable that will be used in the template. {{ .Scaffold.<name> }}
 
 `required`
 
-:    Whether or not the question is required.
+: Whether or not the question is required.
 
 `when`
 
-:    A go template will will be evaluated with the previous context to conditionally render the questions. If the template evaluates to `false` the question will not be rendered, otherwise it will be. This is done by using the `strconv.ParseBool` function to parse the result of the template. **Previous question variables are available at the root level {{ .previous_name }} instead of inside a .Scaffold container.**
+: A go template will will be evaluated with the previous context to conditionally render the questions. If the template evaluates to `false` the question will not be rendered, otherwise it will be. This is done by using the `strconv.ParseBool` function to parse the result of the template. **Previous question variables are available at the root level {{ .previous_name }} instead of inside a .Scaffold container.**
 
 `prompt`
 
-:    Prompt configured the type of questions to display to the user. See the examples below for more details.
+: Prompt configured the type of questions to display to the user. See the examples below for more details.
 
      `message`
 
-     :    The message field is the message that will be displayed to the user. If only this field is specified, the user will be prompted for a text input.
+     :   The message field is the message that will be displayed to the user. If only this field is specified, the user will be prompted for a text input.
+
+    `description`
+
+     :   The description field is an optional field that will be displayed to the user as a description of the question.
+
+    `loop`
+
+     :   When the loop field is true, and the question is a text question, the user will be prompted to enter multipel values until they enter an empty string. The resulting type will be an array of string.
 
      `confirm`
 
@@ -84,8 +92,7 @@ They share a base type of question with the following fields
 
      `default`
 
-     :    The default field is the default value that will be used if the user does not provide an answer. Currently this is only supported for text questions.
-
+     :    The default field is the default value(s) that will be used if the user does not provide an answer.
 
 #### Question Examples
 
@@ -95,6 +102,11 @@ questions:
     prompt:
       message: "Description of the project"
     required: true
+  - name: "CLI Commands"
+    prompt:
+      message: "CLI Commands"
+      description: "Enter a list of cli commands to stub out"
+      loop: true
   - name: "license"
     prompt:
       message: "License of the project"
@@ -109,10 +121,11 @@ questions:
     prompt:
       confirm: "Use Github Actions for CI/CD?"
   - name: "colors"
-    when: {{ .use_github_actions }}
+    when: { { .use_github_actions } }
     prompt:
       multi: true
       message: "Colors of the project"
+      default: ["red", "green"]
       options:
         - "red"
         - "green"
@@ -132,7 +145,7 @@ computed:
 You can reference computed variables like so
 
 ```yaml
-{{ .Computed.shuffled }}
+{ { .Computed.shuffled } }
 ```
 
 !!! tip
@@ -165,6 +178,7 @@ skip:
   - "*.goreleaser.yaml"
   - "**/*.gotmpl"
 ```
+
 ### Inject
 
 `inject` is a list of code/text injections to perform on a given file. This is to be used in conjunction with `scaffold templates` and is not supported within a `scaffold project`.
@@ -173,19 +187,19 @@ The following example will inject a role into the `site.yaml` file at the output
 
 `name`
 
-:   The name of the injection
+: The name of the injection
 
 `path`
 
-:   The relative path to the file to inject into from the output directory
+: The relative path to the file to inject into from the output directory
 
 `at`
 
-:  The location to inject the code/text. This is evaluated using the strings.Contains function. Note that ALL matches will be replaced.
+: The location to inject the code/text. This is evaluated using the strings.Contains function. Note that ALL matches will be replaced.
 
 `template`
 
-:   The template to inject into the file. These work the same as scaffold templates.
+: The template to inject into the file. These work the same as scaffold templates.
 
 ```yaml
 inject:

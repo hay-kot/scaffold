@@ -4,7 +4,7 @@
 source tests/assert.sh
 
 # Your script continues as before...
-output=$(go run main.go --log-level="error" \
+output=$($1 --log-level="error" \
     new \
     --preset="default" \
     --no-prompt \

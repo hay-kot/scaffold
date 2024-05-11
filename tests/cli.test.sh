@@ -3,7 +3,7 @@
 # Source the assertions file
 source tests/assert.sh
 
-go run main.go --log-level="error" \
+$1 --log-level="error" \
     new \
     --preset="default" \
     --no-prompt \

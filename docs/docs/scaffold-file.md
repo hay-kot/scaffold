@@ -136,12 +136,8 @@ You can reference computed variables like so
 ```
 
 !!! tip
-    Computed variables are generally of type string however, there is special handling for boolean and integer types. Scaffold will attempt to parse the resulting string into a boolean, and then an integer. 
+    Computed variables are generally of type string however, there are special cases for boolean and integer types. Scaffold will attempt to parse the computed string value into an integer, and then a boolean. If any are successful, that value will be used in-place of the string.
 
-    Boolean parsing is stricker to avoid accidentally parsing an integer into a boolean.
-
-    - `false` `False` and `FALSE` will be corsed into `false`
-    - `true` `True` and `TRUE` will be corsed into `true`
 
 
 ### Rewrites

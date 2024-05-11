@@ -166,21 +166,15 @@ func BuildVars(eng *engine.Engine, project *Project, vars engine.Vars) (engine.V
 			return nil, err
 		}
 
-		// try parse bool, we don't use strconv.ParseBool because
-		// we don't want to incorrectly parse an int as a bool so
-		// we will be more strict.
-		switch out {
-		case "true", "TRUE", "True":
-			computed[k] = true
-			continue
-		case "false", "FALSE", "False":
-			computed[k] = false
+		// We must parse the integer first to avoid incorrectly parsing a '0'
+		// as a boolean.
+		if i, err := strconv.Atoi(out); err == nil {
+			computed[k] = i
 			continue
 		}
 
-		// try parse int
-		if i, err := strconv.Atoi(out); err == nil {
-			computed[k] = i
+		if b, err := strconv.ParseBool(out); err == nil {
+			computed[k] = b
 			continue
 		}
 

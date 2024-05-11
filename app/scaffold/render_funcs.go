@@ -150,17 +150,17 @@ func guardFeatureFlag(e *engine.Engine, args *RWFSArgs, vars engine.Vars) filepa
 
 // BuildVars builds the vars for the engine by setting the provided vars
 // under the "Scaffold" key and adding the project name and computed vars.
-func BuildVars(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) (engine.Vars, error) {
+func BuildVars(eng *engine.Engine, project *Project, vars engine.Vars) (engine.Vars, error) {
 	iVars := engine.Vars{
-		"Project":      args.Project.Name,
-		"ProjectSnake": xstrings.ToSnakeCase(args.Project.Name),
-		"ProjectKebab": xstrings.ToKebabCase(args.Project.Name),
-		"ProjectCamel": xstrings.ToCamelCase(args.Project.Name),
+		"Project":      project.Name,
+		"ProjectSnake": xstrings.ToSnakeCase(project.Name),
+		"ProjectKebab": xstrings.ToKebabCase(project.Name),
+		"ProjectCamel": xstrings.ToCamelCase(project.Name),
 		"Scaffold":     vars,
 	}
 
-	computed := make(map[string]any, len(args.Project.Conf.Computed))
-	for k, v := range args.Project.Conf.Computed {
+	computed := make(map[string]any, len(project.Conf.Computed))
+	for k, v := range project.Conf.Computed {
 		out, err := eng.TmplString(v, iVars)
 		if err != nil {
 			return nil, err

@@ -53,7 +53,7 @@ func (ctrl *Controller) runscaffold(cfg runconf) error {
 		WriteFS: cfg.outputfs,
 	}
 
-	vars, err = scaffold.BuildVars(ctrl.engine, args, vars)
+	vars, err = scaffold.BuildVars(ctrl.engine, args.Project, vars)
 	if err != nil {
 		return err
 	}

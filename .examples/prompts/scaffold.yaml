@@ -1,0 +1,64 @@
+messages:
+  pre: |
+    # Example Prompts
+
+    This is an example of all the prompts available in the CLI.
+
+  post: |
+    # All Set
+
+    You're Done!
+
+    - Input:         {{ .Scaffold.input }}
+    - Looped:        {{ .Scaffold.looped | join ", " }}
+    - Multiline:     {{ .Scaffold.multiline }}
+    - Single Select: {{ .Scaffold.singleselect }}
+    - Multi Select:  {{ .Scaffold.multiselect | join ", " }}
+    - Confirm:       {{ .Scaffold.confirm }}
+
+questions:
+  - name: "input"
+    prompt:
+      message: "Basic Input"
+      description: "This is a basic text input"
+    required: true
+  - name: "looped"
+    prompt:
+      message: "Looped Input"
+      description: "This is a looped input, submit empty value to stop looping"
+      loop: true
+    required: true
+  - name: "multiline"
+    prompt:
+      message: "Multiline Input"
+      multi: true
+    required: true
+  - name: "singleselect"
+    prompt:
+      message: "Single Select"
+      description: "This is a single select prompt"
+      default: ["Option 2"]
+      options:
+        - "Option 1"
+        - "Option 2"
+        - "Option 3"
+        - "Option 4"
+    required: true
+  - name: "multiselect"
+    prompt:
+      message: "Multi Select"
+      description: "This is a multi select prompt"
+      multi: true
+      default: ["Option 4"]
+      options:
+        - "Option 1"
+        - "Option 2"
+        - "Option 3"
+        - "Option 4"
+    required: true
+  - name: "confirm"
+    prompt:
+      message: "Confirm"
+      description: "This is a confirm prompt"
+      confirm: true
+    required: true

@@ -6,6 +6,9 @@ export SCAFFOLD_DIR=".scaffold,.examples"
 checkmark="✓"
 crossmark="✗"
 
+# build main.go into random temp path
+go build -o /tmp/scaffold-test ./main.go 
+
 echo "Running Script Tests"
 # run each test script in the tests directory
 for test_script in tests/*.test.sh; do
@@ -13,7 +16,7 @@ for test_script in tests/*.test.sh; do
 
     # if exit code of script is 0, print checkmark, else print crossmark
     # and the output indented by 4 spaces
-    output=$($test_script 2>&1)
+    output=$($test_script /tmp/scaffold-test 2>&1)
 
     if [ $? -eq 0 ]; then
         echo "  $checkmark $test_script"

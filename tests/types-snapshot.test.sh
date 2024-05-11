@@ -9,7 +9,7 @@ output=$($1 --log-level="error" \
     --preset="default" \
     --no-prompt \
     --snapshot="stdout" \
-    cli)
+    types)
 
 # Call the function to assert the snapshot
-assert_snapshot "cli.snapshot.txt" "$output"
+assert_snapshot "types.snapshot.txt" "$output"

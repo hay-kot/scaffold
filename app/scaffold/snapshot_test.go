@@ -74,7 +74,7 @@ func Test_RenderRWFileSystem(t *testing.T) {
 				Path:     "ROOT_NODE",
 			}
 
-			vars, err := BuildVars(tEngine, args, vars)
+			vars, err := BuildVars(tEngine, args.Project, vars)
 			require.NoError(t, err)
 
 			err = RenderRWFS(tEngine, args, vars)

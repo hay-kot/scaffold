@@ -1,0 +1,11 @@
+scaffold-test-defaults:  (type=dir)
+	types.txt:  (type=file)
+		Has Javascript
+		    false (type=bool)
+		Has Python
+		    true (type=bool)
+		Should Be Int
+		    1 (type=int)
+		Basic Int
+		    3 (type=int)
+		

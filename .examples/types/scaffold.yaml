@@ -1,0 +1,19 @@
+questions:
+  - name: langs
+    prompt:
+      multi: true
+      message: "Languages to be used in the project"
+      options:
+        - JavaScript & TypeScript
+        - Python
+
+computed:
+  javascript: '{{ has "JavaScript & TypeScript" .Scaffold.langs }}'
+  python: '{{ has "Python" .Scaffold.langs }}'
+  int: "1"
+  basicint: "{{ add 1 2 }}"
+
+presets:
+  default:
+    Project: "scaffold-test-defaults"
+    langs: ["Python"]

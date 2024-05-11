@@ -17,6 +17,17 @@ type ProjectScaffoldFile struct {
 	Presets   map[string]map[string]any `yaml:"presets"`
 }
 
+func ReadScaffoldFile(reader io.Reader) (*ProjectScaffoldFile, error) {
+	var out ProjectScaffoldFile
+
+	err := yaml.NewDecoder(reader).Decode(&out)
+	if err != nil {
+		return nil, err
+	}
+
+	return &out, nil
+}
+
 type Messages struct {
 	Pre  string `yaml:"pre"`
 	Post string `yaml:"post"`
@@ -37,15 +48,4 @@ type Injectable struct {
 type Feature struct {
 	Value string   `yaml:"value"`
 	Globs []string `yaml:"globs"`
-}
-
-func ReadScaffoldFile(reader io.Reader) (*ProjectScaffoldFile, error) {
-	var out ProjectScaffoldFile
-
-	err := yaml.NewDecoder(reader).Decode(&out)
-	if err != nil {
-		return nil, err
-	}
-
-	return &out, nil
 }

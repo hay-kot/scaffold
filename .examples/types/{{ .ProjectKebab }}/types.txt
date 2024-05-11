@@ -1,0 +1,8 @@
+Has Javascript
+    {{ .Computed.javascript }} (type={{ typeOf .Computed.javascript }})
+Has Python
+    {{ .Computed.python }} (type={{ typeOf .Computed.python }})
+Should Be Int
+    {{ .Computed.int }} (type={{ typeOf .Computed.int }})
+Basic Int
+    {{ .Computed.basicint }} (type={{ typeOf .Computed.basicint }})

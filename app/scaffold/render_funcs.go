@@ -159,17 +159,35 @@ func BuildVars(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) (engine.Var
 		"Scaffold":     vars,
 	}
 
-	mp := make(map[string]any, len(args.Project.Conf.Computed))
+	computed := make(map[string]any, len(args.Project.Conf.Computed))
 	for k, v := range args.Project.Conf.Computed {
 		out, err := eng.TmplString(v, iVars)
 		if err != nil {
 			return nil, err
 		}
 
-		mp[k] = out
+		// try parse bool, we don't use strconv.ParseBool because
+		// we don't want to incorrectly parse an int as a bool so
+		// we will be more strict.
+		switch out {
+		case "true", "TRUE", "True":
+			computed[k] = true
+			continue
+		case "false", "FALSE", "False":
+			computed[k] = false
+			continue
+		}
+
+		// try parse int
+		if i, err := strconv.Atoi(out); err == nil {
+			computed[k] = i
+			continue
+		}
+
+		computed[k] = out
 	}
 
-	iVars["Computed"] = mp
+	iVars["Computed"] = computed
 
 	return iVars, nil
 }

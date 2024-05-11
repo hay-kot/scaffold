@@ -135,6 +135,9 @@ You can reference computed variables like so
 {{ .Computed.shuffled }}
 ```
 
+!!! tip
+    Computed variables are generally of type `string` however, there is special handling for boolean and integer types. Scaffold will attempt to parse the resulting string into a boolean, and then an integer.
+
 ### Rewrites
 
 Rewrites working with the [template scaffolds](./index.md#terminology) to perform a path rewrite to another directory. The following example defines a rewrite that will render the `templates/defaults.yaml` file to the `roles/{{ .ProjectKebab }}/defaults/main.yaml` path.

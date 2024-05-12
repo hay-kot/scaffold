@@ -294,6 +294,12 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 			return nil
 		}
 
+		// Skip whitespace files
+		if len(strings.TrimSpace(buff.String())) == 0 {
+			_ = f.Close()
+			return nil
+		}
+
 		// Ensure the directory exists
 		err = args.WriteFS.MkdirAll(filepath.Dir(outpath), os.ModePerm)
 		if err != nil {

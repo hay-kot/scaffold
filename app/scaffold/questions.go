@@ -9,8 +9,27 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func QuestionGroupBy(questions []Question) [][]Question {
+	grouped := [][]Question{}
+
+outer:
+	for _, q := range questions {
+		for i, group := range grouped {
+			if group[0].Group == q.Group {
+				grouped[i] = append(group, q)
+				continue outer
+			}
+		}
+
+		grouped = append(grouped, []Question{q})
+	}
+
+	return grouped
+}
+
 type Question struct {
 	Name     string    `yaml:"name"`
+	Group    string    `yaml:"group"`
 	Prompt   AnyPrompt `yaml:"prompt"`
 	When     string    `yaml:"when"`
 	Required bool      `yaml:"required"`
@@ -58,7 +77,7 @@ func (p AnyPrompt) IsMultiSelect() bool {
 	return p.IsSelect() && p.Multi
 }
 
-func (q Question) ToAskable2(defaults engine.Vars) *Askable {
+func (q Question) ToAskable(defaults engine.Vars) *Askable {
 	def := defaults[q.Name]
 
 	switch {

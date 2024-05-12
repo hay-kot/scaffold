@@ -129,37 +129,75 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 
 	vars := maps.Clone(def)
 
-	for _, q := range p.Conf.Questions {
-		if q.When != "" {
-			result, err := e.TmplString(q.When, vars)
+	qgroups := QuestionGroupBy(p.Conf.Questions)
+	askables := []*Askable{}
+	patchvars := func() error {
+		for _, askable := range askables {
+			err := askable.Hook(vars)
 			if err != nil {
-				return nil, err
-			}
-
-			resultBool, _ := strconv.ParseBool(result)
-			if !resultBool {
-				continue
+				return err
 			}
 		}
 
-		question := q.ToAskable2(vars)
-
-		form := huh.NewForm(
-			huh.NewGroup(
-				question.Field,
-			),
-		)
-
-		err := form.Run()
-		if err != nil {
-			return nil, err
-		}
-
-		err = question.Hook(vars)
-		if err != nil {
-			return nil, err
-		}
+		return nil
 	}
+
+	var form *huh.Form
+	formgroups := []*huh.Group{}
+
+	for _, qgroup := range qgroups {
+		fields := []huh.Field{}
+
+		for _, q := range qgroup {
+			question := q.ToAskable(vars)
+			fields = append(fields, question.Field)
+			askables = append(askables, question)
+		}
+
+		group := huh.NewGroup(fields...)
+
+		firstq := qgroup[0]
+		if firstq.When != "" {
+			group.WithHideFunc(func() bool {
+				if form == nil {
+					return false
+				}
+
+				// extract existing properties
+				_ = patchvars()
+
+				// TODO: Implement This!
+				first := qgroup[0]
+
+				// we check the first question in the group to see if it has a when
+				// and if so, we evaluate it and skip the group if it's false
+				if first.When != "" {
+					result, err := e.TmplString(first.When, vars)
+					if err != nil {
+						return true
+					}
+
+					resultBool, _ := strconv.ParseBool(result)
+					if !resultBool {
+						return true
+					}
+				}
+				return false
+			})
+		}
+
+		formgroups = append(formgroups, group)
+	}
+
+	form = huh.NewForm(formgroups...)
+
+	err := form.Run()
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure properts are set on vars
+	patchvars()
 
 	// Grab the project name from the vars/answers to ensure that
 	// it's set.

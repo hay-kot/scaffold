@@ -18,22 +18,32 @@ messages:
 
 questions:
   - name: "input"
+    group: inputs
     prompt:
       message: "Basic Input"
       description: "This is a basic text input"
     required: true
   - name: "looped"
+    group: "inputs"
     prompt:
       message: "Looped Input"
       description: "This is a looped input, submit empty value to stop looping"
       loop: true
     required: true
   - name: "multiline"
+    group: "inputs"
     prompt:
       message: "Multiline Input"
       multi: true
     required: true
+  - name: "hidden"
+    group: "hidden"
+    when: '{{ eq .input "hidden" }}'
+    prompt:
+      message: "Hidden Input"
+      description: "This input group is shown conditionally"
   - name: "singleselect"
+    group: selects
     prompt:
       message: "Single Select"
       description: "This is a single select prompt"
@@ -45,6 +55,7 @@ questions:
         - "Option 4"
     required: true
   - name: "multiselect"
+    group: selects
     prompt:
       message: "Multi Select"
       description: "This is a multi select prompt"
@@ -57,6 +68,7 @@ questions:
         - "Option 4"
     required: true
   - name: "confirm"
+    group: confirms
     prompt:
       message: "Confirm"
       description: "This is a confirm prompt"

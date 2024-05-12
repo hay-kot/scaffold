@@ -1,0 +1,1 @@
+{{/* file shouldn't render when only comment present */}}

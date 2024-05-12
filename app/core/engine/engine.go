@@ -18,7 +18,7 @@ var ErrTemplateIsEmpty = fmt.Errorf("template is empty")
 type Vars map[string]any
 
 type Engine struct {
-	baseTemplate *template.Template
+	fm template.FuncMap
 }
 
 func New() *Engine {
@@ -27,8 +27,12 @@ func New() *Engine {
 	fm["wraptmpl"] = wraptmpl
 
 	return &Engine{
-		baseTemplate: template.New("scaffold").Funcs(fm),
+		fm: fm,
 	}
+}
+
+func (e *Engine) parse(tmpl string) (*template.Template, error) {
+	return template.New("scaffold").Funcs(e.fm).Parse(tmpl)
 }
 
 func isTemplate(s string) bool {
@@ -40,7 +44,7 @@ func (e *Engine) TmplString(str string, vars any) (string, error) {
 		return str, nil
 	}
 
-	tmpl, err := e.baseTemplate.Parse(str)
+	tmpl, err := e.parse(str)
 	if err != nil {
 		log.Err(err).Msg("failed to parse template")
 		return "", err
@@ -73,7 +77,7 @@ func (e *Engine) Factory(reader io.Reader) (*template.Template, error) {
 		return nil, ErrTemplateIsEmpty
 	}
 
-	return e.baseTemplate.Parse(string(out))
+	return e.parse(string(out))
 }
 
 func (e *Engine) Render(w io.Writer, tmpl *template.Template, vars any) error {

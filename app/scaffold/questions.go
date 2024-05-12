@@ -1,11 +1,11 @@
 package scaffold
 
 import (
-	"cmp"
 	"fmt"
 
 	"github.com/charmbracelet/huh"
 	"github.com/hay-kot/scaffold/app/core/engine"
+	"github.com/hay-kot/scaffold/internal/huhext"
 	"github.com/rs/zerolog/log"
 )
 
@@ -58,7 +58,7 @@ func (p AnyPrompt) IsMultiSelect() bool {
 	return p.IsSelect() && p.Multi
 }
 
-func (q Question) ToAskable(defaults engine.Vars) Askable {
+func (q Question) ToAskable2(defaults engine.Vars) *Askable {
 	def := defaults[q.Name]
 
 	switch {
@@ -75,8 +75,10 @@ func (q Question) ToAskable(defaults engine.Vars) Askable {
 			prompt.Validate(validateAtleastOne)
 		}
 
-		return HuhToAskable[[]string](q.Name, prompt)
-
+		return NewAskable(q.Name, prompt, func(vars engine.Vars) error {
+			vars[q.Name] = prompt.GetValue().([]string)
+			return nil
+		})
 	case q.Prompt.IsSelect():
 		defValue := parseDefaultString(def, q.Prompt.Default)
 
@@ -90,69 +92,52 @@ func (q Question) ToAskable(defaults engine.Vars) Askable {
 			prompt.Validate(validateNotZero)
 		}
 
-		return HuhToAskable[string](q.Name, prompt)
+		return NewAskable(q.Name, prompt, func(vars engine.Vars) error {
+			vars[q.Name] = prompt.GetValue().(string)
+			return nil
+		})
+
 	case q.Prompt.IsConfirm():
 		defValue := parseDefaultBool(def, q.Prompt.Default)
-		return HuhToAskable[bool](q.Name, huh.NewConfirm().
+		prompt := huh.NewConfirm().
 			Title(q.Title()).
 			Description(q.Description()).
-			Value(&defValue))
+			Value(&defValue)
+
+		return NewAskable(q.Name, prompt, func(vars engine.Vars) error {
+			vars[q.Name] = prompt.GetValue().(bool)
+			return nil
+		})
 	case q.Prompt.IsInputLoop():
-		var out []string
-		return AskableFunc(func(vars engine.Vars) error {
-			for {
-				ref := ""
+		defValue := parseDefaultStrings(def, q.Prompt.Default)
 
-				desc := cmp.Or(q.Description(), "Press enter to finish")
+		prompt := huhext.NewLoopedInput().
+			Title(q.Title()).
+			Description(q.Description()).
+			Value(defValue)
 
-				ask := huh.NewInput().
-					Title(q.Title()).
-					Description(desc).
-					Value(&ref)
-
-				if q.Required {
-					ask.Validate(func(s string) error {
-						if s == "" && len(out) == 0 {
-							return fmt.Errorf("atleast one value is required")
-						}
-
-						return nil
-					})
-				}
-
-				err := ask.Run()
-				if err != nil {
-					return nil
-				}
-
-				fmt.Println(ask.View())
-				fmt.Print("\n")
-
-				if ref == "" {
-					break
-				}
-
-				out = append(out, ref)
-			}
-
-			vars[q.Name] = out
+		return NewAskable(q.Name, prompt, func(vars engine.Vars) error {
+			vars[q.Name] = prompt.GetValue().([]string)
 			return nil
 		})
 
 	case q.Prompt.IsTextInput():
 		defValue := parseDefaultString(def, q.Prompt.Default)
-		desc := cmp.Or(q.Description(), "ctrl+j for new line")
 
 		prompt := huh.NewText().
 			Title(q.Title()).
-			Description(desc).
+			Description(q.Description()).
 			Value(&defValue)
 
 		if q.Required {
 			prompt.Validate(validateNotZero)
 		}
 
-		return HuhToAskable[string](q.Name, prompt)
+		return NewAskable(q.Name, prompt, func(vars engine.Vars) error {
+			vars[q.Name] = prompt.GetValue().(string)
+			return nil
+		})
+
 	case q.Prompt.IsInput():
 		defValue := parseDefaultString(def, q.Prompt.Default)
 
@@ -165,7 +150,11 @@ func (q Question) ToAskable(defaults engine.Vars) Askable {
 			prompt.Validate(validateNotZero)
 		}
 
-		return HuhToAskable[string](q.Name, prompt)
+		return NewAskable(q.Name, prompt, func(vars engine.Vars) error {
+			vars[q.Name] = prompt.GetValue().(string)
+			return nil
+		})
+
 	default:
 		log.Fatal().
 			Str("question", q.Name).

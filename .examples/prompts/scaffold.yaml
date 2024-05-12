@@ -9,12 +9,12 @@ messages:
 
     You're Done!
 
-    - Input:         {{ .Scaffold.input }}
-    - Looped:        {{ .Scaffold.looped | join ", " }}
-    - Multiline:     {{ .Scaffold.multiline }}
-    - Single Select: {{ .Scaffold.singleselect }}
-    - Multi Select:  {{ .Scaffold.multiselect | join ", " }}
-    - Confirm:       {{ .Scaffold.confirm }}
+    - Input:         {{ .Scaffold.input }} (type={{ typeOf  .Scaffold.input }})
+    - Looped:        {{ .Scaffold.looped | join ", " }} (type={{ typeOf  .Scaffold.looped }}) 
+    - Multiline:     {{ .Scaffold.multiline }} (type={{ typeOf  .Scaffold.multiline }}) 
+    - Single Select: {{ .Scaffold.singleselect }} (type={{ typeOf  .Scaffold.singleselect }}) 
+    - Multi Select:  {{ .Scaffold.multiselect | join ", " }} (type={{ typeOf  .Scaffold.multiselect }}) 
+    - Confirm:       {{ .Scaffold.confirm }} (type={{ typeOf  .Scaffold.confirm }})
 
 questions:
   - name: "input"

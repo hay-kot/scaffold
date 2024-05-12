@@ -1,73 +1,48 @@
-package main
+package huhext
 
 import (
-	"log"
-	"os"
+	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 )
 
-func main() {
-	form := huh.NewForm(
-		huh.NewGroup(
-			huh.NewInput().
-				Key("name").
-				Title("Name").
-				Description("The name of the project"),
-			input(),
-			huh.NewInput().
-				Key("name").
-				Title("Name").
-				Description("The name of the project"),
-		),
-	)
-
-	err := form.Run()
-	if err != nil {
-		panic(err)
-	}
-
-	v := form.Get("names")
-
-	// cast as []string
-	names := v.([]string)
-
-	for i, name := range names {
-		println(i, name)
-	}
-
-	// Do something with the form data
-	println("all done")
-}
-
-func input() huh.Field {
-	debugfile, err := os.Create("debug.log")
-	if err != nil {
-		panic(err)
-	}
-
-	loggers := log.New(debugfile, "", log.LstdFlags)
-
-	input := huh.NewInput().
-		Key("names").
-		Title("Name").
-		Description("The name of the project")
-
-	return &LoopedInput{
-		input: input,
-		log:   loggers,
-	}
-}
-
-var _ huh.Field = &LoopedInput{}
-
 type LoopedInput struct {
-	input    *huh.Input
+	input *huh.Input
+	desc  string
+
 	values   []string
 	inputstr *string
-	log      *log.Logger
+}
+
+func NewLoopedInput() *LoopedInput {
+	return &LoopedInput{
+		input: huh.NewInput(),
+	}
+}
+
+func (l *LoopedInput) Description(v string) *LoopedInput {
+	l.desc = v
+	l.input.Description(l.description())
+	return l
+}
+
+func (l *LoopedInput) Key(v string) *LoopedInput {
+	l.input = l.input.Key(v)
+	return l
+}
+
+func (l *LoopedInput) Title(v string) *LoopedInput {
+	l.input = l.input.Title(v)
+	return l
+}
+
+func (l *LoopedInput) Value(v []string) *LoopedInput {
+	l.values = v
+	l.input.Description(l.description())
+	return l
 }
 
 // Blur implements huh.Field.
@@ -108,7 +83,14 @@ func (l *LoopedInput) Init() tea.Cmd {
 
 // KeyBinds implements huh.Field.
 func (l *LoopedInput) KeyBinds() []key.Binding {
-	return l.input.KeyBinds()
+	custombinds := []key.Binding{
+		key.NewBinding(
+			key.WithKeys("up"),
+			key.WithHelp("up", "prev value"),
+		),
+	}
+
+	return append(l.input.KeyBinds(), custombinds...)
 }
 
 // Run implements huh.Field.
@@ -121,12 +103,30 @@ func (l *LoopedInput) Skip() bool {
 	return l.input.Skip()
 }
 
+func (l *LoopedInput) description() string {
+	if len(l.values) == 0 {
+		return l.desc
+	}
+
+	return fmt.Sprintf("chosen: %v", strings.Join(l.values, ", "))
+}
+
 // Update implements huh.Field.
 func (l *LoopedInput) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		l.log.Printf("msg value: %v\n", msg.String())
-		if msg.String() == "enter" {
+	if msg, ok := msg.(tea.KeyMsg); ok {
+		switch msg.String() {
+		case "up": // pop that last value from the slice and update the input
+			lastval := ""
+			if len(l.values) > 0 {
+				lastval = l.values[len(l.values)-1]
+				l.values = l.values[:len(l.values)-1]
+			}
+
+			l.inputstr = &lastval
+
+			l.input = l.input.Value(l.inputstr)
+			return l, l.input.Focus()
+		case "enter":
 			val := l.input.GetValue().(string)
 			if val == "" {
 				m, cmd := l.input.Update(msg)
@@ -135,15 +135,13 @@ func (l *LoopedInput) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			l.values = append(l.values, val)
+
 			var zero string
 			l.inputstr = &zero
 
 			l.input = l.input.Value(l.inputstr)
-
 			return l, l.input.Focus()
 		}
-	default:
-		l.log.Printf("msg type: %T\n", msg)
 	}
 
 	m, cmd := l.input.Update(msg)
@@ -153,42 +151,42 @@ func (l *LoopedInput) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // View implements huh.Field.
 func (l *LoopedInput) View() string {
-	l.log.Println("View")
+	l.input = l.input.Description(l.description())
 	return l.input.View()
 }
 
 // WithAccessible implements huh.Field.
 func (l *LoopedInput) WithAccessible(b bool) huh.Field {
-	l.input = l.input.WithAccessible(b).(*huh.Input)
+	l.input.WithAccessible(b)
 	return l
 }
 
 // WithHeight implements huh.Field.
 func (l *LoopedInput) WithHeight(h int) huh.Field {
-	l.input = l.input.WithHeight(h).(*huh.Input)
+	l.input.WithHeight(h)
 	return l
 }
 
 // WithKeyMap implements huh.Field.
 func (l *LoopedInput) WithKeyMap(mp *huh.KeyMap) huh.Field {
-	l.input = l.input.WithKeyMap(mp).(*huh.Input)
+	l.input.WithKeyMap(mp)
 	return l
 }
 
 // WithPosition implements huh.Field.
 func (l *LoopedInput) WithPosition(v huh.FieldPosition) huh.Field {
-	l.input = l.input.WithPosition(v).(*huh.Input)
+	l.input.WithPosition(v)
 	return l
 }
 
 // WithTheme implements huh.Field.
 func (l *LoopedInput) WithTheme(v *huh.Theme) huh.Field {
-	l.input = l.input.WithTheme(v).(*huh.Input)
+	l.input.WithTheme(v)
 	return l
 }
 
 // WithWidth implements huh.Field.
 func (l *LoopedInput) WithWidth(v int) huh.Field {
-	l.input = l.input.WithWidth(v).(*huh.Input)
+	l.input.WithWidth(v)
 	return l
 }

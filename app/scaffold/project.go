@@ -7,6 +7,7 @@ import (
 	"maps"
 	"strconv"
 
+	"github.com/charmbracelet/huh"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/rs/zerolog"
@@ -141,9 +142,21 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 			}
 		}
 
-		question := q.ToAskable(vars)
+		question := q.ToAskable2(vars)
 
-		if err := question.Ask(vars); err != nil {
+		form := huh.NewForm(
+			huh.NewGroup(
+				question.Field,
+			),
+		)
+
+		err := form.Run()
+		if err != nil {
+			return nil, err
+		}
+
+		err = question.Hook(vars)
+		if err != nil {
 			return nil, err
 		}
 	}

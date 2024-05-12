@@ -48,7 +48,6 @@ enable = [
   "unconvert",
   "unused",
   "whitespace",
-  "gocyclo",
   "exhaustive",
   "typecheck",
   "asciicheck",

@@ -21,11 +21,25 @@ hello world
     # Inject Marker
 `
 
+var t2 = `---
+hello world
+    indented line
+    # Inject After Marker
+`
+var t2Want = `---
+hello world
+    indented line
+    # Inject After Marker
+    injected line 1
+    injected line 2
+`
+
 func TestInject(t *testing.T) {
 	type args struct {
 		s    string
 		data string
 		at   string
+		mode Mode
 	}
 	tests := []struct {
 		name    string
@@ -43,6 +57,16 @@ func TestInject(t *testing.T) {
 			want: t1Want,
 		},
 		{
+			name: "inject after",
+			args: args{
+				s:    t2,
+				data: "injected line 1\ninjected line 2",
+				at: "# Inject After Marker",
+				mode: After,
+			},
+			want: t2Want,
+		},
+		{
 			name: "inject no marker",
 			args: args{
 				s:    t1,
@@ -54,7 +78,7 @@ func TestInject(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Inject(strings.NewReader(tt.args.s), tt.args.data, tt.args.at)
+			got, err := Inject(strings.NewReader(tt.args.s), tt.args.data, tt.args.at, tt.args.mode)
 
 			switch {
 			case tt.wantErr:

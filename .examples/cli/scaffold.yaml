@@ -19,6 +19,7 @@ questions:
     prompt:
       multi: true
       message: "Colors of the project"
+      default: ["red", "green"]
       options:
         - "red"
         - "green"

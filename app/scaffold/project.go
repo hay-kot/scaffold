@@ -7,8 +7,7 @@ import (
 	"maps"
 	"strconv"
 
-	"github.com/AlecAivazis/survey/v2"
-	"github.com/AlecAivazis/survey/v2/core"
+	"github.com/charmbracelet/huh"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/rs/zerolog"
@@ -103,13 +102,15 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 
 		switch ok {
 		case false:
-			msg := "Project name"
+			msg := "Project Name"
+			decs := "The name your project will be generated with"
 
 			pre := []Question{
 				{
 					Name: "Project",
 					Prompt: AnyPrompt{
-						Message: &msg,
+						Message:    &msg,
+						Desciption: &decs,
 					},
 					Required: true,
 				},
@@ -128,47 +129,85 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 
 	vars := maps.Clone(def)
 
-	for _, q := range p.Conf.Questions {
-		if q.When != "" {
-			result, err := e.TmplString(q.When, vars)
+	qgroups := QuestionGroupBy(p.Conf.Questions)
+	askables := []*Askable{}
+	patchvars := func() error {
+		for _, askable := range askables {
+			err := askable.Hook(vars)
 			if err != nil {
-				return nil, err
-			}
-
-			resultBool, _ := strconv.ParseBool(result)
-			if !resultBool {
-				continue
+				return err
 			}
 		}
 
-		question := q.ToSurveyQuestion(vars)
-
-		err := survey.Ask([]*survey.Question{question}, &vars)
-		if err != nil {
-			return nil, err
-		}
+		return nil
 	}
 
+	var form *huh.Form
+	formgroups := []*huh.Group{}
+
+	for _, qgroup := range qgroups {
+		fields := []huh.Field{}
+
+		for _, q := range qgroup {
+			question := q.ToAskable(vars[q.Name])
+			fields = append(fields, question.Field)
+			askables = append(askables, question)
+		}
+
+		group := huh.NewGroup(fields...)
+
+		firstq := qgroup[0]
+		if firstq.When != "" {
+			group.WithHideFunc(func() bool {
+				if form == nil {
+					return false
+				}
+
+				// extract existing properties
+				_ = patchvars()
+
+				first := qgroup[0]
+
+				// we check the first question in the group to see if it has a when
+				// and if so, we evaluate it and skip the group if it's false
+				if first.When != "" {
+					result, err := e.TmplString(first.When, vars)
+					if err != nil {
+						return true
+					}
+
+					resultBool, _ := strconv.ParseBool(result)
+					if !resultBool {
+						return true
+					}
+				}
+				return false
+			})
+		}
+
+		formgroups = append(formgroups, group)
+	}
+
+	form = huh.NewForm(formgroups...)
+
+	err := form.Run()
+	if err != nil {
+		return nil, err
+	}
+
+	// Ensure properts are set on vars
+	err = patchvars()
+	if err != nil {
+		return nil, err
+	}
+
+	// Grab the project name from the vars/answers to ensure that
+	// it's set.
 	if projectMode {
 		p.Name = vars["Project"].(string)
 	} else {
 		p.Name = "templates"
 		vars["Project"] = "templates"
-	}
-
-	// Unwrap core.OptionAnswer types into their values
-	for k, v := range vars {
-		switch vt := v.(type) {
-		case core.OptionAnswer:
-			vars[k] = vt.Value
-		case []core.OptionAnswer:
-			values := make([]string, len(vt))
-			for i, v := range vt {
-				values[i] = v.Value
-			}
-
-			vars[k] = values
-		}
 	}
 
 	if log.Logger.GetLevel() == zerolog.DebugLevel {
@@ -180,6 +219,12 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 				Msg("question")
 		}
 	}
+
+	for _, askable := range askables {
+		fmt.Print(askable.String())
+	}
+
+	fmt.Print("\n")
 
 	return vars, nil
 }

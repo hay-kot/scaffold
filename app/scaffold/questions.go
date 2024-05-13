@@ -97,7 +97,7 @@ func (q Question) ToAskable(def any) *Askable {
 			prompt.Validate(validateAtleastOne)
 		}
 
-		return NewAskable(q.Name, prompt, func(vars engine.Vars) error {
+		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
 			vars[q.Name] = prompt.GetValue().([]string)
 			return nil
 		})
@@ -114,7 +114,7 @@ func (q Question) ToAskable(def any) *Askable {
 			prompt.Validate(validateNotZero)
 		}
 
-		return NewAskable(q.Name, prompt, func(vars engine.Vars) error {
+		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
 			vars[q.Name] = prompt.GetValue().(string)
 			return nil
 		})
@@ -126,7 +126,7 @@ func (q Question) ToAskable(def any) *Askable {
 			Description(q.Description()).
 			Value(&defValue)
 
-		return NewAskable(q.Name, prompt, func(vars engine.Vars) error {
+		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
 			vars[q.Name] = prompt.GetValue().(bool)
 			return nil
 		})
@@ -138,7 +138,7 @@ func (q Question) ToAskable(def any) *Askable {
 			Description(q.Description()).
 			Value(defValue)
 
-		return NewAskable(q.Name, prompt, func(vars engine.Vars) error {
+		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
 			vars[q.Name] = prompt.GetValue().([]string)
 			return nil
 		})
@@ -155,7 +155,7 @@ func (q Question) ToAskable(def any) *Askable {
 			prompt.Validate(validateNotZero)
 		}
 
-		return NewAskable(q.Name, prompt, func(vars engine.Vars) error {
+		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
 			vars[q.Name] = prompt.GetValue().(string)
 			return nil
 		})
@@ -172,7 +172,7 @@ func (q Question) ToAskable(def any) *Askable {
 			prompt.Validate(validateNotZero)
 		}
 
-		return NewAskable(q.Name, prompt, func(vars engine.Vars) error {
+		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
 			vars[q.Name] = prompt.GetValue().(string)
 			return nil
 		})

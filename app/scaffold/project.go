@@ -102,8 +102,8 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 
 		switch ok {
 		case false:
-			msg := "Project name"
-			decs := "The project name for the new project."
+			msg := "Project Name"
+			decs := "The name your project will be generated with"
 
 			pre := []Question{
 				{
@@ -166,7 +166,6 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 				// extract existing properties
 				_ = patchvars()
 
-				// TODO: Implement This!
 				first := qgroup[0]
 
 				// we check the first question in the group to see if it has a when
@@ -220,6 +219,12 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 				Msg("question")
 		}
 	}
+
+	for _, askable := range askables {
+		fmt.Print(askable.String())
+	}
+
+	fmt.Print("\n")
 
 	return vars, nil
 }

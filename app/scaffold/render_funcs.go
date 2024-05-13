@@ -334,7 +334,7 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 			return err
 		}
 
-		outbytes, err := Inject(f, out, injection.At)
+		outbytes, err := Inject(f, out, injection.At, injection.Mode)
 		if err != nil {
 			return err
 		}

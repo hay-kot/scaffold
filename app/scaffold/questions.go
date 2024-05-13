@@ -1,11 +1,10 @@
 package scaffold
 
 import (
-	"fmt"
-
 	"github.com/charmbracelet/huh"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/internal/huhext"
+	"github.com/hay-kot/scaffold/internal/validators"
 	"github.com/rs/zerolog/log"
 )
 
@@ -94,7 +93,7 @@ func (q Question) ToAskable(def any) *Askable {
 			Value(&defValue)
 
 		if q.Required {
-			prompt.Validate(validateAtleastOne)
+			prompt.Validate(validators.AtleastOne)
 		}
 
 		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
@@ -111,7 +110,7 @@ func (q Question) ToAskable(def any) *Askable {
 			Value(&defValue)
 
 		if q.Required {
-			prompt.Validate(validateNotZero)
+			prompt.Validate(validators.NotZero)
 		}
 
 		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
@@ -152,7 +151,7 @@ func (q Question) ToAskable(def any) *Askable {
 			Value(&defValue)
 
 		if q.Required {
-			prompt.Validate(validateNotZero)
+			prompt.Validate(validators.NotZero)
 		}
 
 		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
@@ -169,7 +168,7 @@ func (q Question) ToAskable(def any) *Askable {
 			Value(&defValue)
 
 		if q.Required {
-			prompt.Validate(validateNotZero)
+			prompt.Validate(validators.NotZero)
 		}
 
 		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
@@ -201,21 +200,4 @@ func unwrap[T any](v *T) T {
 	}
 
 	return *v
-}
-
-func validateNotZero[T comparable](v T) error {
-	var zero T
-	if v == zero {
-		return fmt.Errorf("value is required")
-	}
-
-	return nil
-}
-
-func validateAtleastOne[T any](v []T) error {
-	if len(v) == 0 {
-		return fmt.Errorf("atleast one selection is required")
-	}
-
-	return nil
 }

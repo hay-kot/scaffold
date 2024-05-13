@@ -149,7 +149,7 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 		fields := []huh.Field{}
 
 		for _, q := range qgroup {
-			question := q.ToAskable(vars)
+			question := q.ToAskable(vars[q.Name])
 			fields = append(fields, question.Field)
 			askables = append(askables, question)
 		}
@@ -197,7 +197,10 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 	}
 
 	// Ensure properts are set on vars
-	patchvars()
+	err = patchvars()
+	if err != nil {
+		return nil, err
+	}
 
 	// Grab the project name from the vars/answers to ensure that
 	// it's set.

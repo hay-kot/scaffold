@@ -70,7 +70,6 @@ func Inject(r io.Reader, data string, at string, mode Mode) ([]byte, error) {
 			writelines(lines, indent)
 			inserted = true
 		}
-
 	}
 
 	if err := scanner.Err(); err != nil {

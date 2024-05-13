@@ -14,6 +14,11 @@ func QuestionGroupBy(questions []Question) [][]Question {
 
 outer:
 	for _, q := range questions {
+		if q.Group == "" {
+			grouped = append(grouped, []Question{q})
+			continue
+		}
+
 		for i, group := range grouped {
 			if group[0].Group == q.Group {
 				grouped[i] = append(group, q)
@@ -77,9 +82,7 @@ func (p AnyPrompt) IsMultiSelect() bool {
 	return p.IsSelect() && p.Multi
 }
 
-func (q Question) ToAskable(defaults engine.Vars) *Askable {
-	def := defaults[q.Name]
-
+func (q Question) ToAskable(def any) *Askable {
 	switch {
 	case q.Prompt.IsMultiSelect():
 		defValue := parseDefaultStrings(def, q.Prompt.Default)

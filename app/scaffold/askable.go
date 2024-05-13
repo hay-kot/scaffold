@@ -81,7 +81,7 @@ func (a *Askable) String() string {
 		bldr.WriteString("unknown type, please report this issue to the scaffold maintainer.")
 	}
 
-  bldr.WriteString("\n")
+	bldr.WriteString("\n")
 
 	return bldr.String()
 }

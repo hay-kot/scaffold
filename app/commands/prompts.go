@@ -1,15 +1,7 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
-)
-
-var (
-	bold     = lipgloss.NewStyle().Bold(true)
-	colorRed = lipgloss.NewStyle().Foreground(lipgloss.Color("#dc2626"))
 )
 
 func httpAuthPrompt() (username string, password string, err error) {
@@ -36,19 +28,10 @@ func httpAuthPrompt() (username string, password string, err error) {
 }
 
 func didYouMeanPrompt(given, suggestion string) bool {
-	// Couldn't find a scaffold named:
-	//   'foo'
-	//
-	// Did you mean:
-	//   'bar'?
-	//
-	// [y/n]:
-
 	ok := true
 
-	fmt.Print("\n")
-	err := huh.NewConfirm().Title("Couldn't Find '" + given + "'").
-		Description("Did you mean: " + suggestion + "?").
+	err := huh.NewConfirm().Title("Did You Mean " + suggestion + "?").
+		Description("Couldn't Find '" + given + "'").
 		Value(&ok).
 		Run()
 	if err != nil {

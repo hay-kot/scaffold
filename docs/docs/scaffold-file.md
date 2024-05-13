@@ -133,6 +133,24 @@ questions:
         - "yellow"
 ```
 
+#### Question Groups
+
+Questions also support grouping. Grouping questions will show them together in the rendered form so the user can toggle between them before submitting to the next question. Any questions that don't specify the `group` property will be grouped into their own group.
+
+```yaml
+- name: "grouped"
+  group: "Group 1"
+  prompt:
+    message: "Grouped Question 1"
+- name: "grouped2"  
+  group: "Group 1"
+  prompt:
+    message: "Grouped Question 2"   
+```
+
+!!! warning
+    When grouping questions the behavior of the `when` field changes. **Only** the first question in the group will be evaluated for the `when` field, and that results (true/false) applies to the **entire** group. You cannot apply the `when` condition to individual fields within a group. If you need to filter specific questions, you cannot use groups.
+
 ### Computed Variables
 
 Computed variables are variables that are computed from the answers to the questions. The following example will compute the `shuffled` variable from the `Project` variable.

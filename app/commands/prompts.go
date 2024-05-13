@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
@@ -37,8 +36,6 @@ func httpAuthPrompt() (username string, password string, err error) {
 }
 
 func didYouMeanPrompt(given, suggestion string) bool {
-	bldr := strings.Builder{}
-
 	// Couldn't find a scaffold named:
 	//   'foo'
 	//
@@ -47,24 +44,16 @@ func didYouMeanPrompt(given, suggestion string) bool {
 	//
 	// [y/n]:
 
-	bldr.WriteString("\n ")
-	bldr.WriteString(bold.Render(colorRed.Render("could not find a scaffold named")))
-	bldr.WriteString("\n    ")
-	bldr.WriteString(given)
-	bldr.WriteString("\n\n")
-	bldr.WriteString(" ")
-	bldr.WriteString(bold.Render("did you mean"))
-	bldr.WriteString("\n    ")
-	bldr.WriteString(suggestion)
-	bldr.WriteString("?\n\n ")
-	bldr.WriteString("[y/n]: ")
+	ok := true
 
-	out := bldr.String()
+	fmt.Print("\n")
+	err := huh.NewConfirm().Title("Couldn't Find '" + given + "'").
+		Description("Did you mean: " + suggestion + "?").
+		Value(&ok).
+		Run()
+	if err != nil {
+		return false
+	}
 
-	var resp string
-
-	fmt.Print(out)
-	fmt.Scanln(&resp)
-
-	return resp == "y"
+	return ok
 }

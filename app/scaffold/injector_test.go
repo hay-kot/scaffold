@@ -26,6 +26,7 @@ hello world
     indented line
     # Inject After Marker
 `
+
 var t2Want = `---
 hello world
     indented line
@@ -61,7 +62,7 @@ func TestInject(t *testing.T) {
 			args: args{
 				s:    t2,
 				data: "injected line 1\ninjected line 2",
-				at: "# Inject After Marker",
+				at:   "# Inject After Marker",
 				mode: After,
 			},
 			want: t2Want,

@@ -38,7 +38,6 @@ func Inject(r io.Reader, data string, at string, mode Mode) ([]byte, error) {
 
 			newline(indent + l)
 		}
-
 	}
 
 	found := false

@@ -110,7 +110,7 @@ func TestScaffold_RenderTemplate(t *testing.T) {
 			},
 		},
 		{
-			name:    "Basic template with sprig function",
+			name:    "Basic template with sprout function",
 			tmpl:    "Hello {{ .World | upper }}",
 			want:    "Hello WORLD!",
 			wantErr: false,

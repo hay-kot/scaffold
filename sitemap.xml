@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://hay-kot.github.io/scaffold/</loc>
+         <lastmod>2024-05-13</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hay-kot.github.io/scaffold/scaffold-file/</loc>
+         <lastmod>2024-05-13</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hay-kot.github.io/scaffold/scaffold-rc/</loc>
+         <lastmod>2024-05-13</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hay-kot.github.io/scaffold/scaffold-resolution/</loc>
+         <lastmod>2024-05-13</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hay-kot.github.io/scaffold/template-engine/</loc>
+         <lastmod>2024-05-13</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://hay-kot.github.io/scaffold/testing-scaffolds/</loc>
+         <lastmod>2024-05-13</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+</urlset>

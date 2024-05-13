@@ -1,0 +1,1028 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://hay-kot.github.io/scaffold/scaffold-file/">
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../scaffold-rc/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+    
+    
+      
+        <title>Scaffold File - Scaffold</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.66ac8b77.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/css/extras.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#overview" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Scaffold" class="md-header__button md-logo" aria-label="Scaffold" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Scaffold
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Scaffold File
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="cyan"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="cyan"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/hay-kot/scaffold" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Scaffold
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Scaffold" class="md-nav__button md-logo" aria-label="Scaffold" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Scaffold
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/hay-kot/scaffold" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Scaffold
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scaffold
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Scaffold File
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Scaffold File
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#project-scaffolds" class="md-nav__link">
+    <span class="md-ellipsis">
+      Project Scaffolds
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-scaffolds" class="md-nav__link">
+    <span class="md-ellipsis">
+      Template Scaffolds
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      File Reference
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="File Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#questions-and-prompts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Questions and Prompts
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Questions and Prompts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#question-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Question Examples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#question-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Question Groups
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#computed-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Computed Variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rewrites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rewrites
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Skips
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inject" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inject
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Messages
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#presets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Presets
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scaffold-rc/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scaffold RC
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../scaffold-resolution/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scaffold Resolution
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../template-engine/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Template Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing-scaffolds/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Testing Scaffolds
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#project-scaffolds" class="md-nav__link">
+    <span class="md-ellipsis">
+      Project Scaffolds
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#template-scaffolds" class="md-nav__link">
+    <span class="md-ellipsis">
+      Template Scaffolds
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      File Reference
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="File Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#questions-and-prompts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Questions and Prompts
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Questions and Prompts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#question-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Question Examples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#question-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      Question Groups
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#computed-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Computed Variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rewrites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rewrites
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Skips
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inject" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inject
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Messages
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#presets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Presets
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>Scaffold File</h1>
+
+<h2 id="overview">Overview</h2>
+<p>There are two types of scaffolds you can define</p>
+<h3 id="project-scaffolds">Project Scaffolds</h3>
+<p>The Project generation scaffolds are used to generate a new project from a template directory. The file structure requires a root directory with one of the following names. All files within that directory will be copied to the destination directory and rendered as a template with the <a href="../template-engine/">template engine</a>.</p>
+<ul>
+<li>{{ .Project }}</li>
+<li>{{ .ProjectSlug }}</li>
+<li>{{ .ProjectSnake }}</li>
+<li>{{ .ProjectKebab }}</li>
+<li>{{ .ProjectCamel }}</li>
+</ul>
+<div class="highlight"><pre><span></span><code>├── scaffold # can be any name
+    ├── scaffold.yaml
+    └── {{ .Project }} # can be any of the project name formats
+        └── any nested amount of files...
+</code></pre></div>
+<h3 id="template-scaffolds">Template Scaffolds</h3>
+<p>The template scaffolds are used to generate files within an existing project. The file structure requires a <code>templates</code> file in the root directory. The <code>templates</code> directory is used to store files that should be rewritten using the <a href="#rewrites">Rewrites</a> configuration in the <code>scaffold.yaml</code> file.</p>
+<div class="highlight"><pre><span></span><code>├── .scaffolds # in your project directory
+    └── my-scaffold # can be any name
+        ├── scaffold.yaml
+        └── templates
+            └── any nested amount of files...
+</code></pre></div>
+<p>The templates directory is <em>usually</em> a flat directory structure, but can be nested as well.</p>
+<h2 id="file-reference">File Reference</h2>
+<h3 id="questions-and-prompts">Questions and Prompts</h3>
+<p>Questions are used to prompt the user for input when generating a scaffold. We support the following types of questions</p>
+<ul>
+<li>Text</li>
+<li>Confirm (Yes/No)</li>
+<li>Select One</li>
+<li>Multi Select</li>
+</ul>
+<p>They share a base type of question with the following fields</p>
+<dl>
+<dt><code>name</code></dt>
+<dd>
+<p>The name of the variable that will be used in the template. {{ .Scaffold.<name> }}</p>
+</dd>
+<dt><code>required</code></dt>
+<dd>
+<p>Whether or not the question is required.</p>
+</dd>
+<dt><code>when</code></dt>
+<dd>
+<p>A go template will will be evaluated with the previous context to conditionally render the questions. If the template evaluates to <code>false</code> the question will not be rendered, otherwise it will be. This is done by using the <code>strconv.ParseBool</code> function to parse the result of the template. <strong>Previous question variables are available at the root level {{ .previous_name }} instead of inside a .Scaffold container.</strong></p>
+</dd>
+<dt><code>prompt</code></dt>
+<dd>
+<p>Prompt configured the type of questions to display to the user. See the examples below for more details.</p>
+<dl>
+<dt><code>message</code></dt>
+<dd>
+<p>The message field is the message that will be displayed to the user. If only this field is specified, the user will be prompted for a text input.</p>
+</dd>
+<dt><code>description</code></dt>
+<dd>
+<p>The description field is an optional field that will be displayed to the user as a description of the question.</p>
+</dd>
+<dt><code>loop</code></dt>
+<dd>
+<p>When the loop field is true, and the question is a text question, the user will be prompted to enter multipel values until they enter an empty string. The resulting type will be an array of string.</p>
+</dd>
+<dt><code>confirm</code></dt>
+<dd>
+<p>The confirm field is the message that will be displayed to the user. If only this field is specified, the user will be prompted for a yes/no input.</p>
+</dd>
+<dt><code>options</code></dt>
+<dd>
+<p>The options field is a list of options that will be displayed to the user. This requires the message field to be specified as well.</p>
+</dd>
+<dt><code>multi</code></dt>
+<dd>
+<p>The multi field is a boolean that will allow the user to select multiple options. This requires the message and options fields to be specified as well.</p>
+</dd>
+<dt><code>default</code></dt>
+<dd>
+<p>The default field is the default value(s) that will be used if the user does not provide an answer.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<h4 id="question-examples">Question Examples</h4>
+<div class="highlight"><pre><span></span><code><span class="nt">questions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;description&quot;</span>
+<span class="w">    </span><span class="nt">prompt</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">message</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Description</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">project&quot;</span>
+<span class="w">    </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CLI</span><span class="nv"> </span><span class="s">Commands&quot;</span>
+<span class="w">    </span><span class="nt">prompt</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">message</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;CLI</span><span class="nv"> </span><span class="s">Commands&quot;</span>
+<span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Enter</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">list</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">cli</span><span class="nv"> </span><span class="s">commands</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">stub</span><span class="nv"> </span><span class="s">out&quot;</span>
+<span class="w">      </span><span class="nt">loop</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;license&quot;</span>
+<span class="w">    </span><span class="nt">prompt</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">message</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;License</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">project&quot;</span>
+<span class="w">      </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;MIT&quot;</span>
+<span class="w">      </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;MIT&quot;</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;Apache-2.0&quot;</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;GPL-3.0&quot;</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;BSD-3-Clause&quot;</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;Unlicense&quot;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;use_github_actions&quot;</span>
+<span class="w">    </span><span class="nt">prompt</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">confirm</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Use</span><span class="nv"> </span><span class="s">Github</span><span class="nv"> </span><span class="s">Actions</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">CI/CD?&quot;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;colors&quot;</span>
+<span class="w">    </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">.use_github_actions</span><span class="nv"> </span><span class="s">}}&quot;</span>
+<span class="w">    </span><span class="nt">prompt</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">multi</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">message</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Colors</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">project&quot;</span>
+<span class="w">      </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;red&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;green&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">options</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;red&quot;</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;green&quot;</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;blue&quot;</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;yellow&quot;</span>
+</code></pre></div>
+<h4 id="question-groups">Question Groups</h4>
+<p>Questions also support grouping. Grouping questions will show them together in the rendered form so the user can toggle between them before submitting to the next question. Any questions that don't specify the <code>group</code> property will be grouped into their own group.</p>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;grouped&quot;</span>
+<span class="w">  </span><span class="nt">group</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Group</span><span class="nv"> </span><span class="s">1&quot;</span>
+<span class="w">  </span><span class="nt">prompt</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">message</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Grouped</span><span class="nv"> </span><span class="s">Question</span><span class="nv"> </span><span class="s">1&quot;</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;grouped2&quot;</span><span class="w">  </span>
+<span class="w">  </span><span class="nt">group</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Group</span><span class="nv"> </span><span class="s">1&quot;</span>
+<span class="w">  </span><span class="nt">prompt</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">message</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Grouped</span><span class="nv"> </span><span class="s">Question</span><span class="nv"> </span><span class="s">2&quot;</span><span class="w">   </span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>When grouping questions the behavior of the <code>when</code> field changes. <strong>Only</strong> the first question in the group will be evaluated for the <code>when</code> field, and that results (true/false) applies to the <strong>entire</strong> group. You cannot apply the <code>when</code> condition to individual fields within a group. If you need to filter specific questions, you cannot use groups.</p>
+</div>
+<h3 id="computed-variables">Computed Variables</h3>
+<p>Computed variables are variables that are computed from the answers to the questions. The following example will compute the <code>shuffled</code> variable from the <code>Project</code> variable.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">computed</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">shuffled</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">shuffle</span><span class="nv"> </span><span class="s">.Project</span><span class="nv"> </span><span class="s">}}&quot;</span>
+</code></pre></div>
+<p>You can reference computed variables like so</p>
+<div class="highlight"><pre><span></span><code>{{ .Computed.shuffled }}
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Computed variables are generally of type string however, there are special cases for boolean and integer types. Scaffold will attempt to parse the computed string value into an integer, and then a boolean. If any are successful, that value will be used in-place of the string.</p>
+</div>
+<h3 id="rewrites">Rewrites</h3>
+<p>Rewrites working with the <a href="../#terminology">template scaffolds</a> to perform a path rewrite to another directory. The following example defines a rewrite that will render the <code>templates/defaults.yaml</code> file to the <code>roles/{{ .ProjectKebab }}/defaults/main.yaml</code> path.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">rewrites</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">from</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">templates/defaults.yaml</span>
+<span class="w">    </span><span class="nt">to</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">roles/{{ .ProjectKebab }}/defaults/main.yaml</span>
+</code></pre></div>
+<ul>
+<li><code>from</code> - The path to the template file</li>
+<li><code>to</code> - a template path to the destination file</li>
+<li>These files <em>are</em> rendered with the template engine</li>
+</ul>
+<p>This feature is not available for project scaffolds.</p>
+<h3 id="skips">Skips</h3>
+<p>Skip is a list of glob patterns that will be used to skip the template <strong>rendering</strong> process. This is useful is your file is itself a go template, or contains similar syntax that will cause the template engine to fail. The following example will skip the <code>templates/defaults.yaml</code> file from being rendered.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">skip</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*.goreleaser.yaml&quot;</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;**/*.gotmpl&quot;</span>
+</code></pre></div>
+<h3 id="inject">Inject</h3>
+<p><code>inject</code> is a list of code/text injections to perform on a given file. This is to be used in conjunction with <code>scaffold templates</code> and is not supported within a <code>scaffold project</code>.</p>
+<p>The following example will inject a role into the <code>site.yaml</code> file at the output directory.</p>
+<dl>
+<dt><code>name</code></dt>
+<dd>
+<p>The name of the injection</p>
+</dd>
+<dt><code>path</code></dt>
+<dd>
+<p>The relative path to the file to inject into from the output directory</p>
+</dd>
+<dt><code>at</code></dt>
+<dd>
+<p>The location to inject the code/text. This is evaluated using the strings.Contains function. Note that ALL matches will be replaced.</p>
+</dd>
+<dt><code>template</code></dt>
+<dd>
+<p>The template to inject into the file. These work the same as scaffold templates.</p>
+</dd>
+</dl>
+<div class="highlight"><pre><span></span><code><span class="nt">inject</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;add</span><span class="nv"> </span><span class="s">role</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">site.yaml&quot;</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">site.yaml</span>
+<span class="w">    </span><span class="nt">at</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#</span><span class="nv"> </span><span class="s">$Scaffold.role_name&quot;</span>
+<span class="w">    </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">      </span><span class="no">- name: {{ .Scaffold.role_name }}</span>
+<span class="w">        </span><span class="no">role: {{ .Computed.snaked }}</span>
+</code></pre></div>
+<h3 id="messages">Messages</h3>
+<p>You can specify messages to show the user that are rendered using the <a href="https://github.com/charmbracelet/glamour/">glamour markdown renderer</a> to show pre and post messages to the user.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">messages</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">pre</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">    </span><span class="no"># Pre Message</span>
+
+<span class="w">    </span><span class="no">This is a pre message that will be shown to the user before the scaffold is generated.</span>
+
+<span class="w">    </span><span class="no">Template variables are _NOT_ available in this message.</span>
+
+<span class="w">  </span><span class="nt">post</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">    </span><span class="no"># Post Message</span>
+
+<span class="w">    </span><span class="no">This is a post message that will be shown to the user after the scaffold is generated.</span>
+
+<span class="w">    </span><span class="no">You can use variables just as you would in your templates.</span>
+
+<span class="w">    </span><span class="no">{{ .ProjectKebab }}</span>
+</code></pre></div>
+<h3 id="features">Features</h3>
+<p>Scaffold support the concept of "feature flags" that can be used to conditionally render entire directories/glob matches of files. This is useful if you want to provide a scaffold that can have wide-reaching optional features, like a database, CI pipeline, etc.</p>
+<p>Features are lists of globs that will be evaluated against the <code>value</code> field. If the value is parsed to <code>true</code> the glob will be rendered, otherwise it will be skipped.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">features</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">.Scaffold.database</span><span class="nv"> </span><span class="s">}}&quot;</span>
+<span class="w">    </span><span class="nt">globs</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;**/core/database/**/*&quot;</span>
+</code></pre></div>
+<h3 id="presets">Presets</h3>
+<p>Presets are a way to define a set of default values for a scaffold. These can be overridden by the user when running the scaffold.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">presets</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">default</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;A</span><span class="nv"> </span><span class="s">description</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">project&quot;</span>
+<span class="w">    </span><span class="nt">license</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;MIT&quot;</span>
+<span class="w">    </span><span class="nt">use_github_actions</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">colors</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;red&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;green&quot;</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Presets and Testing</p>
+<p>Presets can be used in conjunction with the <code>new</code> command for testing purposes. See <a href="../testing-scaffolds/">Testing Scaffolds</a> for more information.</p>
+</div>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.annotate", "navigation.instant", "navigation.expand", "navigation.sections", "navigation.tabs.sticky"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      
+    
+  </body>
+</html>

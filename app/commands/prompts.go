@@ -30,8 +30,9 @@ func httpAuthPrompt() (username string, password string, err error) {
 func didYouMeanPrompt(given, suggestion string) bool {
 	ok := true
 
-	err := huh.NewConfirm().Title("Did You Mean " + suggestion + "?").
-		Description("Couldn't Find '" + given + "'").
+	err := huh.NewConfirm().
+		Title("Did You Mean " + suggestion + "?").
+		Description("Couldn't find '" + given + "'").
 		Value(&ok).
 		Run()
 	if err != nil {

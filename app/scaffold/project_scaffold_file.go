@@ -32,14 +32,14 @@ type Mode string
 
 const (
 	Before Mode = "before"
-	After Mode = "after"
+	After  Mode = "after"
 )
 
 type Injectable struct {
 	Name     string `yaml:"name"`
 	Path     string `yaml:"path"`
 	At       string `yaml:"at"`
-	Mode     Mode `yaml:"mode"`
+	Mode     Mode   `yaml:"mode"`
 	Template string `yaml:"template"`
 }
 

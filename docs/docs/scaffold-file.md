@@ -121,7 +121,7 @@ questions:
     prompt:
       confirm: "Use Github Actions for CI/CD?"
   - name: "colors"
-    when: { { .use_github_actions } }
+    when: "{{ .use_github_actions }}"
     prompt:
       multi: true
       message: "Colors of the project"
@@ -144,8 +144,8 @@ computed:
 
 You can reference computed variables like so
 
-```yaml
-{ { .Computed.shuffled } }
+```
+{{ .Computed.shuffled }}
 ```
 
 !!! tip

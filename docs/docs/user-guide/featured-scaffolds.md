@@ -1,14 +1,22 @@
 ---
+scaffolds:
+  - name: hay-kot/scaffold-go-cli
+    href: https://github.com/hay-kot/scaffold-go-cli
+    description: |
+      Scaffold for stubbing out an opinionated CLI project using <a href="https://github.com/urfave/cli">urfave/cli</a>
+    features:
+      - CI/CD w/ Github Actions or Drone.io
+      - GoReleaser for releases
+      - GolangCI-Lint for linting
+      - Build/Version/Commit injection on build
 ---
 
 # Featured Scaffolds
 
-## Go CLI
+<script setup>
+import Featured from '../components/Featured.vue'
+import { useData } from 'vitepress'
+const { page } = useData()
+</script>
 
-[github.com/hay-kot/scaffold-go-cli](https://github.com/hay-kot/scaffold-go-cli)
-
-- CI/CD with Github Actions or Drone.io
-    - PR/Commit/Release workflows
-- GoReleaser for releases
-- GolangCI-Lint for linting
-- Build/Version/Commit injection on build
+<Featured :features="page.frontmatter.scaffolds"/>

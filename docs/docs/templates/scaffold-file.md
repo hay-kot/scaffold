@@ -29,7 +29,7 @@ The Project generation scaffolds are used to generate a new project from a templ
 
 ## Template Scaffolds
 
-The template scaffolds are used to generate files within an existing project. The file structure requires a `templates` file in the root directory. The `templates` directory is used to store files that should be rewritten using the [Rewrites](#rewrites) configuration in the `scaffold.yaml` file.
+The template scaffolds are used to generate files within an existing project. The file structure requires a `templates` folder in the root directory. The `templates` directory is used to store files that should be rewritten using the [rewrites](./config-reference#rewrites) configuration in the `scaffold.yaml` file.
 
 ### File Structure
 

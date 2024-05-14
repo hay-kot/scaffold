@@ -26,7 +26,11 @@ Whether or not the question is required.
 
 ### `when`
 
-A go template will will be evaluated with the previous context to conditionally render the questions. If the template evaluates to `false` the question will not be rendered, otherwise it will be. This is done by using the `strconv.ParseBool` function to parse the result of the template. **Previous question variables are available at the root level <span v-pre>{{ .previous_name }}</span> instead of inside a .Scaffold container.**
+A go template will will be evaluated with the previous context to conditionally render the questions. If the template evaluates to `false` the question will not be rendered, otherwise it will be. This is done by using the `strconv.ParseBool` function to parse the result of the template. 
+
+::: tip
+Previous question variables are available at the root level <span v-pre>`{{ .previous_name }}`</span> instead of inside the `.Scaffold` namespace.
+::: 
 
 ### `group`
 

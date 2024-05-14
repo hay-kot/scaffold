@@ -21,7 +21,7 @@ hero:
 features:
   - title: Feature Flag Support
     link: /templates/config-reference#features
-    details: Guard large sections of your tempaltes with feature flags to allow for easy feature toggling.
+    details: Guard large sections of your templates with feature flags to allow for easy feature toggling.
 
   - title: Powerful Interactive Forms
     link: /templates/scaffold-file/#prompts

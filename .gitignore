@@ -24,3 +24,8 @@ gen/
 go.work
 
 *.venv
+
+
+# Docs Stuff
+node_modules/
+docs/docs/.vitepress/cache/

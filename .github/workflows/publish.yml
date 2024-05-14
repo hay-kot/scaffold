@@ -1,12 +1,13 @@
 name: Build and Publish
 
 permissions:
-  contents: write
+  contents: write # for release
+  pages: write
+  id-token: write
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   backend-tests:
@@ -57,19 +58,49 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
 
-  deploy-docs:
-    name: Deploy docs
+  build-docs:
+    runs-on: ubuntu-latest
     needs:
       - goreleaser
-    runs-on: ubuntu-latest
     steps:
-      - name: Checkout main
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Not needed if lastUpdated is not enabled
 
-      - name: Deploy docs
-        uses: mhausenblas/mkdocs-deploy-gh-pages@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CONFIG_FILE: docs/mkdocs.yml
-          REQUIREMENTS: docs/requirements.txt
-          EXTRA_PACKAGES: build-base
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm # or pnpm / yarn
+          cache-dependency-path: "docs"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Install dependencies
+        working-directory: docs
+        run: npm ci
+
+      - name: Build with VitePress
+        working-directory: docs
+        run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/docs/.vitepress/dist
+
+  # Deployment job
+  deploy-docs:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs:
+      - build-docs
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

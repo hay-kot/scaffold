@@ -1,15 +1,16 @@
 ---
-title: Scaffold RC
 ---
+
+# Scaffold Runtime Config
 
 Scaffold RC is the runtime configuration file that can be used to define some default values and perform some basic enhancements to the scaffolding process. Your scaffoldrc path is defined by:
 
 - The `--scaffoldrc` flag
 - the `SCAFFOLDRC` environment variable
 
-Default: `~/.scaffold/scaffoldrc.yml`
+Defaults to `~/.scaffold/scaffoldrc.yml`
 
-## Defaults
+## `defaults`
 
 The `defaults` section allows you to set some default values for the scaffolding process. These can be any key/value string pairs
 
@@ -20,10 +21,7 @@ defaults:
   email: joebags@donus.gonuts
 ```
 
-!!! tip
-    Note that defaults are only used for text type questions at this time.
-
-## Aliases
+## `aliases`
 
 The `aliases` section allows you to define key/value pairs as shortcuts for a scaffold path. This is useful to shorten a reference for a specific scaffold.
 
@@ -39,7 +37,7 @@ Then you can use the alias in the `scaffold` command
 scaffold new api
 ```
 
-## Shorts
+## `shorts`
 
 The `shorts` section allows you to define expandable text snippets. Commonly these would be used to prefix a URL or path.
 
@@ -61,11 +59,11 @@ Which will expand to
 scaffold new https://github.com/joebagadonuts/my-project
 ```
 
-## Auth
+## `auth`
 
 The `auth` sections lets you define authentication matchers for your scaffolds. This is useful for using scaffolds that are stored in a private repository.
 
-The configuration supports basic authentication and token authentication. Note that in most cases, you want basic authnetication, even us you're using a personal access token.
+The configuration supports basic authentication and token authentication. Note that in most cases, you want basic authentication, even us you're using a personal access token.
 
 ```yaml
 auth:
@@ -77,5 +75,6 @@ auth:
     token: ${GITEA_TOKEN} # this will be replaced with the environment variable
 ```
 
-!!! tip
-    the `match` key supports regular expressions giving you a lot of flexibility in defining your matchers.
+::: tip
+the `match` key supports regular expressions giving you a lot of flexibility in defining your matchers.
+:::

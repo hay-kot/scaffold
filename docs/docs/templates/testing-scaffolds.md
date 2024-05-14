@@ -1,15 +1,17 @@
 ---
-title: Testing Scaffolds
 ---
 
-Scaffold does not have a test command or framework, *however* it does provide some tools that can be utilized to implement tests for your scaffolds.
+# Testing Scaffolds
+
+Scaffold does not have a test command or framework, _however_ it does provide some tools that can be utilized to implement tests for your scaffolds.
 
 ## Testing with ASTs
 
 Scaffold provides a way to output an AST of the scaffolded files. This can be used with a diffing tool to compare the ASTs of the scaffolded files with the expected ASTs to ensure that the scaffolded files are correct.
 
+**Command**
+
 ```bash
-# Command
 scaffold \
     --log-level="error" \     # set log level to error to avoid noise
     --output-dir=":memory:" \ # render scaffold in memory
@@ -18,8 +20,11 @@ scaffold \
     --no-prompt \             # disable interactive prompts
     --snapshot="stdout" \     # write snapshot to stdout
     <scaffold>
+```
 
-# Output
+**Output**
+
+```bash
 scaffold-test-5781:  (type=dir)
         main.go:  (type=file)
                 package main

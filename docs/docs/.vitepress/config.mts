@@ -3,6 +3,7 @@ import { withMermaid } from "vitepress-plugin-mermaid";
 // https://vitepress.dev/reference/site-config
 export default withMermaid(
   defineConfig({
+    base: "/scaffold/",
     title: "Scaffold",
     description: "A Project and Template Scaffolding Tool",
     head: [["link", { rel: "icon", href: "/favicon.webp" }]],

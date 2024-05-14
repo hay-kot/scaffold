@@ -8,8 +8,11 @@ hero:
   tagline: The Scaffolding Tool of the Future
   actions:
     - theme: brand
+      text: What is Scaffold?
+      link: /introduction/what-is-scaffold
+    - theme: alt
       text: Quick Start
-      link: /getting-started/quick-start
+      link: /introduction/quick-start
     - theme: alt
       text: Creating Templates
       link: /templates/scaffold-file

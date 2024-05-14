@@ -54,6 +54,10 @@ export default withMermaid(
               text: "File Reference",
               link: "/templates/config-reference",
             },
+            {
+              text: "Testing Scaffolds",
+              link: "/templates/testing-scaffolds",
+            },
           ],
         },
       ],

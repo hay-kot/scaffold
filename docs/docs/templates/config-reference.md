@@ -18,7 +18,7 @@ Questions are used to prompt the user for input when generating a scaffold. We s
 
 ### `name`
 
-The name of the variable that will be used in the template. <span v-pre>{{ .Scaffold.name }}</span>
+The name of the variable that will be used in the template. <span v-pre>`{{ .Scaffold.name }}`</span>
 
 ### `required`
 

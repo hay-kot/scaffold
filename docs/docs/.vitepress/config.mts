@@ -5,6 +5,7 @@ export default withMermaid(
   defineConfig({
     title: "Scaffold",
     description: "A Project and Template Scaffolding Tool",
+    head: [["link", { rel: "icon", href: "/favicon.webp" }]],
     themeConfig: {
       search: {
         provider: "local",

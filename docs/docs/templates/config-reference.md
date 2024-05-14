@@ -150,7 +150,7 @@ Computed variables are generally of type string however, there are special cases
 
 ## `rewrites`
 
-Rewrites working with the [template scaffolds](./index.md#terminology) to perform a path rewrite to another directory. The following example defines a rewrite that will render the `templates/defaults.yaml` file to the <span v-pre>`roles/{{ .ProjectKebab }}/defaults/main.yaml`</span> path.
+Rewrites working with the [template scaffolds](../introduction/terminology.md) to perform a path rewrite to another directory. The following example defines a rewrite that will render the `templates/defaults.yaml` file to the <span v-pre>`roles/{{ .ProjectKebab }}/defaults/main.yaml`</span> path.
 
 ```yaml
 rewrites:

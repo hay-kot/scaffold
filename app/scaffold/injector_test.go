@@ -59,6 +59,24 @@ hello world
 `,
 		},
 		{
+			name: "don't inject empty data",
+			args: args{
+				s:    Input,
+				data: "",
+				at:   Marker,
+			},
+			want: Input,
+		},
+		{
+			name: "don't inject empty lines",
+			args: args{
+				s:    Input,
+				data: "\n\n\n\n",
+				at:   Marker,
+			},
+			want: Input,
+		},
+		{
 			name: "inject no marker",
 			args: args{
 				s:    Input,
@@ -66,6 +84,21 @@ hello world
 				at:   Marker + "invalid",
 			},
 			wantErr: true,
+		},
+		{
+			name: "preserve manual indentation",
+			args: args{
+				s:    Input,
+				data: "    injected",
+				at:   Marker,
+				mode: After,
+			},
+			want: `---
+hello world
+    indented line
+    # Inject Marker
+        injected
+`,
 		},
 	}
 	for _, tt := range tests {

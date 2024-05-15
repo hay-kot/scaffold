@@ -196,6 +196,10 @@ The location to inject the code/text. This is evaluated using the strings.Contai
 
 The template to inject into the file. These work the same as scaffold templates.
 
+::: tip
+If the template string evaluates to an empty string or _only_ whitespace, the injection will be skipped.
+:::
+
 ### `mode`
 
 The mode to use when injecting the code. This can be one of the following:

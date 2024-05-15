@@ -334,6 +334,11 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 			return err
 		}
 
+		// Assume that empty string or only whitespace is not a valid injection.
+		if out == "" || strings.TrimSpace(out) == "" {
+			continue
+		}
+
 		outbytes, err := Inject(f, out, injection.At, injection.Mode)
 		if err != nil {
 			return err

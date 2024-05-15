@@ -2,6 +2,7 @@ package scaffold
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"io"
 	"strings"
@@ -24,50 +25,47 @@ func indentation(b string) string {
 // that contains the string "at". It will then insert the data
 // before that line.
 func Inject(r io.Reader, data string, at string, mode Mode) ([]byte, error) {
-	bldr := strings.Builder{}
-	newline := func(s string) {
-		bldr.WriteString(s)
-		bldr.WriteString("\n")
+	var buf bytes.Buffer
+
+	// Write a line to the buffer
+	writeLine := func(line string) {
+		buf.WriteString(line)
+		buf.WriteString("\n")
 	}
 
-	writelines := func(lines []string, indent string) {
+	// Write multiple lines with indentation to the buffer
+	writeLines := func(lines []string, indent string) {
 		for _, l := range lines {
-			if l == "" {
-				continue
+			if l != "" {
+				writeLine(indent + l)
 			}
-
-			newline(indent + l)
 		}
 	}
 
-	found := false
-	after := mode == After
-	inserted := false
+	var (
+		inserted      = false
+		found         = false
+		scanner       = bufio.NewScanner(r)
+		linesToInsert = strings.Split(data, "\n")
+	)
 
-	scanner := bufio.NewScanner(r)
-	lines := strings.Split(data, "\n")
-	var indent string
-
+	// Loop through each line in the reader
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		// Found the line, insert the data
-		// default case will be before
 		if strings.Contains(line, at) {
-			indent = indentation(line)
 			if mode != After {
-				writelines(lines, indent)
+				writeLines(linesToInsert, indentation(line))
 				inserted = true
 			}
 			found = true
 		}
 
-		newline(line)
+		writeLine(line)
 
-		// if there is an after mode, insert after!
-		if after && found && !inserted {
-			println("inserting after")
-			writelines(lines, indent)
+		// If in 'after' mode and the insertion point is found, insert after it
+		if mode == After && found && !inserted {
+			writeLines(linesToInsert, indentation(line))
 			inserted = true
 		}
 	}
@@ -80,5 +78,5 @@ func Inject(r io.Reader, data string, at string, mode Mode) ([]byte, error) {
 		return nil, ErrInjectMarkerNotFound
 	}
 
-	return []byte(bldr.String()), nil
+	return buf.Bytes(), nil
 }

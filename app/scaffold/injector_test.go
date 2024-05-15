@@ -7,35 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var t1 = `---
-hello world
-    indented line
-    # Inject Marker
-`
-
-var t1Want = `---
-hello world
-    indented line
-    injected line 1
-    injected line 2
-    # Inject Marker
-`
-
-var t2 = `---
-hello world
-    indented line
-    # Inject After Marker
-`
-
-var t2Want = `---
-hello world
-    indented line
-    # Inject After Marker
-    injected line 1
-    injected line 2
-`
-
 func TestInject(t *testing.T) {
+	const Marker = "# Inject Marker"
+	const Input = `---
+hello world
+    indented line
+    # Inject Marker
+`
+
 	type args struct {
 		s    string
 		data string
@@ -51,28 +30,40 @@ func TestInject(t *testing.T) {
 		{
 			name: "inject",
 			args: args{
-				s:    t1,
+				s:    Input,
 				data: "injected line 1\ninjected line 2",
-				at:   "# Inject Marker",
+				at:   Marker,
 			},
-			want: t1Want,
+			want: `---
+hello world
+    indented line
+    injected line 1
+    injected line 2
+    # Inject Marker
+`,
 		},
 		{
 			name: "inject after",
 			args: args{
-				s:    t2,
+				s:    Input,
 				data: "injected line 1\ninjected line 2",
-				at:   "# Inject After Marker",
+				at:   Marker,
 				mode: After,
 			},
-			want: t2Want,
+			want: `---
+hello world
+    indented line
+    # Inject Marker
+    injected line 1
+    injected line 2
+`,
 		},
 		{
 			name: "inject no marker",
 			args: args{
-				s:    t1,
-				data: "injected line 1\ninjected line 2",
-				at:   "# Inject Marker 2",
+				s:    Input,
+				data: "injected",
+				at:   Marker + "invalid",
 			},
 			wantErr: true,
 		},

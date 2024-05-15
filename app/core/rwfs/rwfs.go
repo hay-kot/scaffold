@@ -3,8 +3,11 @@
 package rwfs
 
 import (
+	"errors"
 	"io/fs"
 )
+
+var ErrHooksNotSupported = errors.New("hooks not supported")
 
 // ReadFS is a read only file system that can be used to read files from
 // a file system. It is a alias for fs.FS.
@@ -16,4 +19,5 @@ type WriteFS interface {
 	fs.FS
 	MkdirAll(path string, perm fs.FileMode) error
 	WriteFile(name string, data []byte, perm fs.FileMode) error
+	RunHook(name string, data []byte, args []string) error
 }

@@ -63,6 +63,11 @@ func (ctrl *Controller) runscaffold(cfg runconf) error {
 		return err
 	}
 
+	err = ctrl.RunHook(pfs, "post_scaffold", cfg.outputfs, vars)
+	if err != nil {
+		return err
+	}
+
 	if cfg.showMessages && p.Conf.Messages.Post != "" {
 		rendered, err := ctrl.engine.TmplString(p.Conf.Messages.Post, vars)
 		if err != nil {

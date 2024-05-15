@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/hay-kot/scaffold/app/core/rule"
 	"github.com/hay-kot/scaffold/internal/styles"
 	"gopkg.in/yaml.v3"
 )
@@ -47,6 +48,9 @@ type ScaffoldRC struct {
 	// Auth defines a list of auth entries that can be used to
 	// authenticate with a remote SCM.
 	Auth []AuthEntry `yaml:"auth"`
+
+	// RunHooks defines the behavior when a scaffold defines hooks.
+	RunHooks rule.Rule `yaml:"run_hooks"`
 }
 
 type Settings struct {

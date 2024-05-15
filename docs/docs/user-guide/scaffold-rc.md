@@ -99,3 +99,11 @@ auth:
 ::: tip
 the `match` key supports regular expressions giving you a lot of flexibility in defining your matchers.
 :::
+
+## `run_hooks`
+
+You may disable hooks globally by setting `run_hooks` to `false`, or choose to be prompted before they run by setting it to `prompt`. The `--run-hooks` CLI setting takes precedence.
+
+```yaml
+run_hooks: prompt
+```

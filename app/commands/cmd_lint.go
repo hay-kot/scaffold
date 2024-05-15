@@ -43,6 +43,8 @@ func (ctrl *Controller) Lint(ctx *cli.Context) error {
 			q.Prompt.IsConfirm(),
 			q.Prompt.IsSelect(),
 			q.Prompt.IsMultiSelect(),
+			q.Prompt.IsInputLoop(),
+			q.Prompt.IsTextInput(),
 		}
 
 		isAny := false
@@ -81,6 +83,15 @@ func (ctrl *Controller) Lint(ctx *cli.Context) error {
 		_, err := os.Stat(abs)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("rewrite from path does not exist: %s", rewrite.From))
+		}
+	}
+
+	// Validate injectjons
+	for _, injection := range pf.Inject {
+		if injection.Mode != "" {
+			if injection.Mode != "before" && injection.Mode != "after" {
+				errs = append(errs, fmt.Errorf("invalid injection mode: %s", injection.Mode))
+			}
 		}
 	}
 

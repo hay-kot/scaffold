@@ -6,7 +6,7 @@ export default withMermaid(
     base: "/scaffold/",
     title: "Scaffold",
     description: "A Project and Template Scaffolding Tool",
-    head: [["link", { rel: "icon", href: "/favicon.webp" }]],
+    head: [["link", { rel: "icon", href: "/scaffold/favicon.webp" }]],
     themeConfig: {
       search: {
         provider: "local",

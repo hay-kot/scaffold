@@ -2,6 +2,7 @@ package scaffold
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"io"
 	"strings"
@@ -23,38 +24,50 @@ func indentation(b string) string {
 // Inject will read the reader line by line and find the line
 // that contains the string "at". It will then insert the data
 // before that line.
-func Inject(r io.Reader, data string, at string) ([]byte, error) {
-	bldr := strings.Builder{}
-	newline := func(s string) {
-		bldr.WriteString(s)
-		bldr.WriteString("\n")
+func Inject(r io.Reader, data string, at string, mode Mode) ([]byte, error) {
+	var buf bytes.Buffer
+
+	// Write a line to the buffer
+	writeLine := func(line string) {
+		buf.WriteString(line)
+		buf.WriteString("\n")
 	}
 
-	found := false
+	// Write multiple lines with indentation to the buffer
+	writeLines := func(lines []string, indent string) {
+		for _, l := range lines {
+			if l != "" {
+				writeLine(indent + l)
+			}
+		}
+	}
 
-	scanner := bufio.NewScanner(r)
+	var (
+		inserted      = false
+		found         = false
+		scanner       = bufio.NewScanner(r)
+		linesToInsert = strings.Split(data, "\n")
+	)
+
+	// Loop through each line in the reader
 	for scanner.Scan() {
 		line := scanner.Text()
 
 		if strings.Contains(line, at) {
-			// Found the line, insert the data
-			// before this line
-			indent := indentation(line)
-
-			lines := strings.Split(data, "\n")
-
-			for _, l := range lines {
-				if l == "" {
-					continue
-				}
-
-				newline(indent + l)
+			if mode != After {
+				writeLines(linesToInsert, indentation(line))
+				inserted = true
 			}
-
 			found = true
 		}
 
-		newline(line)
+		writeLine(line)
+
+		// If in 'after' mode and the insertion point is found, insert after it
+		if mode == After && found && !inserted {
+			writeLines(linesToInsert, indentation(line))
+			inserted = true
+		}
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -65,5 +78,5 @@ func Inject(r io.Reader, data string, at string) ([]byte, error) {
 		return nil, ErrInjectMarkerNotFound
 	}
 
-	return []byte(bldr.String()), nil
+	return buf.Bytes(), nil
 }

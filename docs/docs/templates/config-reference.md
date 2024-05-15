@@ -26,11 +26,11 @@ Whether or not the question is required.
 
 ### `when`
 
-A go template will will be evaluated with the previous context to conditionally render the questions. If the template evaluates to `false` the question will not be rendered, otherwise it will be. This is done by using the `strconv.ParseBool` function to parse the result of the template. 
+A go template will will be evaluated with the previous context to conditionally render the questions. If the template evaluates to `false` the question will not be rendered, otherwise it will be. This is done by using the `strconv.ParseBool` function to parse the result of the template.
 
 ::: tip
 Previous question variables are available at the root level <span v-pre>`{{ .previous_name }}`</span> instead of inside the `.Scaffold` namespace.
-::: 
+:::
 
 ### `group`
 
@@ -195,6 +195,19 @@ The location to inject the code/text. This is evaluated using the strings.Contai
 ### `template`
 
 The template to inject into the file. These work the same as scaffold templates.
+
+::: tip
+If the template string evaluates to an empty string or _only_ whitespace, the injection will be skipped.
+:::
+
+### `mode`
+
+The mode to use when injecting the code. This can be one of the following:
+
+- `before` - Inject the code before the match
+- `after` - Inject the code after the match
+
+`mode` defaults to `before`
 
 **Example**
 

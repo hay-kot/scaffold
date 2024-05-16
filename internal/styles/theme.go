@@ -1,3 +1,4 @@
+// Package styles contains the shared styles for the terminal UI components.
 package styles
 
 import (

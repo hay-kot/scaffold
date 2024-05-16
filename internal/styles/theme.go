@@ -1,16 +1,9 @@
-// Package styles contains the shared styles for the terminal UI components.
 package styles
 
 import (
 	catppuccingo "github.com/catppuccin/go"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
-)
-
-var (
-	Bold  = lipgloss.NewStyle().Bold(true).Render
-	Light = lipgloss.NewStyle().Foreground(lipgloss.Color("#FF83D5")).Render
-	Base  = lipgloss.NewStyle().Foreground(lipgloss.Color("#6C74FD")).Render
 )
 
 type HuhTheme string
@@ -60,8 +53,12 @@ func Theme(theme HuhTheme) *huh.Theme {
 		return huh.ThemeCatppuccin()
 	default:
 		// Set Globals
-		Light = lipgloss.NewStyle().Foreground(lipgloss.Color("#758BF9")).Render
-		Base = lipgloss.NewStyle().Foreground(lipgloss.Color("#80A1F7")).Render
+		Light = lipgloss.NewStyle().
+			Foreground(lipgloss.Color(colorScaffoldBlueDark)).
+			Render
+		Base = lipgloss.NewStyle().
+			Foreground(lipgloss.Color(colorScaffoldBlueSecondary)).
+			Render
 
 		return ThemeScaffold()
 	}
@@ -73,9 +70,9 @@ func ThemeScaffold() *huh.Theme {
 
 	var (
 		normalFg = lipgloss.AdaptiveColor{Light: "235", Dark: "252"}
-		indigo   = lipgloss.AdaptiveColor{Light: "#5A82E0", Dark: "#758BF9"}
+		indigo   = lipgloss.AdaptiveColor{Light: colorScaffoldBlueLight, Dark: colorScaffoldBlueDark}
 		cream    = lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}
-		fuchsia  = lipgloss.Color("#80A1F7")
+		fuchsia  = lipgloss.Color(colorScaffoldBlueSecondary)
 		green    = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
 		red      = lipgloss.AdaptiveColor{Light: "#FF4672", Dark: "#ED567A"}
 	)

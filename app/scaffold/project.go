@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
+	"github.com/hay-kot/scaffold/internal/styles"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -188,7 +189,7 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 		formgroups = append(formgroups, group)
 	}
 
-	form = huh.NewForm(formgroups...)
+	form = huh.NewForm(formgroups...).WithTheme(styles.Theme("scaffold"))
 
 	err := form.Run()
 	if err != nil {

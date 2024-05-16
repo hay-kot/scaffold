@@ -2,9 +2,10 @@ package commands
 
 import (
 	"github.com/charmbracelet/huh"
+	"github.com/hay-kot/scaffold/internal/styles"
 )
 
-func httpAuthPrompt() (username string, password string, err error) {
+func httpAuthPrompt(theme styles.HuhTheme) (username string, password string, err error) {
 	form := huh.NewForm(
 		huh.NewGroup(
 			huh.NewInput().
@@ -17,7 +18,7 @@ func httpAuthPrompt() (username string, password string, err error) {
 				Value(&password).
 				Password(true),
 		),
-	)
+	).WithTheme(styles.Theme(theme))
 
 	err = form.Run()
 	if err != nil {

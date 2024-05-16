@@ -4,8 +4,8 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/hay-kot/scaffold/app/core/engine"
+	"github.com/hay-kot/scaffold/internal/styles"
 )
 
 type Askable struct {
@@ -24,19 +24,13 @@ func NewAskable(name string, key string, field huh.Field, fn func(vars engine.Va
 	}
 }
 
-var (
-	bold  = lipgloss.NewStyle().Bold(true).Render
-	light = lipgloss.NewStyle().Foreground(lipgloss.Color("#FF83D5")).Render
-	base  = lipgloss.NewStyle().Foreground(lipgloss.Color("#6C74FD")).Render
-)
-
 func (a *Askable) String() string {
 	bldr := strings.Builder{}
 
 	bldr.WriteString("  ")
-	bldr.WriteString(light("?"))
+	bldr.WriteString(styles.Light("?"))
 	bldr.WriteString(" ")
-	bldr.WriteString(bold(a.Name))
+	bldr.WriteString(styles.Bold(a.Name))
 	bldr.WriteString(" ")
 
 	val := a.Field.GetValue()
@@ -48,18 +42,18 @@ func (a *Askable) String() string {
 		}
 
 		if strings.Contains(v, "\n") {
-			bldr.WriteString(base("|"))
+			bldr.WriteString(styles.Base("|"))
 
 			for _, line := range strings.Split(v, "\n") {
 				bldr.WriteString("\n")
 				bldr.WriteString("      ")
-				bldr.WriteString(base(line))
+				bldr.WriteString(styles.Base(line))
 			}
 
 			break
 		}
 
-		bldr.WriteString(base(v))
+		bldr.WriteString(styles.Base(v))
 	case []string:
 		if len(v) == 0 {
 			return ""
@@ -68,13 +62,13 @@ func (a *Askable) String() string {
 		for _, v := range v {
 			bldr.WriteString("\n")
 			bldr.WriteString("      - ")
-			bldr.WriteString(base(v))
+			bldr.WriteString(styles.Base(v))
 		}
 	case bool:
 		if v {
-			bldr.WriteString(base("true"))
+			bldr.WriteString(styles.Base("true"))
 		} else {
-			bldr.WriteString(base("false"))
+			bldr.WriteString(styles.Base("false"))
 		}
 
 	default:

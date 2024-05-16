@@ -40,7 +40,7 @@ func (ctrl *Controller) resolve(argPath string, noPrompt bool) (string, error) {
 				return "", err
 			}
 
-			username, password, err := httpAuthPrompt()
+			username, password, err := httpAuthPrompt(ctrl.rc.Settings.Theme)
 			if err != nil {
 				return "", err
 			}

@@ -2,8 +2,15 @@
 package styles
 
 import (
+	catppuccingo "github.com/catppuccin/go"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
+)
+
+var (
+	Bold  = lipgloss.NewStyle().Bold(true).Render
+	Light = lipgloss.NewStyle().Foreground(lipgloss.Color("#FF83D5")).Render
+	Base  = lipgloss.NewStyle().Foreground(lipgloss.Color("#6C74FD")).Render
 )
 
 type HuhTheme string
@@ -16,17 +23,46 @@ var (
 	HuhThemeScaffold   = HuhTheme("scaffold")
 )
 
-func Theme(theme string) *huh.Theme {
-	switch HuhTheme(theme) {
+// SetGlobalStyles sets the global style reference based on the theme.
+func SetGlobalStyles(theme HuhTheme) {
+	Theme(theme)
+}
+
+// Theme returns a new theme based on the given HuhTheme.
+func Theme(theme HuhTheme) *huh.Theme {
+	switch theme {
 	case HuhThemeCharm:
+		// Set Globals
+		Light = lipgloss.NewStyle().Foreground(lipgloss.Color("#F780E2")).Render
+		Base = lipgloss.NewStyle().Foreground(lipgloss.Color("#7571F9")).Render
+
 		return huh.ThemeCharm()
 	case HuhThemeDracula:
+		// Set Globals
+		Light = lipgloss.NewStyle().Foreground(lipgloss.Color("#f1fa8c")).Render
+		Base = lipgloss.NewStyle().Foreground(lipgloss.Color("#6272a4")).Render
+
 		return huh.ThemeDracula()
 	case HuhThemeBase16:
+		// Set Globals
+		Light = lipgloss.NewStyle().Foreground(lipgloss.Color("3")).Render
+		Base = lipgloss.NewStyle().Foreground(lipgloss.Color("6")).Render
+
 		return huh.ThemeBase16()
 	case HuhThemeCatppuccin:
+		// Set Globals
+		light := catppuccingo.Latte
+		dark := catppuccingo.Mocha
+
+		Light = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: light.Mauve().Hex, Dark: dark.Mauve().Hex}).Render
+		Base = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: light.Pink().Hex, Dark: dark.Pink().Hex}).Render
+
 		return huh.ThemeCatppuccin()
 	default:
+		// Set Globals
+		Light = lipgloss.NewStyle().Foreground(lipgloss.Color("#758BF9")).Render
+		Base = lipgloss.NewStyle().Foreground(lipgloss.Color("#80A1F7")).Render
+
 		return ThemeScaffold()
 	}
 }

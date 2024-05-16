@@ -12,10 +12,14 @@ import (
 
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/hay-kot/scaffold/internal/styles"
 	"gopkg.in/yaml.v3"
 )
 
 type ScaffoldRC struct {
+	// Settings define the settings for the scaffold application.
+	Settings Settings `yaml:"settings"`
+
 	// Defaults define a default value for a variable.
 	//   name: myproject
 	//   git_user: hay-kot
@@ -45,6 +49,10 @@ type ScaffoldRC struct {
 	Auth []AuthEntry `yaml:"auth"`
 }
 
+type Settings struct {
+	Theme styles.HuhTheme `yaml:"theme"`
+}
+
 type AuthEntry struct {
 	Match regexp.Regexp `yaml:"match"`
 	Basic BasicAuth     `yaml:"basic"`
@@ -68,7 +76,11 @@ func (e RcValidationErrors) Error() string {
 }
 
 func NewScaffoldRC(r io.Reader) (*ScaffoldRC, error) {
-	var out ScaffoldRC
+	out := ScaffoldRC{
+		Settings: Settings{
+			Theme: styles.HuhThemeScaffold,
+		},
+	}
 
 	err := yaml.NewDecoder(r).Decode(&out)
 	if err != nil {

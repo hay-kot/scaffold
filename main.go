@@ -9,6 +9,7 @@ import (
 	"github.com/hay-kot/scaffold/app/commands"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/scaffold"
+	"github.com/hay-kot/scaffold/internal/styles"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/urfave/cli/v2"
@@ -133,7 +134,12 @@ func main() {
 				log.Debug().Msg("scaffoldrc file does not exist, skipping")
 			}
 
-			rc := &scaffold.ScaffoldRC{}
+			rc := &scaffold.ScaffoldRC{
+				Settings: scaffold.Settings{
+					Theme: styles.HuhThemeScaffold,
+				},
+			}
+
 			if scaffoldrcFile != nil {
 				rc, err = scaffold.NewScaffoldRC(scaffoldrcFile)
 				if err != nil {
@@ -148,6 +154,8 @@ func main() {
 					}
 				}
 			}
+
+			styles.SetGlobalStyles(rc.Settings.Theme)
 
 			ctrl.Prepare(engine.New(), rc)
 			return nil

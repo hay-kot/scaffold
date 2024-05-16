@@ -16,5 +16,5 @@ var (
 const (
 	colorScaffoldBlueLight     = "#5A82E0"
 	colorScaffoldBlueDark      = "#758BF9"
-	colorScaffoldBlueSecondary = "#80A1f7"
+	colorScaffoldBlueSecondary = "#059669"
 )

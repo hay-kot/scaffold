@@ -127,6 +127,7 @@ func main() {
 
 			// Parse scaffoldrc file
 			scaffoldrcFile, err := os.Open(ctrl.Flags.ScaffoldRCPath)
+			println(ctrl.Flags.ScaffoldRCPath)
 			if err != nil {
 				if !errors.Is(err, os.ErrNotExist) {
 					return fmt.Errorf("failed to open scaffoldrc file: %w", err)

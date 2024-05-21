@@ -92,6 +92,12 @@ func main() {
 				Value:   "warn",
 				EnvVars: []string{"SCAFFOLD_LOG_LEVEL"},
 			},
+			&cli.StringFlag{
+				Name:    "theme",
+				Usage:   "theme to use for the scaffold output",
+				Value:   "scaffold",
+				EnvVars: []string{"SCAFFOLD_THEME"},
+			},
 		},
 		Before: func(ctx *cli.Context) error {
 			ctrl.Flags = commands.Flags{
@@ -127,7 +133,6 @@ func main() {
 
 			// Parse scaffoldrc file
 			scaffoldrcFile, err := os.Open(ctrl.Flags.ScaffoldRCPath)
-			println(ctrl.Flags.ScaffoldRCPath)
 			if err != nil {
 				if !errors.Is(err, os.ErrNotExist) {
 					return fmt.Errorf("failed to open scaffoldrc file: %w", err)
@@ -154,6 +159,13 @@ func main() {
 						return fmt.Errorf("failed to parse scaffoldrc file: %w", err)
 					}
 				}
+			}
+
+			//
+			// Override Settings with Flags
+			//
+			if ctx.IsSet("theme") {
+				rc.Settings.Theme = styles.HuhTheme(ctx.String("theme"))
 			}
 
 			styles.SetGlobalStyles(rc.Settings.Theme)

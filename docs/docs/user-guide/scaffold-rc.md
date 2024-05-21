@@ -10,6 +10,27 @@ Scaffold RC is the runtime configuration file that can be used to define some de
 
 Defaults to `~/.scaffold/scaffoldrc.yml`
 
+## `settings`
+
+The `settings` section allows you to define some global settings for the scaffolding process. These can be any key/value string pairs
+
+**Example**
+
+```yaml
+settings:
+  theme: scaffold
+```
+
+### `theme`
+
+The Theme settings allows the user to set the default theme for the scaffolding process. Options include
+
+- `scaffold` (default)
+- `charm`
+- `dracula`
+- `base16`
+- `catppuccino`
+
 ## `defaults`
 
 The `defaults` section allows you to set some default values for the scaffolding process. These can be any key/value string pairs

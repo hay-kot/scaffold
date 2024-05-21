@@ -119,6 +119,9 @@ func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (p
 		// Clone Repository to cache and set path to cache path
 		clonedPath, err := r.cloner.Clone(dir, false, cfg)
 		if err != nil {
+			// ensure directory is cleaned up
+			_ = os.RemoveAll(dir)
+
 			return "", fmt.Errorf("failed to clone repository: %w", err)
 		}
 

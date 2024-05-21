@@ -2,9 +2,12 @@
 package commands
 
 import (
+	"os"
+
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
+	"github.com/hay-kot/scaffold/internal/printer"
 )
 
 type Flags struct {
@@ -30,9 +33,10 @@ type Controller struct {
 	// that are from the root command
 	Flags Flags
 
+	prepared bool
 	engine   *engine.Engine
 	rc       *scaffoldrc.ScaffoldRC
-	prepared bool
+	printer  *printer.Printer
 }
 
 // Prepare sets up the controller to be called by the CLI, if the controller is
@@ -41,6 +45,7 @@ func (ctrl *Controller) Prepare(e *engine.Engine, src *scaffoldrc.ScaffoldRC) {
 	ctrl.engine = e
 	ctrl.rc = src
 	ctrl.prepared = true
+	ctrl.printer = printer.New(os.Stdout)
 }
 
 func (ctrl *Controller) ready() {

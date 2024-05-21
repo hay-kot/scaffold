@@ -75,25 +75,35 @@ func (e RcValidationErrors) Error() string {
 	return "invalid scaffold rc"
 }
 
-func NewScaffoldRC(r io.Reader) (*ScaffoldRC, error) {
-	out := ScaffoldRC{
+// DefaultScaffoldRC returns a default scaffold rc file.
+func DefaultScaffoldRC() *ScaffoldRC {
+	return &ScaffoldRC{
 		Settings: Settings{
 			Theme: styles.HuhThemeScaffold,
 		},
 	}
+}
 
+// NewScaffoldRC  reads a scaffold rc file from the reader and returns a
+// ScaffoldRC struct.
+func NewScaffoldRC(r io.Reader) (*ScaffoldRC, error) {
+	out := DefaultScaffoldRC()
 	err := yaml.NewDecoder(r).Decode(&out)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
 			// Assume empty file and return empty struct
-			return &out, nil
+			return out, nil
 		}
 		return nil, err
 	}
 
+	return out, nil
+}
+
+func (rc *ScaffoldRC) Validate() error {
 	errs := []RCValidationError{}
 
-	for k, v := range out.Shorts {
+	for k, v := range rc.Shorts {
 		_, err := url.ParseRequestURI(v)
 		if err != nil {
 			errs = append(errs, RCValidationError{
@@ -103,7 +113,7 @@ func NewScaffoldRC(r io.Reader) (*ScaffoldRC, error) {
 		}
 	}
 
-	for k, v := range out.Aliases {
+	for k, v := range rc.Aliases {
 		// Shorts must be absolute path or relative to ~ or a URL
 		_, err := url.ParseRequestURI(v)
 		if err != nil {
@@ -116,11 +126,18 @@ func NewScaffoldRC(r io.Reader) (*ScaffoldRC, error) {
 		}
 	}
 
-	if len(errs) > 0 {
-		return nil, RcValidationErrors(errs)
+	if !rc.Settings.Theme.IsValid() {
+		errs = append(errs, RCValidationError{
+			Key:   "settings.theme",
+			Cause: fmt.Errorf("invalid theme: %s", rc.Settings.Theme.String()),
+		})
 	}
 
-	return &out, nil
+	if len(errs) > 0 {
+		return RcValidationErrors(errs)
+	}
+
+	return nil
 }
 
 func expandEnvVars(s string) string {

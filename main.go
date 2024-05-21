@@ -140,24 +140,12 @@ func main() {
 				log.Debug().Msg("scaffoldrc file does not exist, skipping")
 			}
 
-			rc := &scaffold.ScaffoldRC{
-				Settings: scaffold.Settings{
-					Theme: styles.HuhThemeScaffold,
-				},
-			}
+			rc := scaffold.DefaultScaffoldRC()
 
 			if scaffoldrcFile != nil {
 				rc, err = scaffold.NewScaffoldRC(scaffoldrcFile)
 				if err != nil {
-					scaferrs := scaffold.RcValidationErrors{}
-					switch {
-					case errors.As(err, &scaferrs):
-						for _, err := range scaferrs {
-							log.Error().Str("key", err.Key).Msg(err.Cause.Error())
-						}
-					default:
-						return fmt.Errorf("failed to parse scaffoldrc file: %w", err)
-					}
+					return err
 				}
 			}
 
@@ -168,14 +156,23 @@ func main() {
 				rc.Settings.Theme = styles.HuhTheme(ctx.String("theme"))
 			}
 
-			if !rc.Settings.Theme.IsValid() {
-				log.Warn().
-					Str("theme", rc.Settings.Theme.String()).
-					Msg("invalid theme, using default")
+			//
+			// Validate Runtime Config
+			//
+			err = rc.Validate()
+			if err != nil {
+				scaferrs := scaffold.RcValidationErrors{}
+				switch {
+				case errors.As(err, &scaferrs):
+					for _, err := range scaferrs {
+						log.Error().Str("key", err.Key).Msg(err.Cause.Error())
+					}
+				default:
+					return fmt.Errorf("unexpected error return from validator: %w", err)
+				}
 			}
 
 			styles.SetGlobalStyles(rc.Settings.Theme)
-
 			ctrl.Prepare(engine.New(), rc)
 			return nil
 		},

@@ -168,6 +168,12 @@ func main() {
 				rc.Settings.Theme = styles.HuhTheme(ctx.String("theme"))
 			}
 
+			if !rc.Settings.Theme.IsValid() {
+				log.Warn().
+					Str("theme", rc.Settings.Theme.String()).
+					Msg("invalid theme, using default")
+			}
+
 			styles.SetGlobalStyles(rc.Settings.Theme)
 
 			ctrl.Prepare(engine.New(), rc)

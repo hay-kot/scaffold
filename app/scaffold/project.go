@@ -94,7 +94,7 @@ func (p *Project) validate() (str string, err error) {
 	return "", fmt.Errorf("{{ .Project }} directory does not exist")
 }
 
-func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string]any, error) {
+func (p *Project) AskQuestions(def map[string]any, e *engine.Engine, theme *huh.Theme) (map[string]any, error) {
 	projectMode := p.NameTemplate != "templates"
 
 	if projectMode {
@@ -188,7 +188,7 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine) (map[string
 		formgroups = append(formgroups, group)
 	}
 
-	form = huh.NewForm(formgroups...)
+	form = huh.NewForm(formgroups...).WithTheme(theme)
 
 	err := form.Run()
 	if err != nil {

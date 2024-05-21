@@ -11,7 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var badScaffoldRC = []byte(`---
+func TestNewScaffoldRC(t *testing.T) {
+	badScaffoldRC := []byte(`---
 shorts:
     gh: github.com
     gitea: gitea.com
@@ -19,7 +20,7 @@ aliases:
     cli: app/cli
 `)
 
-var goodScaffoldRC = []byte(`---
+	goodScaffoldRC := []byte(`---
 shorts:
     gh: https://github.com
     gitea: https://gitea.com
@@ -27,7 +28,6 @@ aliases:
     cli: ~/app/cli
 `)
 
-func TestNewScaffoldRC(t *testing.T) {
 	tests := []struct {
 		name    string
 		r       io.Reader
@@ -46,7 +46,10 @@ func TestNewScaffoldRC(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewScaffoldRC(tt.r)
+			rc, err := NewScaffoldRC(tt.r)
+			require.NoError(t, err, "failed on setup")
+
+			err = rc.Validate()
 
 			switch {
 			case tt.wantErr:

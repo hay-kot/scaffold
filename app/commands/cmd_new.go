@@ -11,6 +11,7 @@ import (
 	"github.com/hay-kot/scaffold/app/core/fsast"
 	"github.com/hay-kot/scaffold/app/scaffold"
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
+	"github.com/hay-kot/scaffold/internal/styles"
 	"github.com/sahilm/fuzzy"
 )
 
@@ -66,7 +67,7 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 	default:
 		varfunc = func(p *scaffold.Project) (map[string]any, error) {
 			vars := scaffold.MergeMaps(argvars, ctrl.rc.Defaults)
-			vars, err = p.AskQuestions(vars, ctrl.engine)
+			vars, err = p.AskQuestions(vars, ctrl.engine, styles.Theme(ctrl.rc.Settings.Theme))
 			if err != nil {
 				return nil, err
 			}

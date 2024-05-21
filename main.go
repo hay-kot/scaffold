@@ -9,6 +9,7 @@ import (
 	"github.com/hay-kot/scaffold/app/commands"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/scaffold"
+	"github.com/hay-kot/scaffold/internal/styles"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/urfave/cli/v2"
@@ -91,6 +92,12 @@ func main() {
 				Value:   "warn",
 				EnvVars: []string{"SCAFFOLD_LOG_LEVEL"},
 			},
+			&cli.StringFlag{
+				Name:    "theme",
+				Usage:   "theme to use for the scaffold output",
+				Value:   "scaffold",
+				EnvVars: []string{"SCAFFOLD_THEME"},
+			},
 		},
 		Before: func(ctx *cli.Context) error {
 			ctrl.Flags = commands.Flags{
@@ -133,22 +140,39 @@ func main() {
 				log.Debug().Msg("scaffoldrc file does not exist, skipping")
 			}
 
-			rc := &scaffold.ScaffoldRC{}
+			rc := scaffold.DefaultScaffoldRC()
+
 			if scaffoldrcFile != nil {
 				rc, err = scaffold.NewScaffoldRC(scaffoldrcFile)
 				if err != nil {
-					scaferrs := scaffold.RcValidationErrors{}
-					switch {
-					case errors.As(err, &scaferrs):
-						for _, err := range scaferrs {
-							log.Error().Str("key", err.Key).Msg(err.Cause.Error())
-						}
-					default:
-						return fmt.Errorf("failed to parse scaffoldrc file: %w", err)
-					}
+					return err
 				}
 			}
 
+			//
+			// Override Settings with Flags
+			//
+			if ctx.IsSet("theme") {
+				rc.Settings.Theme = styles.HuhTheme(ctx.String("theme"))
+			}
+
+			//
+			// Validate Runtime Config
+			//
+			err = rc.Validate()
+			if err != nil {
+				scaferrs := scaffold.RcValidationErrors{}
+				switch {
+				case errors.As(err, &scaferrs):
+					for _, err := range scaferrs {
+						log.Error().Str("key", err.Key).Msg(err.Cause.Error())
+					}
+				default:
+					return fmt.Errorf("unexpected error return from validator: %w", err)
+				}
+			}
+
+			styles.SetGlobalStyles(rc.Settings.Theme)
 			ctrl.Prepare(engine.New(), rc)
 			return nil
 		},

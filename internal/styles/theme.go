@@ -69,37 +69,37 @@ func ThemeScaffold() *huh.Theme {
 	t := huh.ThemeBase()
 
 	var (
-		normalFg = lipgloss.AdaptiveColor{Light: "235", Dark: "252"}
-		indigo   = lipgloss.AdaptiveColor{Light: colorScaffoldBlueLight, Dark: colorScaffoldBlueDark}
-		cream    = lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}
-		fuchsia  = lipgloss.Color(colorScaffoldBlueSecondary)
-		green    = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
-		red      = lipgloss.AdaptiveColor{Light: "#FF4672", Dark: "#ED567A"}
+		normalFg  = lipgloss.AdaptiveColor{Light: "235", Dark: "252"}
+		primary   = lipgloss.AdaptiveColor{Light: colorScaffoldBlueLight, Dark: colorScaffoldBlueDark}
+		cream     = lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}
+		secondary = lipgloss.Color(colorScaffoldBlueSecondary)
+		green     = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
+		red       = lipgloss.AdaptiveColor{Light: "#FF4672", Dark: "#ED567A"}
 	)
 
 	t.Focused.Base = t.Focused.Base.BorderForeground(lipgloss.Color("238"))
-	t.Focused.Title = t.Focused.Title.Foreground(indigo).Bold(true)
-	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(indigo).Bold(true).MarginBottom(1)
-	// t.Focused.Directory = t.Focused.Directory.Foreground(indigo)
+	t.Focused.Title = t.Focused.Title.Foreground(primary).Bold(true)
+	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(primary).Bold(true).MarginBottom(1)
+	// t.Focused.Directory = t.Focused.Directory.Foreground(secondary)
 	t.Focused.Description = t.Focused.Description.Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"})
 	t.Focused.ErrorIndicator = t.Focused.ErrorIndicator.Foreground(red)
 	t.Focused.ErrorMessage = t.Focused.ErrorMessage.Foreground(red)
-	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(fuchsia)
-	// t.Focused.NextIndicator = t.Focused.NextIndicator.Foreground(fuchsia)
-	// t.Focused.PrevIndicator = t.Focused.PrevIndicator.Foreground(fuchsia)
+	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(secondary)
+	// t.Focused.NextIndicator = t.Focused.NextIndicator.Foreground(primary)
+	// t.Focused.PrevIndicator = t.Focused.PrevIndicator.Foreground(primary)
 	t.Focused.Option = t.Focused.Option.Foreground(normalFg)
-	t.Focused.MultiSelectSelector = t.Focused.MultiSelectSelector.Foreground(fuchsia)
+	t.Focused.MultiSelectSelector = t.Focused.MultiSelectSelector.Foreground(secondary)
 	t.Focused.SelectedOption = t.Focused.SelectedOption.Foreground(green)
 	t.Focused.SelectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#02CF92", Dark: "#02A877"}).SetString("✓ ")
 	t.Focused.UnselectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"}).SetString("• ")
 	t.Focused.UnselectedOption = t.Focused.UnselectedOption.Foreground(normalFg)
-	t.Focused.FocusedButton = t.Focused.FocusedButton.Foreground(cream).Background(fuchsia)
+	t.Focused.FocusedButton = t.Focused.FocusedButton.Foreground(cream).Background(secondary)
 	t.Focused.Next = t.Focused.FocusedButton
 	t.Focused.BlurredButton = t.Focused.BlurredButton.Foreground(normalFg).Background(lipgloss.AdaptiveColor{Light: "252", Dark: "237"})
 
 	t.Focused.TextInput.Cursor = t.Focused.TextInput.Cursor.Foreground(green)
 	t.Focused.TextInput.Placeholder = t.Focused.TextInput.Placeholder.Foreground(lipgloss.AdaptiveColor{Light: "248", Dark: "238"})
-	t.Focused.TextInput.Prompt = t.Focused.TextInput.Prompt.Foreground(fuchsia)
+	t.Focused.TextInput.Prompt = t.Focused.TextInput.Prompt.Foreground(secondary)
 
 	t.Blurred = t.Focused
 	t.Blurred.Base = t.Focused.Base.BorderStyle(lipgloss.HiddenBorder())

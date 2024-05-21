@@ -1,7 +1,6 @@
 package styles
 
 import (
-	catppuccingo "github.com/catppuccin/go"
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -16,6 +15,28 @@ var (
 	HuhThemeScaffold   = HuhTheme("scaffold")
 )
 
+func (t HuhTheme) String() string {
+	return string(t)
+}
+
+func (t HuhTheme) IsValid() bool {
+	valid := []HuhTheme{
+		HuhThemeCharm,
+		HuhThemeDracula,
+		HuhThemeBase16,
+		HuhThemeCatppuccin,
+		HuhThemeScaffold,
+	}
+
+	for _, v := range valid {
+		if t == v {
+			return true
+		}
+	}
+
+	return false
+}
+
 // SetGlobalStyles sets the global style reference based on the theme.
 func SetGlobalStyles(theme HuhTheme) {
 	Theme(theme)
@@ -25,40 +46,23 @@ func SetGlobalStyles(theme HuhTheme) {
 func Theme(theme HuhTheme) *huh.Theme {
 	switch theme {
 	case HuhThemeCharm:
-		// Set Globals
-		Light = lipgloss.NewStyle().Foreground(lipgloss.Color("#F780E2")).Render
-		Base = lipgloss.NewStyle().Foreground(lipgloss.Color("#7571F9")).Render
+		Base, Light = ThemeColorCharm.Compile()
 
 		return huh.ThemeCharm()
 	case HuhThemeDracula:
-		// Set Globals
-		Light = lipgloss.NewStyle().Foreground(lipgloss.Color("#f1fa8c")).Render
-		Base = lipgloss.NewStyle().Foreground(lipgloss.Color("#6272a4")).Render
+		Base, Light = ThemeColorDracula.Compile()
 
 		return huh.ThemeDracula()
 	case HuhThemeBase16:
-		// Set Globals
-		Light = lipgloss.NewStyle().Foreground(lipgloss.Color("3")).Render
-		Base = lipgloss.NewStyle().Foreground(lipgloss.Color("6")).Render
+		Base, Light = ThemeColorsBase16.Compile()
 
 		return huh.ThemeBase16()
 	case HuhThemeCatppuccin:
-		// Set Globals
-		light := catppuccingo.Latte
-		dark := catppuccingo.Mocha
-
-		Light = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: light.Mauve().Hex, Dark: dark.Mauve().Hex}).Render
-		Base = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: light.Pink().Hex, Dark: dark.Pink().Hex}).Render
+		Base, Light = ThemeColorsCatppuccin.Compile()
 
 		return huh.ThemeCatppuccin()
 	default:
-		// Set Globals
-		Light = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(colorScaffoldBlueDark)).
-			Render
-		Base = lipgloss.NewStyle().
-			Foreground(lipgloss.Color(colorScaffoldBlueSecondary)).
-			Render
+		Base, Light = ThemeColorsScaffold.Compile()
 
 		return ThemeScaffold()
 	}
@@ -70,9 +74,9 @@ func ThemeScaffold() *huh.Theme {
 
 	var (
 		normalFg  = lipgloss.AdaptiveColor{Light: "235", Dark: "252"}
-		primary   = lipgloss.AdaptiveColor{Light: colorScaffoldBlueLight, Dark: colorScaffoldBlueDark}
+		primary   = lipgloss.AdaptiveColor{Light: ThemeColorsScaffold.Base, Dark: ThemeColorsScaffold.BaseDark}
 		cream     = lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}
-		secondary = lipgloss.Color(colorScaffoldBlueSecondary)
+		secondary = lipgloss.Color(ThemeColorsScaffold.Light)
 		green     = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
 		red       = lipgloss.AdaptiveColor{Light: "#FF4672", Dark: "#ED567A"}
 	)

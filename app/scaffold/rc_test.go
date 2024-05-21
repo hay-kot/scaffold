@@ -46,7 +46,10 @@ aliases:
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewScaffoldRC(tt.r)
+			rc, err := NewScaffoldRC(tt.r)
+			require.NoError(t, err, "failed on setup")
+
+			err = rc.Validate()
 
 			switch {
 			case tt.wantErr:

@@ -1,5 +1,5 @@
 <div>
-  <img src="/docs/docs/assets/imgs/scaffold-gopher.webp">
+  <img src="/docs/docs/public/imgs/scaffold-gopher.webp">
   <h1 align="center" style="margin-bottom: 0px;">
     Scaffold
   </h1>

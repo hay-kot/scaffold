@@ -26,13 +26,18 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 		return fmt.Errorf("missing scaffold name")
 	}
 
-	path, err := ctrl.resolve(args[0], flags.NoPrompt)
-	if err != nil {
-		return err
-	}
+	path := ""
 
-	if path == "" {
-		return fmt.Errorf("missing scaffold path")
+	if ctrl.Flags.ScaffoldFS == nil {
+
+		path, err := ctrl.resolve(args[0], flags.NoPrompt)
+		if err != nil {
+			return err
+		}
+
+		if path == "" {
+			return fmt.Errorf("missing scaffold path")
+		}
 	}
 
 	rest := args[1:]
@@ -80,6 +85,7 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 
 	err = ctrl.runscaffold(runconf{
 		scaffolddir:  path,
+		scaffoldFS:   ctrl.Flags.ScaffoldFS,
 		showMessages: !flags.NoPrompt,
 		varfunc:      varfunc,
 		outputfs:     outfs,

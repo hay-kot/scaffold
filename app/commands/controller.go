@@ -2,6 +2,8 @@
 package commands
 
 import (
+	"io/fs"
+
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/hay-kot/scaffold/app/scaffold"
@@ -11,6 +13,7 @@ type Flags struct {
 	NoClobber      bool
 	Force          bool
 	ScaffoldRCPath string
+	ScaffoldFS     fs.FS
 	Cache          string
 	OutputDir      string
 	ScaffoldDirs   []string

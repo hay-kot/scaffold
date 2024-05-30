@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 
 	"github.com/charmbracelet/glamour"
@@ -12,6 +13,8 @@ import (
 type runconf struct {
 	// os path to the scaffold directory.
 	scaffolddir string
+	// optionally an embedded FS that points to the scaffold directory
+	scaffoldFS fs.FS
 	// showMessages is a flag to show pre/post messages.
 	showMessages bool
 	// varfunc is a function that returns a map of variables that is provided
@@ -25,7 +28,13 @@ type runconf struct {
 // so that we can allow the `test` and `new` commands to share as much of the same code
 // as possible.
 func (ctrl *Controller) runscaffold(cfg runconf) error {
+
 	pfs := os.DirFS(cfg.scaffolddir)
+
+	if cfg.scaffolddir == "" {
+		pfs = cfg.scaffoldFS
+	}
+
 	p, err := scaffold.LoadProject(pfs, scaffold.Options{
 		NoClobber: ctrl.Flags.NoClobber,
 	})

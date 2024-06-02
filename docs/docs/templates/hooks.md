@@ -16,6 +16,6 @@ Hooks are files that are stored in the `hooks` subdirectory of your scaffold. Th
 The scripts' working directory is set to the scaffold output directory.
 :::
 
-## `post_scaffold*`
+## `post_scaffold`
 
-The `post_scaffold*` hook is executed after the files have been rendered on the disk, but before the `post` message is printed. It is typically used to fix the formatting of generated files.
+The `post_scaffold` hook is executed after the files have been rendered on the disk, but before the `post` message is printed. It is typically used to fix the formatting of generated files.

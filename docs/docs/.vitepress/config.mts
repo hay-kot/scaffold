@@ -51,16 +51,10 @@ export default withMermaid(
           text: "Creating Scaffolds",
           items: [
             { text: "Scaffold File", link: "/templates/scaffold-file" },
+            { text: "File Reference", link: "/templates/config-reference" },
             { text: "Template Engine", link: "/templates/template-engine" },
-            {
-              text: "File Reference",
-              link: "/templates/config-reference",
-            },
             { text: "Hooks", link: "/templates/hooks" },
-            {
-              text: "Testing Scaffolds",
-              link: "/templates/testing-scaffolds",
-            },
+            { text: "Testing Scaffolds", link: "/templates/testing-scaffolds" },
           ],
         },
       ],

@@ -69,11 +69,10 @@ func (ctrl *Controller) runscaffold(cfg runconf) error {
 	}
 
 	if ctrl.rc.Settings.RunHooks != scaffold.RunHooksNever {
-	}
-
-	err = ctrl.runHook(scaffoldFS, cfg.outputfs, scaffold.PostScaffoldScripts, vars, cfg.noPrompt)
-	if err != nil {
-		return err
+		err = ctrl.runHook(scaffoldFS, cfg.outputfs, scaffold.PostScaffoldScripts, vars, cfg.noPrompt)
+		if err != nil {
+			return err
+		}
 	}
 
 	if !cfg.noPrompt && p.Conf.Messages.Post != "" {

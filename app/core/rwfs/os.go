@@ -75,7 +75,7 @@ func writeHook(name string, data []byte) (string, error) {
 
 	tmp := f.Name()
 
-	err = os.Chmod(tmp, 0700)
+	err = os.Chmod(tmp, 0o700)
 	if err != nil {
 		return tmp, err
 	}

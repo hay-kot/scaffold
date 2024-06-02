@@ -66,8 +66,8 @@ func (ctrl *Controller) Update(ctx *cli.Context) error {
 		items := make([]printer.StatusListItem, 0, len(updated))
 		for _, s := range updated {
 			items = append(items, printer.StatusListItem{
-				StatusOk: true,
-				Status:   s,
+				Ok:     true,
+				Status: s,
 			})
 		}
 
@@ -78,8 +78,8 @@ func (ctrl *Controller) Update(ctx *cli.Context) error {
 		items := make([]printer.StatusListItem, 0, len(updated))
 		for _, s := range failed {
 			items = append(items, printer.StatusListItem{
-				StatusOk: false,
-				Status:   s.repository + ": " + s.message,
+				Ok:     false,
+				Status: s.repository + ": " + s.message,
 			})
 		}
 

@@ -8,6 +8,7 @@ import (
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
 	"github.com/hay-kot/scaffold/internal/printer"
+	"github.com/hay-kot/scaffold/internal/styles"
 )
 
 type Flags struct {
@@ -45,7 +46,7 @@ func (ctrl *Controller) Prepare(e *engine.Engine, src *scaffoldrc.ScaffoldRC) {
 	ctrl.engine = e
 	ctrl.rc = src
 	ctrl.prepared = true
-	ctrl.printer = printer.New(os.Stdout)
+	ctrl.printer = printer.New(os.Stdout).WithBase(styles.Base).WithLight(styles.Light)
 }
 
 func (ctrl *Controller) ready() {

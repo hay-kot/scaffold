@@ -62,6 +62,11 @@ func (t *ThemeColors) Compile() (base RenderFunc, light RenderFunc) {
 	return t.base.Render, t.light.Render
 }
 
+func (t *ThemeColors) Styles() (base lipgloss.Style, light lipgloss.Style) {
+	t.compile()
+	return t.base, t.light
+}
+
 func (t *ThemeColors) BaseFn(string ...string) string {
 	t.compile()
 	return t.base.Render(string...)

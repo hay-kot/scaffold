@@ -62,6 +62,11 @@ tasks:
       - task: lint
       - task: test
 
+  printer:
+    desc: Runs the main.go program with the dev printer command for testing output
+    cmds:
+      - go run main.go dev printer
+
   do:cli:
     desc: Runs the main.go program with the cli scaffold
     cmds:

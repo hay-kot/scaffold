@@ -10,6 +10,7 @@ const (
 	Cross  = "✘"
 	Git    = "\uf02a2" // 󰊢
 	Folder = ""
+	Dot    = "•"
 )
 
 const (
@@ -25,4 +26,5 @@ var (
 
 	Error   = lipgloss.NewStyle().Foreground(lipgloss.Color(ColorError)).PaddingLeft(1).Render
 	Success = lipgloss.NewStyle().Foreground(lipgloss.Color(ColorSuccess)).PaddingLeft(1).Render
+	Subtle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#a3a3a3")).PaddingLeft(1).Render
 )

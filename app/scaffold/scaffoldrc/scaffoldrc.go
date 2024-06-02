@@ -14,6 +14,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/hay-kot/scaffold/internal/styles"
+	"github.com/rs/zerolog"
 	"gopkg.in/yaml.v3"
 )
 
@@ -53,6 +54,8 @@ type ScaffoldRC struct {
 type Settings struct {
 	Theme    styles.HuhTheme `yaml:"theme"`
 	RunHooks RunHooksOption  `yaml:"run_hooks"`
+	LogFile  string          `yaml:"log_file"`
+	LogLevel zerolog.Level   `yaml:"log_level"`
 }
 
 type AuthEntry struct {
@@ -72,6 +75,8 @@ func Default() *ScaffoldRC {
 		Settings: Settings{
 			Theme:    styles.HuhThemeScaffold,
 			RunHooks: RunHooksPrompt,
+			LogFile:  "stdout",
+			LogLevel: zerolog.WarnLevel,
 		},
 	}
 }

@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/hay-kot/scaffold/app/commands"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
+	"github.com/hay-kot/scaffold/internal/printer"
 	"github.com/hay-kot/scaffold/internal/styles"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -41,9 +43,10 @@ func HomeDir(s ...string) string {
 }
 
 func main() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).Level(zerolog.WarnLevel)
 
 	ctrl := &commands.Controller{}
+	console := printer.New(os.Stdout)
 
 	app := &cli.App{
 		Name:    "scaffold",
@@ -114,13 +117,6 @@ func main() {
 				ScaffoldDirs:   ctx.StringSlice("scaffold-dir"),
 			}
 
-			level, err := zerolog.ParseLevel(ctx.String("log-level"))
-			if err != nil {
-				return fmt.Errorf("failed to parse log level: %w", err)
-			}
-
-			log.Logger = log.Level(level)
-
 			dir := filepath.Dir(ctrl.Flags.ScaffoldRCPath)
 			if err := os.MkdirAll(dir, 0o755); err != nil {
 				return fmt.Errorf("failed to create scaffoldrc directory: %w", err)
@@ -165,6 +161,15 @@ func main() {
 				rc.Settings.RunHooks = scaffoldrc.ParseRunHooksOption(ctx.String("run-hooks"))
 			}
 
+			if ctx.IsSet("log-level") {
+				level, err := zerolog.ParseLevel(ctx.String("log-level"))
+				if err != nil {
+					return fmt.Errorf("failed to parse log level: %w", err)
+				}
+
+				log.Logger = log.Level(level)
+			}
+
 			//
 			// Validate Runtime Config
 			//
@@ -181,7 +186,18 @@ func main() {
 				}
 			}
 
+			if rc.Settings.LogFile != "stdout" {
+				f, err := os.Open(rc.Settings.LogFile)
+				if err != nil {
+					return fmt.Errorf("failed to open log file: %w", err)
+				}
+
+				log.Logger = log.Output(f)
+			}
+
 			styles.SetGlobalStyles(rc.Settings.Theme)
+			console = console.WithBase(styles.Base).WithLight(styles.Light)
+
 			ctrl.Prepare(engine.New(), rc)
 			return nil
 		},
@@ -239,10 +255,63 @@ func main() {
 				UsageText: "scaffold init [flags]",
 				Action:    ctrl.Init,
 			},
+			{
+				Name: "dev",
+				Subcommands: []*cli.Command{
+					{
+						Name:  "printer",
+						Usage: "demos the printer",
+						Action: func(ctx *cli.Context) error {
+							console.Title(" --- Unknown Error ---")
+							console.LineBreak()
+
+							console.UnknownError("Basic Error", errors.New("this is a basic error's message"))
+
+							console.LineBreak()
+							console.Title(" --- List ---")
+							console.LineBreak()
+
+							console.List("List Items", []string{"item 1", "item 2", "item 3"})
+
+							console.LineBreak()
+							console.Title(" --- StatusList ---")
+							console.LineBreak()
+
+							console.StatusList("Status Items", []printer.StatusListItem{
+								{Ok: true, Status: "Status 1"},
+								{Ok: false, Status: "Status 2"},
+								{Ok: true, Status: "Status 3"},
+							})
+
+							console.LineBreak()
+							console.Title(" --- Key Value Error ---")
+							console.LineBreak()
+
+							console.KeyValueValidationError("Key Value Errors", []printer.KeyValueError{
+								{Key: "alias.gh", Message: "invalid choice for key_1"},
+								{Key: "settings.theme", Message: "invalid theme 'x-theme'"},
+							})
+
+							return nil
+						},
+					},
+				},
+			},
 		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal().Err(err).Msg("failed to run scaffold")
+		errstr := err.Error()
+
+		switch {
+		// ignore these errors, urfave/cli does not provide any way to hanldle them
+		// without direct string comparison :(
+		case strings.HasPrefix(errstr, "flag provided but not defined"):
+		default:
+			log.Error().Err(err).Msg("error occurred")
+			console.UnknownError("An unexpected error occurred", err)
+		}
+
+		os.Exit(1)
 	}
 }

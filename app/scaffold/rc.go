@@ -12,7 +12,6 @@ import (
 
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
-	"github.com/hay-kot/scaffold/app/core/rule"
 	"github.com/hay-kot/scaffold/internal/styles"
 	"gopkg.in/yaml.v3"
 )
@@ -48,13 +47,55 @@ type ScaffoldRC struct {
 	// Auth defines a list of auth entries that can be used to
 	// authenticate with a remote SCM.
 	Auth []AuthEntry `yaml:"auth"`
+}
 
-	// RunHooks defines the behavior when a scaffold defines hooks.
-	RunHooks rule.Rule `yaml:"run_hooks"`
+type RunHooksOption string
+
+var (
+	RunHooksNever  RunHooksOption = "never"
+	RunHooksAlways RunHooksOption = "always"
+	RunHooksPrompt RunHooksOption = "prompt"
+)
+
+func ParseRunHooksOption(s string) RunHooksOption {
+	zero := RunHooksOption("")
+	ptr := &zero
+	_ = ptr.UnmarshalText([]byte(s))
+	return *ptr
+}
+
+func (r *RunHooksOption) UnmarshalText(text []byte) error {
+	switch string(text) {
+	case "never", "no", "false":
+		*r = RunHooksNever
+	case "always", "yes", "true":
+		*r = RunHooksAlways
+	case "prompt", "": // if left empty, default to prompt
+		*r = RunHooksPrompt
+	default:
+		// fallback to whatever they input so we can log the incorrect value
+		*r = RunHooksOption(string(text))
+	}
+
+	return nil
+}
+
+func (r RunHooksOption) IsValid() bool {
+	switch r {
+	case RunHooksNever, RunHooksAlways, RunHooksPrompt:
+		return true
+	default:
+		return false
+	}
+}
+
+func (r RunHooksOption) String() string {
+	return string(r)
 }
 
 type Settings struct {
-	Theme styles.HuhTheme `yaml:"theme"`
+	Theme    styles.HuhTheme `yaml:"theme"`
+	RunHooks RunHooksOption  `yaml:"run_hooks"`
 }
 
 type AuthEntry struct {
@@ -83,7 +124,8 @@ func (e RcValidationErrors) Error() string {
 func DefaultScaffoldRC() *ScaffoldRC {
 	return &ScaffoldRC{
 		Settings: Settings{
-			Theme: styles.HuhThemeScaffold,
+			Theme:    styles.HuhThemeScaffold,
+			RunHooks: RunHooksPrompt,
 		},
 	}
 }
@@ -134,6 +176,13 @@ func (rc *ScaffoldRC) Validate() error {
 		errs = append(errs, RCValidationError{
 			Key:   "settings.theme",
 			Cause: fmt.Errorf("invalid theme: %s", rc.Settings.Theme.String()),
+		})
+	}
+
+	if !rc.Settings.RunHooks.IsValid() {
+		errs = append(errs, RCValidationError{
+			Key:   "settings.run_hooks",
+			Cause: fmt.Errorf("invalid run_hooks: %s", rc.Settings.RunHooks.String()),
 		})
 	}
 

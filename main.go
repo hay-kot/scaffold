@@ -98,6 +98,10 @@ func main() {
 				Value:   "scaffold",
 				EnvVars: []string{"SCAFFOLD_THEME"},
 			},
+			&cli.StringFlag{
+				Name:  "run-hooks",
+				Usage: "run hooks (never, always, prompt) when provided overrides scaffold rc",
+			},
 		},
 		Before: func(ctx *cli.Context) error {
 			ctrl.Flags = commands.Flags{
@@ -156,6 +160,10 @@ func main() {
 				rc.Settings.Theme = styles.HuhTheme(ctx.String("theme"))
 			}
 
+			if ctx.IsSet("run-hooks") {
+				rc.Settings.RunHooks = scaffold.ParseRunHooksOption(ctx.String("run-hooks"))
+			}
+
 			//
 			// Validate Runtime Config
 			//
@@ -188,11 +196,6 @@ func main() {
 						Value: false,
 					},
 					&cli.StringFlag{
-						Name:  "run-hooks",
-						Usage: "run hooks (yes, no, prompt, inherit; default: inherited from scaffoldrc)",
-						Value: "inherit",
-					},
-					&cli.StringFlag{
 						Name:  "preset",
 						Usage: "preset to use for the scaffold",
 						Value: "",
@@ -206,7 +209,6 @@ func main() {
 				Action: func(ctx *cli.Context) error {
 					return ctrl.New(ctx.Args().Slice(), commands.FlagsNew{
 						NoPrompt: ctx.Bool("no-prompt"),
-						RunHooks: ctx.String("run-hooks"),
 						Preset:   ctx.String("preset"),
 						Snapshot: ctx.String("snapshot"),
 					})

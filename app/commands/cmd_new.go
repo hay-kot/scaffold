@@ -9,7 +9,6 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/hay-kot/scaffold/app/core/fsast"
-	"github.com/hay-kot/scaffold/app/core/rule"
 	"github.com/hay-kot/scaffold/app/scaffold"
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
 	"github.com/hay-kot/scaffold/internal/styles"
@@ -18,7 +17,6 @@ import (
 
 type FlagsNew struct {
 	NoPrompt bool
-	RunHooks string
 	Preset   string
 	Snapshot string
 }
@@ -78,26 +76,13 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 		}
 	}
 
-	if flags.RunHooks != "inherit" {
-		runHooks, err := rule.NewFromString(flags.RunHooks)
-		if err != nil {
-			return err
-		}
-
-		ctrl.runHooks = runHooks
-	}
-
-	if ctrl.runHooks == rule.Prompt && flags.NoPrompt {
-		ctrl.runHooks = rule.No
-	}
-
 	outfs := ctrl.Flags.OutputFS()
 
 	err = ctrl.runscaffold(runconf{
-		scaffolddir:  path,
-		showMessages: !flags.NoPrompt,
-		varfunc:      varfunc,
-		outputfs:     outfs,
+		scaffolddir: path,
+		noPrompt:    flags.NoPrompt,
+		varfunc:     varfunc,
+		outputfs:    outfs,
 	})
 	if err != nil {
 		return err

@@ -31,6 +31,21 @@ The Theme settings allows the user to set the default theme for the scaffolding 
 - `base16`
 - `catppuccino`
 
+### `run_hooks`
+
+You may disable hooks globally by setting `run_hooks` to `never`, or choose to be prompted before they run by setting it to `prompt`. The `--run-hooks` CLI setting takes precedence. Options include:
+
+- `always` - run hooks without prompting
+- `never` - never run hooks without prompting
+- `prompt` - prompt before running hooks (default)
+
+**Example**
+
+```yaml
+settings:
+  run_hooks: prompt
+```
+
 ## `defaults`
 
 The `defaults` section allows you to set some default values for the scaffolding process. These can be any key/value string pairs
@@ -99,11 +114,3 @@ auth:
 ::: tip
 the `match` key supports regular expressions giving you a lot of flexibility in defining your matchers.
 :::
-
-## `run_hooks`
-
-You may disable hooks globally by setting `run_hooks` to `false`, or choose to be prompted before they run by setting it to `prompt`. The `--run-hooks` CLI setting takes precedence.
-
-```yaml
-run_hooks: prompt
-```

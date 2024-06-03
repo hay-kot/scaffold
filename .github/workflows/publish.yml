@@ -6,8 +6,16 @@ permissions:
   id-token: write
 
 on:
-  workflow_dispatch: {}
-
+  workflow_dispatch:
+    semverbump:
+      description: "Which version to bump by"
+      required: true
+      default: "patch"
+      type: choice
+      options:
+        - patch
+        - minor
+        - major
 jobs:
   backend-tests:
     name: "Go Build/Test"
@@ -28,7 +36,7 @@ jobs:
         id: bump-semver
         with:
           current_version: ${{ steps.get-latest-tag.outputs.tag }}
-          level: patch
+          level: ${{ inputs.semverbump}}
 
       - uses: actions-ecosystem/action-push-tag@v1
         with:

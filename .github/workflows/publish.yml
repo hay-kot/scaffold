@@ -7,15 +7,16 @@ permissions:
 
 on:
   workflow_dispatch:
-    semverbump:
-      description: "Which version to bump by"
-      required: true
-      default: "patch"
-      type: choice
-      options:
-        - patch
-        - minor
-        - major
+    inputs:
+      semverbump:
+        description: "Which version to bump by"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 jobs:
   backend-tests:
     name: "Go Build/Test"

@@ -4,7 +4,7 @@ package commands
 import (
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
-	"github.com/hay-kot/scaffold/app/scaffold"
+	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
 )
 
 type Flags struct {
@@ -31,13 +31,13 @@ type Controller struct {
 	Flags Flags
 
 	engine   *engine.Engine
-	rc       *scaffold.ScaffoldRC
+	rc       *scaffoldrc.ScaffoldRC
 	prepared bool
 }
 
 // Prepare sets up the controller to be called by the CLI, if the controller is
 // not prepared it will panic
-func (ctrl *Controller) Prepare(e *engine.Engine, src *scaffold.ScaffoldRC) {
+func (ctrl *Controller) Prepare(e *engine.Engine, src *scaffoldrc.ScaffoldRC) {
 	ctrl.engine = e
 	ctrl.rc = src
 	ctrl.prepared = true

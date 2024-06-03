@@ -1,11 +1,9 @@
-package scaffold
+package scaffoldrc
 
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
-	"strings"
 	"testing"
 
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
@@ -48,7 +46,7 @@ aliases:
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rc, err := NewScaffoldRC(tt.r)
+			rc, err := New(tt.r)
 			require.NoError(t, err, "failed on setup")
 
 			err = rc.Validate()
@@ -75,7 +73,7 @@ auth:
     token: token-value
 `)
 
-	rc, err := NewScaffoldRC(bytes.NewReader(authscaffoldRC))
+	rc, err := New(bytes.NewReader(authscaffoldRC))
 	require.NoError(t, err)
 
 	auth, ok := rc.Authenticator("https://github.com/hay-kot/scaffold-go")
@@ -123,7 +121,7 @@ auth:
     token: ${GITEA_AUTH_TOKEN}
 `)
 
-	rc, err := NewScaffoldRC(bytes.NewReader(authscaffoldRC))
+	rc, err := New(bytes.NewReader(authscaffoldRC))
 	require.NoError(t, err)
 
 	auth, ok := rc.Authenticator("https://github.com/hay-kot/scaffold-go")
@@ -150,58 +148,43 @@ auth:
 	assert.Nil(t, auth)
 }
 
-func Test_RunHooksOption_UnmarshalText(t *testing.T) {
+func Test_expandEnvVars(t *testing.T) {
 	type tcase struct {
-		namefmt   string
-		inputs    []string
-		want      RunHooksOption
-		wantValid bool
+		name   string
+		input  string
+		fn     func(t *testing.T)
+		expect string
 	}
 
 	tests := []tcase{
 		{
-			namefmt:   "valid for 'never' (%s)",
-			inputs:    []string{"never", "no", "false"},
-			want:      RunHooksNever,
-			wantValid: true,
+			name:   "no env vars in string",
+			input:  "this is a string",
+			fn:     func(t *testing.T) {},
+			expect: "this is a string",
 		},
 		{
-			namefmt:   "valid for 'always' (%s)",
-			inputs:    []string{"always", "yes", "true"},
-			want:      RunHooksAlways,
-			wantValid: true,
+			name:  "env vars in string",
+			input: "${TESTVAR_1}",
+			fn: func(t *testing.T) {
+				t.Setenv("TESTVAR_1", "testvar1")
+			},
+			expect: "testvar1",
 		},
 		{
-			namefmt:   "valid for 'prompt' (%s)",
-			inputs:    []string{"prompt", ""},
-			want:      RunHooksPrompt,
-			wantValid: true,
-		},
-		{
-			namefmt:   "invalid for any option (%s)",
-			inputs:    []string{"invalid", " "},
-			wantValid: false,
+			name:  "env vars in string with missing var",
+			input: "${TESTVAR_1}",
+			fn: func(t *testing.T) {
+				t.Setenv("__TESTVAR_1", "testvar1")
+			},
+			expect: "",
 		},
 	}
 
 	for _, tt := range tests {
-		name := fmt.Sprintf(tt.namefmt, strings.Join(tt.inputs, ", "))
-		t.Run(name, func(t *testing.T) {
-			for _, input := range tt.inputs {
-				var got RunHooksOption
-				err := got.UnmarshalText([]byte(input))
-
-				require.NoError(t, err) // UnmarshalText should _never_ error
-
-				switch {
-				case tt.wantValid:
-					assert.Equal(t, tt.want, got)
-					assert.True(t, got.IsValid())
-				default:
-					assert.NotEqual(t, tt.want, got)
-					assert.False(t, got.IsValid())
-				}
-			}
+		t.Run(tt.name, func(t *testing.T) {
+			tt.fn(t)
+			assert.Equal(t, tt.expect, expandEnvVars(tt.input))
 		})
 	}
 }

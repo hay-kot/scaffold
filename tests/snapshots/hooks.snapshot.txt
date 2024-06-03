@@ -1,0 +1,5 @@
+scaffold-test-default:  (type=dir)
+	file.txt:  (type=file)
+		Hook says:
+		Hello
+		

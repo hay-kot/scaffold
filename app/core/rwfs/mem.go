@@ -34,6 +34,10 @@ func (m *MemoryWFS) WriteFile(path string, data []byte, perm fs.FileMode) error 
 	return m.FS.WriteFile(path, data, perm)
 }
 
+func (m *MemoryWFS) RunHook(name string, data []byte, args []string) error {
+	return ErrHooksNotSupported
+}
+
 func NewMemoryWFS() *MemoryWFS {
 	return &MemoryWFS{
 		FS: memfs.New(),

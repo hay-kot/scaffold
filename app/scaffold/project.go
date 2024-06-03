@@ -14,6 +14,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const (
+	HooksDir            = "hooks"
+	PostScaffoldScripts = "post_scaffold"
+)
+
 var projectNames = [...]string{
 	"{{ .Project }}",
 	"{{ .ProjectSlug }}",

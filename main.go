@@ -96,7 +96,12 @@ func main() {
 				Name:    "theme",
 				Usage:   "theme to use for the scaffold output",
 				Value:   "scaffold",
-				EnvVars: []string{"SCAFFOLD_THEME"},
+				EnvVars: []string{"SCAFFOLD_THEME", "SCAFFOLD_SETTINGS_THEME"},
+			},
+			&cli.StringFlag{
+				Name:    "run-hooks",
+				Usage:   "run hooks (never, always, prompt) when provided overrides scaffold rc",
+				EnvVars: []string{"SCAFFOLD_SETTINGS_RUN_HOOKS"},
 			},
 		},
 		Before: func(ctx *cli.Context) error {
@@ -154,6 +159,10 @@ func main() {
 			//
 			if ctx.IsSet("theme") {
 				rc.Settings.Theme = styles.HuhTheme(ctx.String("theme"))
+			}
+
+			if ctx.IsSet("run-hooks") {
+				rc.Settings.RunHooks = scaffold.ParseRunHooksOption(ctx.String("run-hooks"))
 			}
 
 			//

@@ -1,8 +1,11 @@
 package rwfs
 
 import (
+	"context"
 	"io/fs"
 	"os"
+	"os/exec"
+	"os/signal"
 	"path/filepath"
 )
 
@@ -33,4 +36,53 @@ func (o *OsWFS) MkdirAll(path string, perm fs.FileMode) error {
 // before calling os.WriteFile
 func (o *OsWFS) WriteFile(name string, data []byte, perm fs.FileMode) error {
 	return os.WriteFile(filepath.Join(o.root, name), data, perm)
+}
+
+func (o *OsWFS) RunHook(name string, data []byte, args []string) error {
+	tmp, err := writeHook(name, data)
+
+	defer func() {
+		if rerr := os.Remove(tmp); rerr != nil && err == nil {
+			err = rerr
+		}
+	}()
+
+	if err != nil {
+		return err
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+	go func() {
+		// stop receiving signal notifications as soon as possible.
+		<-ctx.Done()
+		stop()
+	}()
+
+	cmd := exec.CommandContext(ctx, tmp, append([]string{tmp}, args...)...)
+	cmd.Dir = o.root
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	return err
+}
+
+func writeHook(name string, data []byte) (string, error) {
+	f, err := os.CreateTemp("", name)
+	if err != nil {
+		return "", err
+	}
+
+	tmp := f.Name()
+
+	err = os.Chmod(tmp, 0o700)
+	if err != nil {
+		return tmp, err
+	}
+
+	_, err = f.Write(data)
+	if cerr := f.Close(); cerr != nil && err == nil {
+		err = cerr
+	}
+	return tmp, err
 }

@@ -79,10 +79,10 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 	outfs := ctrl.Flags.OutputFS()
 
 	err = ctrl.runscaffold(runconf{
-		scaffolddir:  path,
-		showMessages: !flags.NoPrompt,
-		varfunc:      varfunc,
-		outputfs:     outfs,
+		scaffolddir: path,
+		noPrompt:    flags.NoPrompt,
+		varfunc:     varfunc,
+		outputfs:    outfs,
 	})
 	if err != nil {
 		return err

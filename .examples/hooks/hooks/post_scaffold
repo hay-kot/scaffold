@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+
+with open("{{ .ProjectKebab }}/file.txt", "a") as f:
+  f.write("Hello\n")

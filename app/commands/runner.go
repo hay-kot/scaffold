@@ -1,10 +1,15 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/charmbracelet/glamour"
+	"github.com/charmbracelet/huh"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/hay-kot/scaffold/app/scaffold"
 )
@@ -12,8 +17,8 @@ import (
 type runconf struct {
 	// os path to the scaffold directory.
 	scaffolddir string
-	// showMessages is a flag to show pre/post messages.
-	showMessages bool
+	// noPrompt is a flag to show pre/post messages.
+	noPrompt bool
 	// varfunc is a function that returns a map of variables that is provided
 	// to the template engine.
 	varfunc func(*scaffold.Project) (map[string]any, error)
@@ -25,15 +30,15 @@ type runconf struct {
 // so that we can allow the `test` and `new` commands to share as much of the same code
 // as possible.
 func (ctrl *Controller) runscaffold(cfg runconf) error {
-	pfs := os.DirFS(cfg.scaffolddir)
-	p, err := scaffold.LoadProject(pfs, scaffold.Options{
+	scaffoldFS := os.DirFS(cfg.scaffolddir)
+	p, err := scaffold.LoadProject(scaffoldFS, scaffold.Options{
 		NoClobber: ctrl.Flags.NoClobber,
 	})
 	if err != nil {
 		return err
 	}
 
-	if cfg.showMessages && p.Conf.Messages.Pre != "" {
+	if !cfg.noPrompt && p.Conf.Messages.Pre != "" {
 		out, err := glamour.RenderWithEnvironmentConfig(p.Conf.Messages.Pre)
 		if err != nil {
 			return err
@@ -49,7 +54,7 @@ func (ctrl *Controller) runscaffold(cfg runconf) error {
 
 	args := &scaffold.RWFSArgs{
 		Project: p,
-		ReadFS:  pfs,
+		ReadFS:  scaffoldFS,
 		WriteFS: cfg.outputfs,
 	}
 
@@ -63,7 +68,14 @@ func (ctrl *Controller) runscaffold(cfg runconf) error {
 		return err
 	}
 
-	if cfg.showMessages && p.Conf.Messages.Post != "" {
+	if ctrl.rc.Settings.RunHooks != scaffold.RunHooksNever {
+		err = ctrl.runHook(scaffoldFS, cfg.outputfs, scaffold.PostScaffoldScripts, vars, cfg.noPrompt)
+		if err != nil {
+			return err
+		}
+	}
+
+	if !cfg.noPrompt && p.Conf.Messages.Post != "" {
 		rendered, err := ctrl.engine.TmplString(p.Conf.Messages.Post, vars)
 		if err != nil {
 			return err
@@ -78,4 +90,92 @@ func (ctrl *Controller) runscaffold(cfg runconf) error {
 	}
 
 	return nil
+}
+
+func (ctrl *Controller) runHook(
+	rfs rwfs.ReadFS,
+	wfs rwfs.WriteFS,
+	hookPrefix string,
+	vars any,
+	noPrompt bool,
+) error {
+	sources, err := fs.ReadDir(rfs, scaffold.HooksDir)
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("failed to open %q hook file: %w", hookPrefix, err)
+		}
+		return nil
+	}
+
+	// find first glob match
+	var hookContents []byte
+	for _, source := range sources {
+		if source.IsDir() {
+			continue
+		}
+
+		if strings.HasPrefix(source.Name(), hookPrefix) {
+			path := filepath.Join(scaffold.HooksDir, source.Name())
+
+			hookContents, err = fs.ReadFile(rfs, path)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(hookContents) == 0 {
+		return nil
+	}
+
+	rendered, err := ctrl.engine.TmplString(string(hookContents), vars)
+	if err != nil {
+		return err
+	}
+
+	if !shouldRunHooks(ctrl.rc.Settings.RunHooks, noPrompt, hookPrefix, rendered) {
+		return nil
+	}
+
+	err = wfs.RunHook(hookPrefix, []byte(rendered), nil)
+	if err != nil && !errors.Is(err, rwfs.ErrHooksNotSupported) {
+		return err
+	}
+
+	return nil
+}
+
+// shouldRunHooks will resolve the users RunHooks preference and either return the preference
+// or prompt the user for their choice when the preference is RunHooksPrompt
+func shouldRunHooks(runPreference scaffold.RunHooksOption, noPrompt bool, name string, rendered string) bool {
+	for {
+		switch runPreference {
+		case scaffold.RunHooksAlways:
+			return true
+		case scaffold.RunHooksNever:
+			return false
+		case scaffold.RunHooksPrompt:
+			if noPrompt {
+				return false
+			}
+
+			err := huh.Run(huh.NewSelect[scaffold.RunHooksOption]().
+				Title(fmt.Sprintf("scaffold defines a %s hook", name)).
+				Options(
+					huh.NewOption("run", scaffold.RunHooksAlways),
+					huh.NewOption("skip", scaffold.RunHooksNever),
+					huh.NewOption("review", scaffold.RunHooksPrompt)).
+				Value(&runPreference))
+			if err != nil {
+				fmt.Fprint(os.Stderr, err)
+				return false
+			}
+
+			if runPreference == scaffold.RunHooksPrompt {
+				fmt.Printf("\n%s\n", rendered)
+			}
+		default:
+			return false
+		}
+	}
 }

@@ -1,0 +1,3 @@
+presets:
+  default:
+    Project: "scaffold-test-default"

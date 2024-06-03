@@ -8,7 +8,7 @@ import (
 
 	"github.com/hay-kot/scaffold/app/commands"
 	"github.com/hay-kot/scaffold/app/core/engine"
-	"github.com/hay-kot/scaffold/app/scaffold"
+	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
 	"github.com/hay-kot/scaffold/internal/styles"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -145,10 +145,10 @@ func main() {
 				log.Debug().Msg("scaffoldrc file does not exist, skipping")
 			}
 
-			rc := scaffold.DefaultScaffoldRC()
+			rc := scaffoldrc.Default()
 
 			if scaffoldrcFile != nil {
-				rc, err = scaffold.NewScaffoldRC(scaffoldrcFile)
+				rc, err = scaffoldrc.New(scaffoldrcFile)
 				if err != nil {
 					return err
 				}
@@ -162,7 +162,7 @@ func main() {
 			}
 
 			if ctx.IsSet("run-hooks") {
-				rc.Settings.RunHooks = scaffold.ParseRunHooksOption(ctx.String("run-hooks"))
+				rc.Settings.RunHooks = scaffoldrc.ParseRunHooksOption(ctx.String("run-hooks"))
 			}
 
 			//
@@ -170,7 +170,7 @@ func main() {
 			//
 			err = rc.Validate()
 			if err != nil {
-				scaferrs := scaffold.RcValidationErrors{}
+				scaferrs := scaffoldrc.RcValidationErrors{}
 				switch {
 				case errors.As(err, &scaferrs):
 					for _, err := range scaferrs {

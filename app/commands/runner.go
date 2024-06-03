@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/hay-kot/scaffold/app/scaffold"
+	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
 )
 
 type runconf struct {
@@ -68,7 +69,7 @@ func (ctrl *Controller) runscaffold(cfg runconf) error {
 		return err
 	}
 
-	if ctrl.rc.Settings.RunHooks != scaffold.RunHooksNever {
+	if ctrl.rc.Settings.RunHooks != scaffoldrc.RunHooksNever {
 		err = ctrl.runHook(scaffoldFS, cfg.outputfs, scaffold.PostScaffoldScripts, vars, cfg.noPrompt)
 		if err != nil {
 			return err
@@ -147,31 +148,31 @@ func (ctrl *Controller) runHook(
 
 // shouldRunHooks will resolve the users RunHooks preference and either return the preference
 // or prompt the user for their choice when the preference is RunHooksPrompt
-func shouldRunHooks(runPreference scaffold.RunHooksOption, noPrompt bool, name string, rendered string) bool {
+func shouldRunHooks(runPreference scaffoldrc.RunHooksOption, noPrompt bool, name string, rendered string) bool {
 	for {
 		switch runPreference {
-		case scaffold.RunHooksAlways:
+		case scaffoldrc.RunHooksAlways:
 			return true
-		case scaffold.RunHooksNever:
+		case scaffoldrc.RunHooksNever:
 			return false
-		case scaffold.RunHooksPrompt:
+		case scaffoldrc.RunHooksPrompt:
 			if noPrompt {
 				return false
 			}
 
-			err := huh.Run(huh.NewSelect[scaffold.RunHooksOption]().
+			err := huh.Run(huh.NewSelect[scaffoldrc.RunHooksOption]().
 				Title(fmt.Sprintf("scaffold defines a %s hook", name)).
 				Options(
-					huh.NewOption("run", scaffold.RunHooksAlways),
-					huh.NewOption("skip", scaffold.RunHooksNever),
-					huh.NewOption("review", scaffold.RunHooksPrompt)).
+					huh.NewOption("run", scaffoldrc.RunHooksAlways),
+					huh.NewOption("skip", scaffoldrc.RunHooksNever),
+					huh.NewOption("review", scaffoldrc.RunHooksPrompt)).
 				Value(&runPreference))
 			if err != nil {
 				fmt.Fprint(os.Stderr, err)
 				return false
 			}
 
-			if runPreference == scaffold.RunHooksPrompt {
+			if runPreference == scaffoldrc.RunHooksPrompt {
 				fmt.Printf("\n%s\n", rendered)
 			}
 		default:

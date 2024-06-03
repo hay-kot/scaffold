@@ -1,4 +1,5 @@
-package scaffold
+// Package scaffoldrc contains the runtime configuration for users
+package scaffoldrc
 
 import (
 	"errors"
@@ -49,50 +50,6 @@ type ScaffoldRC struct {
 	Auth []AuthEntry `yaml:"auth"`
 }
 
-type RunHooksOption string
-
-var (
-	RunHooksNever  RunHooksOption = "never"
-	RunHooksAlways RunHooksOption = "always"
-	RunHooksPrompt RunHooksOption = "prompt"
-)
-
-func ParseRunHooksOption(s string) RunHooksOption {
-	zero := RunHooksOption("")
-	ptr := &zero
-	_ = ptr.UnmarshalText([]byte(s))
-	return *ptr
-}
-
-func (r *RunHooksOption) UnmarshalText(text []byte) error {
-	switch string(text) {
-	case "never", "no", "false":
-		*r = RunHooksNever
-	case "always", "yes", "true":
-		*r = RunHooksAlways
-	case "prompt", "": // if left empty, default to prompt
-		*r = RunHooksPrompt
-	default:
-		// fallback to whatever they input so we can log the incorrect value
-		*r = RunHooksOption(string(text))
-	}
-
-	return nil
-}
-
-func (r RunHooksOption) IsValid() bool {
-	switch r {
-	case RunHooksNever, RunHooksAlways, RunHooksPrompt:
-		return true
-	default:
-		return false
-	}
-}
-
-func (r RunHooksOption) String() string {
-	return string(r)
-}
-
 type Settings struct {
 	Theme    styles.HuhTheme `yaml:"theme"`
 	RunHooks RunHooksOption  `yaml:"run_hooks"`
@@ -109,19 +66,8 @@ type BasicAuth struct {
 	Password string `yaml:"password"`
 }
 
-type RCValidationError struct {
-	Key   string
-	Cause error
-}
-
-type RcValidationErrors []RCValidationError
-
-func (e RcValidationErrors) Error() string {
-	return "invalid scaffold rc"
-}
-
-// DefaultScaffoldRC returns a default scaffold rc file.
-func DefaultScaffoldRC() *ScaffoldRC {
+// Default returns a default scaffold rc file.
+func Default() *ScaffoldRC {
 	return &ScaffoldRC{
 		Settings: Settings{
 			Theme:    styles.HuhThemeScaffold,
@@ -130,10 +76,10 @@ func DefaultScaffoldRC() *ScaffoldRC {
 	}
 }
 
-// NewScaffoldRC  reads a scaffold rc file from the reader and returns a
+// New reads a scaffold rc file from the reader and returns a
 // ScaffoldRC struct.
-func NewScaffoldRC(r io.Reader) (*ScaffoldRC, error) {
-	out := DefaultScaffoldRC()
+func New(r io.Reader) (*ScaffoldRC, error) {
+	out := Default()
 	err := yaml.NewDecoder(r).Decode(&out)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
@@ -193,14 +139,6 @@ func (rc *ScaffoldRC) Validate() error {
 	return nil
 }
 
-func expandEnvVars(s string) string {
-	if !strings.HasPrefix(s, "${") && !strings.HasSuffix(s, "}") {
-		return s
-	}
-
-	return os.Getenv(s[2 : len(s)-1])
-}
-
 func (rc *ScaffoldRC) Authenticator(pkgurl string) (transport.AuthMethod, bool) {
 	for _, auth := range rc.Auth {
 		if auth.Match.MatchString(pkgurl) {
@@ -220,4 +158,13 @@ func (rc *ScaffoldRC) Authenticator(pkgurl string) (transport.AuthMethod, bool) 
 	}
 
 	return nil, false
+}
+
+// expandEnvVars will expand an environment variable in the form of ${VAR}
+func expandEnvVars(s string) string {
+	if !strings.HasPrefix(s, "${") && !strings.HasSuffix(s, "}") {
+		return s
+	}
+
+	return os.Getenv(s[2 : len(s)-1])
 }

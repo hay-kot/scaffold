@@ -16,6 +16,7 @@ The Project generation scaffolds are used to generate a new project from a templ
 - `{{ .ProjectSnake }}`
 - `{{ .ProjectKebab }}`
 - `{{ .ProjectCamel }}`
+- `{{ .ProjectPascal }}`
 :::
 
 ### File Structure

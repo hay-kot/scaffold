@@ -16,7 +16,7 @@ func httpAuthPrompt(theme styles.HuhTheme) (username string, password string, er
 				Title("Password").
 				Description("Enter your password (or token)").
 				Value(&password).
-				Password(true),
+				EchoMode(huh.EchoModePassword),
 		),
 	).WithTheme(styles.Theme(theme))
 

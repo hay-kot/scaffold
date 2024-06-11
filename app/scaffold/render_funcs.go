@@ -152,11 +152,12 @@ func guardFeatureFlag(e *engine.Engine, args *RWFSArgs, vars engine.Vars) filepa
 // under the "Scaffold" key and adding the project name and computed vars.
 func BuildVars(eng *engine.Engine, project *Project, vars engine.Vars) (engine.Vars, error) {
 	iVars := engine.Vars{
-		"Project":      project.Name,
-		"ProjectSnake": xstrings.ToSnakeCase(project.Name),
-		"ProjectKebab": xstrings.ToKebabCase(project.Name),
-		"ProjectCamel": xstrings.ToCamelCase(project.Name),
-		"Scaffold":     vars,
+		"Project":       project.Name,
+		"ProjectSnake":  xstrings.ToSnakeCase(project.Name),
+		"ProjectKebab":  xstrings.ToKebabCase(project.Name),
+		"ProjectCamel":  xstrings.ToCamelCase(project.Name),
+		"ProjectPascal": xstrings.ToPascalCase(project.Name),
+		"Scaffold":      vars,
 	}
 
 	computed := make(map[string]any, len(project.Conf.Computed))

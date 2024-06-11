@@ -9,6 +9,7 @@ Scaffold uses the Go template engine to generate files. The following variables 
 - `ProjectKebab` - The kebab case version of the project name
 - `ProjectSnake` - The snake case version of the project name
 - `ProjectCamel` - The camel case version of the project name
+- `ProjectPascal` - The pascal case version of the project name
 - `Scaffold` - a map of the scaffold questions and answers
 - `Computed` - a map of computed values as defined in the scaffolds configuration
 

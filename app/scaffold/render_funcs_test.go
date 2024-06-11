@@ -39,6 +39,7 @@ func Test_BuildVars(t *testing.T) {
 		"ProjectSnake",
 		"ProjectKebab",
 		"ProjectCamel",
+		"ProjectPascal",
 	}
 
 	for _, key := range requiredStringKeys {

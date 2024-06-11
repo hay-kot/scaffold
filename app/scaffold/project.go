@@ -25,6 +25,7 @@ var projectNames = [...]string{
 	"{{ .ProjectSnake }}",
 	"{{ .ProjectKebab }}",
 	"{{ .ProjectCamel }}",
+	"{{ .ProjectPascal }}",
 }
 
 var templateNames = [...]string{

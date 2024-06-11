@@ -9,6 +9,8 @@ import (
 	"github.com/charmbracelet/huh"
 )
 
+var _ huh.Field = &LoopedInput{}
+
 type LoopedInput struct {
 	input *huh.Input
 	desc  string
@@ -189,4 +191,9 @@ func (l *LoopedInput) WithTheme(v *huh.Theme) huh.Field {
 func (l *LoopedInput) WithWidth(v int) huh.Field {
 	l.input.WithWidth(v)
 	return l
+}
+
+// Zoom implements huh.Field.
+func (l *LoopedInput) Zoom() bool {
+	return l.input.Zoom()
 }

@@ -1,5 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
     "properties": {
         "aliases": {
             "additionalProperties": {
@@ -13,8 +14,10 @@
             "items": {
                 "anyOf": [
                     {
+                        "additionalProperties": false,
                         "properties": {
                             "basic": {
+                                "additionalProperties": false,
                                 "description": "The basic authentication entry. This is the username and password that will be used to authenticate",
                                 "properties": {
                                     "password": {
@@ -24,6 +27,10 @@
                                         "type": "string"
                                     }
                                 },
+                                "required": [
+                                    "password",
+                                    "username"
+                                ],
                                 "type": "object"
                             },
                             "match": {
@@ -31,9 +38,14 @@
                                 "type": "string"
                             }
                         },
+                        "required": [
+                            "basic",
+                            "match"
+                        ],
                         "type": "object"
                     },
                     {
+                        "additionalProperties": false,
                         "properties": {
                             "match": {
                                 "description": "Match is a regular expression  that will be used to match the scaffold path. If the path matches\nthe regular expression, the authentication will be used.",
@@ -44,6 +56,10 @@
                                 "type": "string"
                             }
                         },
+                        "required": [
+                            "match",
+                            "token"
+                        ],
                         "type": "object"
                     }
                 ]
@@ -51,6 +67,7 @@
             "type": "array"
         },
         "settings": {
+            "additionalProperties": false,
             "properties": {
                 "run_hooks": {
                     "description": "The behavior for running hooks. `prompt` will ask the user if they want to run the hooks ,\n`always` will always run the hooks, and `never` will never run the hooks. The default is\n`prompt`.",

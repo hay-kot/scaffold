@@ -1,8 +1,8 @@
 {
   "scripts": {
     "dev": "vitepress dev docs",
-    "prebuild:scaffoldrc": "typescript-json-schema ./schema/schema.scaffold.ts Schema > ./docs/public/schema.json",
-    "prebuild:scaffold": "typescript-json-schema ./schema/schema.scaffoldrc.ts Schema > ./docs/public/schema.scaffoldrc.json",
+    "prebuild:scaffoldrc": "typescript-json-schema --required  --noExtraProps ./schema/schema.scaffold.ts Schema > ./docs/public/schema.json",
+    "prebuild:scaffold": "typescript-json-schema --required  --noExtraProps ./schema/schema.scaffoldrc.ts Schema > ./docs/public/schema.scaffoldrc.json",
     "prebuild": "npm run prebuild:scaffold && npm run prebuild:scaffoldrc",
     "build": "vitepress build docs",
     "preview": "vitepress preview docs"

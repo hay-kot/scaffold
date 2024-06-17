@@ -25,7 +25,7 @@ export interface Schema {
      * */
     post?: string;
   };
-  features?: Features[];
+  features?: Feature[];
   /**
    * presets is a map of key/value pairs that can be used to provide default values for the questions. Generally, this is only used for testing scaffolds, but could be used for other purposes.
    * */
@@ -161,7 +161,13 @@ type Inject = {
   template: string;
 };
 
-type Features = {
+type Feature = {
+  /*
+   * A template value that when evaluates to true will enable the feature
+   * */
   value: string;
+  /**
+   * a list of globs that are considered to be apart of this feature. When the `value` evaluates to true, files matching these globs will be included in the output.
+   * */
   globs: string[];
 };

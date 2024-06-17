@@ -80,3 +80,9 @@ tasks:
     cmds:
       - rm -rf ./gen/*
       - go run main.go --output-dir=":memory:" new prompts
+
+  docs:
+    dir: docs
+    desc: Starts the development server for the documentation
+    cmds:
+      - npm run dev

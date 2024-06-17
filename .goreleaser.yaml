@@ -1,5 +1,6 @@
 # This is an example .goreleaser.yml file with some sensible defaults.
 # Make sure to check the documentation at https://goreleaser.com
+version: 2
 before:
   hooks:
     # You may remove this if you don't use go modules.
@@ -38,7 +39,7 @@ changelog:
       - "^test:"
 
 brews:
-  - tap:
+  - repository:
       owner: hay-kot
       name: homebrew-scaffold-tap
     description: "Scaffold is a tool for creating new projects from pre-defined templates."

@@ -57,6 +57,10 @@ export default withMermaid(
             { text: "Testing Scaffolds", link: "/templates/testing-scaffolds" },
           ],
         },
+        {
+          text: "Advanced",
+          items: [{ text: "Editor Support", link: "/advanced/editor-support" }],
+        },
       ],
 
       socialLinks: [

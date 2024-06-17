@@ -1,6 +1,10 @@
 {
   "scripts": {
+    "predev": "npm run prebuild:scaffold && npm run prebuild:scaffoldrc",
     "dev": "vitepress dev docs",
+    "prebuild:scaffoldrc": "typescript-json-schema --required  --noExtraProps ./schema/schema.scaffold.ts Schema > ./docs/public/schema.json",
+    "prebuild:scaffold": "typescript-json-schema --required  --noExtraProps ./schema/schema.scaffoldrc.ts Schema > ./docs/public/schema.scaffoldrc.json",
+    "prebuild": "npm run prebuild:scaffold && npm run prebuild:scaffoldrc",
     "build": "vitepress build docs",
     "preview": "vitepress preview docs"
   },
@@ -9,6 +13,7 @@
   },
   "devDependencies": {
     "mermaid": "^10.9.0",
-    "vitepress-plugin-mermaid": "^2.0.16"
+    "vitepress-plugin-mermaid": "^2.0.16",
+    "typescript-json-schema": "^0.64.0"
   }
 }

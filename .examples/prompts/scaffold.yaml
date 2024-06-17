@@ -1,19 +1,19 @@
+# yaml-language-server: $schema=../../docs/docs/public/schema.json
 messages:
   pre: |
     # Example Prompts
 
     This is an example of all the prompts available in the CLI.
-
   post: |
     # All Set
 
     You're Done!
 
     - Input:         {{ .Scaffold.input }} (type={{ typeOf  .Scaffold.input }})
-    - Looped:        {{ .Scaffold.looped | join ", " }} (type={{ typeOf  .Scaffold.looped }}) 
-    - Multiline:     {{ .Scaffold.multiline }} (type={{ typeOf  .Scaffold.multiline }}) 
-    - Single Select: {{ .Scaffold.singleselect }} (type={{ typeOf  .Scaffold.singleselect }}) 
-    - Multi Select:  {{ .Scaffold.multiselect | join ", " }} (type={{ typeOf  .Scaffold.multiselect }}) 
+    - Looped:        {{ .Scaffold.looped | join ", " }} (type={{ typeOf  .Scaffold.looped }})
+    - Multiline:     {{ .Scaffold.multiline }} (type={{ typeOf  .Scaffold.multiline }})
+    - Single Select: {{ .Scaffold.singleselect }} (type={{ typeOf  .Scaffold.singleselect }})
+    - Multi Select:  {{ .Scaffold.multiselect | join ", " }} (type={{ typeOf  .Scaffold.multiselect }})
     - Confirm:       {{ .Scaffold.confirm }} (type={{ typeOf  .Scaffold.confirm }})
 
 questions:
@@ -29,6 +29,7 @@ questions:
       message: "Looped Input"
       description: "This is a looped input, submit empty value to stop looping"
       loop: true
+      default: ["asdadsf"]
     required: true
   - name: "multiline"
     group: "inputs"
@@ -47,7 +48,7 @@ questions:
     prompt:
       message: "Single Select"
       description: "This is a single select prompt"
-      default: ["Option 2"]
+      default: "Option 2"
       options:
         - "Option 1"
         - "Option 2"
@@ -70,7 +71,6 @@ questions:
   - name: "confirm"
     group: confirms
     prompt:
-      message: "Confirm"
+      confirm: "Confirm"
       description: "This is a confirm prompt"
-      confirm: true
     required: true

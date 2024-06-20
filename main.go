@@ -93,7 +93,12 @@ func main() {
 				Name:    "log-level",
 				Usage:   "log level (debug, info, warn, error, fatal, panic)",
 				Value:   "warn",
-				EnvVars: []string{"SCAFFOLD_LOG_LEVEL"},
+				EnvVars: []string{"SCAFFOLD_LOG_LEVEL", "SCAFFOLD_SETTINGS_LOG_LEVEL"},
+			},
+			&cli.StringFlag{
+				Name:    "log-file",
+				Usage:   "log file to write to (use 'stdout' for stdout)",
+				EnvVars: []string{"SCAFFOLD_SETTINGS_LOG_FILE"},
 			},
 			&cli.StringFlag{
 				Name:    "theme",
@@ -170,6 +175,21 @@ func main() {
 				log.Logger = log.Level(level)
 			}
 
+			if ctx.IsSet("log-file") {
+				rc.Settings.LogFile = ctx.String("log-file")
+
+				if !strings.HasPrefix(rc.Settings.LogFile, "/") {
+					// If the file path is not absolute, we want to make it absolute
+					// so that it is relative to the cwd and not the scaffoldrc file.
+					absLogFilePath, err := filepath.Abs(rc.Settings.LogFile)
+					if err != nil {
+						return err
+					}
+
+					rc.Settings.LogFile = absLogFilePath
+				}
+			}
+
 			//
 			// Validate Runtime Config
 			//
@@ -187,12 +207,21 @@ func main() {
 			}
 
 			if rc.Settings.LogFile != "stdout" {
-				f, err := os.Open(rc.Settings.LogFile)
+				logpath := rc.Settings.LogFile
+				if !strings.HasPrefix(ctrl.Flags.ScaffoldRCPath, "/") {
+					// Assume that the path is relative to the scaffold rc file
+					logpath = filepath.Join(dir, rc.Settings.LogFile)
+				}
+
+				f, err := os.OpenFile(logpath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 				if err != nil {
 					return fmt.Errorf("failed to open log file: %w", err)
 				}
 
-				log.Logger = log.Output(f)
+				log.Logger = log.Output(zerolog.ConsoleWriter{
+					Out:     f,
+					NoColor: true,
+				})
 			}
 
 			styles.SetGlobalStyles(rc.Settings.Theme)
@@ -232,16 +261,14 @@ func main() {
 				},
 			},
 			{
-				Name:      "list",
-				Usage:     "list available scaffolds",
-				UsageText: "scaffold list [flags]",
-				Action:    ctrl.List,
+				Name:   "list",
+				Usage:  "list available scaffolds",
+				Action: ctrl.List,
 			},
 			{
-				Name:      "update",
-				Usage:     "update the local cache of scaffolds",
-				UsageText: "scaffold update [flags]",
-				Action:    ctrl.Update,
+				Name:   "update",
+				Usage:  "update the local cache of scaffolds",
+				Action: ctrl.Update,
 			},
 			{
 				Name:      "lint",
@@ -250,13 +277,13 @@ func main() {
 				Action:    ctrl.Lint,
 			},
 			{
-				Name:      "init",
-				Usage:     "initialize a new scaffold in the current directory for template scaffolds",
-				UsageText: "scaffold init [flags]",
-				Action:    ctrl.Init,
+				Name:   "init",
+				Usage:  "initialize a new scaffold in the current directory for template scaffolds",
+				Action: ctrl.Init,
 			},
 			{
-				Name: "dev",
+				Name:  "dev",
+				Usage: "development commands for testing",
 				Subcommands: []*cli.Command{
 					{
 						Name:  "printer",

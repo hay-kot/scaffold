@@ -5,6 +5,8 @@ env:
   SCAFFOLD_NO_CLOBBER: true
   SCAFFOLD_OUT: "gen"
   SCAFFOLD_DIR: ".scaffold,.examples"
+  SCAFFOLD_SETTINGS_LOG_LEVEL: "debug"
+  SCAFFOLD_SETTINGS_LOG_FILE: "./scaffold.log"
 
 tasks:
   run:

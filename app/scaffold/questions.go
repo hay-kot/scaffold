@@ -37,6 +37,7 @@ type Question struct {
 	Prompt   AnyPrompt `yaml:"prompt"`
 	When     string    `yaml:"when"`
 	Required bool      `yaml:"required"`
+	Validate Validate  `yaml:"validate"`
 }
 
 func (q Question) Title() string {
@@ -45,6 +46,16 @@ func (q Question) Title() string {
 
 func (q Question) Description() string {
 	return unwrap(q.Prompt.Desciption)
+}
+
+type Validate struct {
+	Required  bool `yaml:"required"`
+	MinLength int  `yaml:"min"`
+	MaxLength int  `yaml:"max"`
+	Match     struct {
+		Regex   string `yaml:"regex"`
+		Message string `yaml:"message"`
+	} `yaml:"match"`
 }
 
 type AnyPrompt struct {
@@ -92,8 +103,20 @@ func (q Question) ToAskable(def any) *Askable {
 			Options(toHuhOptions(q.Prompt.Options)...).
 			Value(&defValue)
 
-		if q.Required {
-			prompt.Validate(validators.AtleastOne)
+		var vals []validators.Validator[[]string]
+
+		if q.Validate.MinLength > 0 {
+			vals = append(vals, validators.MinLength[[]string](q.Validate.MinLength))
+		} else if q.Required || q.Validate.Required {
+			vals = append(vals, validators.AtleastOne[string])
+		}
+
+		if q.Validate.MaxLength > 0 {
+			vals = append(vals, validators.MaxLength[[]string](q.Validate.MaxLength))
+		}
+
+		if len(vals) > 0 {
+			prompt.Validate(validators.Combine(vals...))
 		}
 
 		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
@@ -111,6 +134,18 @@ func (q Question) ToAskable(def any) *Askable {
 
 		if q.Required {
 			prompt.Validate(validators.NotZero)
+		}
+
+		var vals []validators.Validator[string]
+
+		if q.Validate.MinLength > 0 {
+			vals = append(vals, validators.MinLength[string](q.Validate.MinLength))
+		} else if q.Required || q.Validate.Required {
+			vals = append(vals, validators.NotZero[string])
+		}
+
+		if len(vals) > 0 {
+			prompt.Validate(validators.Combine(vals...))
 		}
 
 		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
@@ -137,6 +172,26 @@ func (q Question) ToAskable(def any) *Askable {
 			Description(q.Description()).
 			Value(defValue)
 
+		var vals []validators.Validator[[]string]
+
+		if q.Validate.MinLength > 0 {
+			vals = append(vals, validators.MinLength[[]string](q.Validate.MinLength))
+		} else if q.Required || q.Validate.Required {
+			vals = append(vals, validators.AtleastOne[string])
+		}
+
+		if q.Validate.MaxLength > 0 {
+			vals = append(vals, validators.MaxLength[[]string](q.Validate.MaxLength))
+		}
+
+		if q.Validate.Match.Regex != "" {
+			vals = append(vals, validators.Match[[]string](q.Validate.Match.Regex, q.Validate.Match.Message))
+		}
+
+		if len(vals) > 0 {
+			prompt.Validate(validators.Combine(vals...))
+		}
+
 		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
 			vars[q.Name] = prompt.GetValue().([]string)
 			return nil
@@ -150,8 +205,24 @@ func (q Question) ToAskable(def any) *Askable {
 			Description(q.Description()).
 			Value(&defValue)
 
-		if q.Required {
-			prompt.Validate(validators.NotZero)
+		var vals []validators.Validator[string]
+
+		if q.Validate.MinLength > 0 {
+			vals = append(vals, validators.MinLength[string](q.Validate.MinLength))
+		} else if q.Required || q.Validate.Required {
+			vals = append(vals, validators.NotZero[string])
+		}
+
+		if q.Validate.MaxLength > 0 {
+			vals = append(vals, validators.MaxLength[string](q.Validate.MaxLength))
+		}
+
+		if q.Validate.Match.Regex != "" {
+			vals = append(vals, validators.Match[string](q.Validate.Match.Regex, q.Validate.Match.Message))
+		}
+
+		if len(vals) > 0 {
+			prompt.Validate(validators.Combine(vals...))
 		}
 
 		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
@@ -167,8 +238,24 @@ func (q Question) ToAskable(def any) *Askable {
 			Description(q.Description()).
 			Value(&defValue)
 
-		if q.Required {
-			prompt.Validate(validators.NotZero)
+		var vals []validators.Validator[string]
+
+		if q.Validate.MinLength > 0 {
+			vals = append(vals, validators.MinLength[string](q.Validate.MinLength))
+		} else if q.Required || q.Validate.Required {
+			vals = append(vals, validators.NotZero[string])
+		}
+
+		if q.Validate.MaxLength > 0 {
+			vals = append(vals, validators.MaxLength[string](q.Validate.MaxLength))
+		}
+
+		if q.Validate.Match.Regex != "" {
+			vals = append(vals, validators.Match[string](q.Validate.Match.Regex, q.Validate.Match.Message))
+		}
+
+		if len(vals) > 0 {
+			prompt.Validate(validators.Combine(vals...))
 		}
 
 		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {

@@ -24,6 +24,8 @@ var (
 	date    = "now"
 )
 
+var ErrLinterErrors = errors.New("scaffold errors found")
+
 func build() string {
 	short := commit
 	if len(commit) > 7 {
@@ -274,7 +276,31 @@ func main() {
 				Name:      "lint",
 				Usage:     "lint a scaffoldrc file",
 				UsageText: "scaffold lint [scaffold file]",
-				Action:    ctrl.Lint,
+				Action: func(ctx *cli.Context) error {
+					pfpath := ctx.Args().First()
+					if pfpath == "" {
+						return errors.New("no file provided")
+					}
+
+					err := ctrl.Lint(pfpath)
+					if err != nil {
+						errlist, ok := err.(commands.ErrList) // nolint: errorlint
+						if !ok {
+							return err
+						}
+
+						items := make([]printer.StatusListItem, 0, len(errlist))
+						for _, e := range errlist {
+							items = append(items, printer.StatusListItem{Ok: false, Status: e.Error()})
+						}
+
+						console.StatusList("Scaffold Errors", items)
+
+						return ErrLinterErrors
+					}
+
+					return nil
+				},
 			},
 			{
 				Name:   "init",
@@ -333,7 +359,8 @@ func main() {
 		switch {
 		// ignore these errors, urfave/cli does not provide any way to hanldle them
 		// without direct string comparison :(
-		case strings.HasPrefix(errstr, "flag provided but not defined"):
+		case strings.HasPrefix(errstr, "flag provided but not defined"), errors.Is(err, ErrLinterErrors):
+			// ignore
 		default:
 			log.Error().Err(err).Msg("error occurred")
 			console.UnknownError("An unexpected error occurred", err)

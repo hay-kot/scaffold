@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -9,17 +8,19 @@ import (
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/scaffold"
-	"github.com/rs/zerolog/log"
-	"github.com/urfave/cli/v2"
 )
 
-func (ctrl *Controller) Lint(ctx *cli.Context) error {
-	pfpath := ctx.Args().First()
+type ErrList []error
 
-	if pfpath == "" {
-		return errors.New("no file provided")
+func (e ErrList) Error() string {
+	var s string
+	for _, err := range e {
+		s += err.Error() + "\n"
 	}
+	return s
+}
 
+func (ctrl *Controller) Lint(pfpath string) error {
 	file, err := os.OpenFile(pfpath, os.O_RDONLY, 0)
 	if err != nil {
 		return err
@@ -95,9 +96,9 @@ func (ctrl *Controller) Lint(ctx *cli.Context) error {
 		}
 	}
 
-	for _, err := range errs {
-		log.Error().Err(err).Msg("")
+	if len(errs) == 0 {
+		return nil
 	}
 
-	return nil
+	return ErrList(errs)
 }

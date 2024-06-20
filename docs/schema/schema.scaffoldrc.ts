@@ -19,6 +19,13 @@ export interface Schema {
     [key: string]: string;
   };
   /**
+   * The defaults section allows you to define key/value pairs that will be used as defaults for
+   * prompts.
+   * */
+  defaults?: {
+    [key: string]: string;
+  };
+  /**
    * The shorts section allows you to define expandable text snippets. Commonly these would be used
    * to prefix a URL or path.
    * */

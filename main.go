@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/charmbracelet/glamour"
 	"github.com/hay-kot/scaffold/app/commands"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
+	"github.com/hay-kot/scaffold/internal/printer"
 	"github.com/hay-kot/scaffold/internal/styles"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -21,6 +24,8 @@ var (
 	commit  = "HEAD"
 	date    = "now"
 )
+
+var ErrLinterErrors = errors.New("scaffold errors found")
 
 func build() string {
 	short := commit
@@ -41,9 +46,10 @@ func HomeDir(s ...string) string {
 }
 
 func main() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).Level(zerolog.WarnLevel)
 
 	ctrl := &commands.Controller{}
+	console := printer.New(os.Stdout)
 
 	app := &cli.App{
 		Name:    "scaffold",
@@ -90,7 +96,12 @@ func main() {
 				Name:    "log-level",
 				Usage:   "log level (debug, info, warn, error, fatal, panic)",
 				Value:   "warn",
-				EnvVars: []string{"SCAFFOLD_LOG_LEVEL"},
+				EnvVars: []string{"SCAFFOLD_LOG_LEVEL", "SCAFFOLD_SETTINGS_LOG_LEVEL"},
+			},
+			&cli.StringFlag{
+				Name:    "log-file",
+				Usage:   "log file to write to (use 'stdout' for stdout)",
+				EnvVars: []string{"SCAFFOLD_SETTINGS_LOG_FILE"},
 			},
 			&cli.StringFlag{
 				Name:    "theme",
@@ -113,13 +124,6 @@ func main() {
 				ScaffoldRCPath: ctx.String("scaffoldrc"),
 				ScaffoldDirs:   ctx.StringSlice("scaffold-dir"),
 			}
-
-			level, err := zerolog.ParseLevel(ctx.String("log-level"))
-			if err != nil {
-				return fmt.Errorf("failed to parse log level: %w", err)
-			}
-
-			log.Logger = log.Level(level)
 
 			dir := filepath.Dir(ctrl.Flags.ScaffoldRCPath)
 			if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -165,6 +169,30 @@ func main() {
 				rc.Settings.RunHooks = scaffoldrc.ParseRunHooksOption(ctx.String("run-hooks"))
 			}
 
+			if ctx.IsSet("log-level") {
+				level, err := zerolog.ParseLevel(ctx.String("log-level"))
+				if err != nil {
+					return fmt.Errorf("failed to parse log level: %w", err)
+				}
+
+				log.Logger = log.Level(level)
+			}
+
+			if ctx.IsSet("log-file") {
+				rc.Settings.LogFile = ctx.String("log-file")
+
+				if !strings.HasPrefix(rc.Settings.LogFile, "/") {
+					// If the file path is not absolute, we want to make it absolute
+					// so that it is relative to the cwd and not the scaffoldrc file.
+					absLogFilePath, err := filepath.Abs(rc.Settings.LogFile)
+					if err != nil {
+						return err
+					}
+
+					rc.Settings.LogFile = absLogFilePath
+				}
+			}
+
 			//
 			// Validate Runtime Config
 			//
@@ -173,15 +201,38 @@ func main() {
 				scaferrs := scaffoldrc.RcValidationErrors{}
 				switch {
 				case errors.As(err, &scaferrs):
+					errlist := make([]printer.KeyValueError, 0, len(scaferrs))
 					for _, err := range scaferrs {
-						log.Error().Str("key", err.Key).Msg(err.Cause.Error())
+						errlist = append(errlist, printer.KeyValueError{Key: err.Key, Message: err.Cause.Error()})
 					}
+
+					console.KeyValueValidationError("ScaffoldRC Errors", errlist)
 				default:
 					return fmt.Errorf("unexpected error return from validator: %w", err)
 				}
 			}
 
+			if rc.Settings.LogFile != "stdout" {
+				logpath := rc.Settings.LogFile
+				if !strings.HasPrefix(ctrl.Flags.ScaffoldRCPath, "/") {
+					// Assume that the path is relative to the scaffold rc file
+					logpath = filepath.Join(dir, rc.Settings.LogFile)
+				}
+
+				f, err := os.OpenFile(logpath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+				if err != nil {
+					return fmt.Errorf("failed to open log file: %w", err)
+				}
+
+				log.Logger = log.Output(zerolog.ConsoleWriter{
+					Out:     f,
+					NoColor: true,
+				})
+			}
+
 			styles.SetGlobalStyles(rc.Settings.Theme)
+			console = console.WithBase(styles.Base).WithLight(styles.Light)
+
 			ctrl.Prepare(engine.New(), rc)
 			return nil
 		},
@@ -216,33 +267,127 @@ func main() {
 				},
 			},
 			{
-				Name:      "list",
-				Usage:     "list available scaffolds",
-				UsageText: "scaffold list [flags]",
-				Action:    ctrl.List,
+				Name:   "list",
+				Usage:  "list available scaffolds",
+				Action: ctrl.List,
 			},
 			{
-				Name:      "update",
-				Usage:     "update the local cache of scaffolds",
-				UsageText: "scaffold update [flags]",
-				Action:    ctrl.Update,
+				Name:   "update",
+				Usage:  "update the local cache of scaffolds",
+				Action: ctrl.Update,
 			},
 			{
 				Name:      "lint",
 				Usage:     "lint a scaffoldrc file",
 				UsageText: "scaffold lint [scaffold file]",
-				Action:    ctrl.Lint,
+				Action: func(ctx *cli.Context) error {
+					pfpath := ctx.Args().First()
+					if pfpath == "" {
+						return errors.New("no file provided")
+					}
+
+					err := ctrl.Lint(pfpath)
+					if err != nil {
+						errlist, ok := err.(commands.ErrList) // nolint: errorlint
+						if !ok {
+							return err
+						}
+
+						items := make([]printer.StatusListItem, 0, len(errlist))
+						for _, e := range errlist {
+							items = append(items, printer.StatusListItem{Ok: false, Status: e.Error()})
+						}
+
+						console.StatusList("Scaffold Errors", items)
+
+						return ErrLinterErrors
+					}
+
+					return nil
+				},
 			},
 			{
-				Name:      "init",
-				Usage:     "initialize a new scaffold in the current directory for template scaffolds",
-				UsageText: "scaffold init [flags]",
-				Action:    ctrl.Init,
+				Name:   "init",
+				Usage:  "initialize a new scaffold in the current directory for template scaffolds",
+				Action: ctrl.Init,
+			},
+			{
+				Name:  "dev",
+				Usage: "development commands for testing",
+				Subcommands: []*cli.Command{
+					{
+						Name:  "printer",
+						Usage: "demos the printer",
+						Action: func(ctx *cli.Context) error {
+							console.Title(" --- Unknown Error ---")
+							console.LineBreak()
+
+							console.FatalError(errors.New("this is a basic error's message"))
+
+							console.LineBreak()
+							console.Title(" --- List ---")
+							console.LineBreak()
+
+							console.List("List Items", []string{"item 1", "item 2", "item 3"})
+
+							console.LineBreak()
+							console.Title(" --- StatusList ---")
+							console.LineBreak()
+
+							console.StatusList("Status Items", []printer.StatusListItem{
+								{Ok: true, Status: "Status 1"},
+								{Ok: false, Status: "Status 2"},
+								{Ok: true, Status: "Status 3"},
+							})
+
+							console.LineBreak()
+							console.Title(" --- Key Value Error ---")
+							console.LineBreak()
+
+							console.KeyValueValidationError("Key Value Errors", []printer.KeyValueError{
+								{Key: "alias.gh", Message: "invalid choice for key_1"},
+								{Key: "settings.theme", Message: "invalid theme 'x-theme'"},
+							})
+
+							return nil
+						},
+					},
+					{
+						Name: "dump",
+						Action: func(ctx *cli.Context) error {
+							rcyml, err := ctrl.RuntimeConfigYAML()
+							if err != nil {
+								return err
+							}
+
+							rcmd := "# Scaffold RC\n\n ```yaml\n" + rcyml + "\n```"
+
+							s, err := glamour.RenderWithEnvironmentConfig(rcmd)
+							if err != nil {
+								return err
+							}
+
+							fmt.Print(s)
+							return nil
+						},
+					},
+				},
 			},
 		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal().Err(err).Msg("failed to run scaffold")
+		errstr := err.Error()
+
+		switch {
+		// ignore these errors, urfave/cli does not provide any way to hanldle them
+		// without direct string comparison :(
+		case strings.HasPrefix(errstr, "flag provided but not defined"), errors.Is(err, ErrLinterErrors):
+			// ignore
+		default:
+			console.FatalError(err)
+		}
+
+		os.Exit(1)
 	}
 }

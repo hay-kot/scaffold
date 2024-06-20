@@ -5,6 +5,8 @@ env:
   SCAFFOLD_NO_CLOBBER: true
   SCAFFOLD_OUT: "gen"
   SCAFFOLD_DIR: ".scaffold,.examples"
+  SCAFFOLD_SETTINGS_LOG_LEVEL: "debug"
+  SCAFFOLD_SETTINGS_LOG_FILE: "./scaffold.log"
 
 tasks:
   run:
@@ -61,6 +63,11 @@ tasks:
       - task: format
       - task: lint
       - task: test
+
+  printer:
+    desc: Runs the main.go program with the dev printer command for testing output
+    cmds:
+      - go run main.go dev printer
 
   do:cli:
     desc: Runs the main.go program with the cli scaffold

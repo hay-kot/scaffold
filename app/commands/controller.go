@@ -2,9 +2,15 @@
 package commands
 
 import (
+	"bytes"
+	"os"
+
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
+	"github.com/hay-kot/scaffold/internal/printer"
+	"github.com/hay-kot/scaffold/internal/styles"
+	"gopkg.in/yaml.v3"
 )
 
 type Flags struct {
@@ -30,9 +36,10 @@ type Controller struct {
 	// that are from the root command
 	Flags Flags
 
+	prepared bool
 	engine   *engine.Engine
 	rc       *scaffoldrc.ScaffoldRC
-	prepared bool
+	printer  *printer.Printer
 }
 
 // Prepare sets up the controller to be called by the CLI, if the controller is
@@ -41,10 +48,23 @@ func (ctrl *Controller) Prepare(e *engine.Engine, src *scaffoldrc.ScaffoldRC) {
 	ctrl.engine = e
 	ctrl.rc = src
 	ctrl.prepared = true
+	ctrl.printer = printer.New(os.Stdout).WithBase(styles.Base).WithLight(styles.Light)
 }
 
 func (ctrl *Controller) ready() {
 	if !ctrl.prepared {
 		panic("controller not prepared")
 	}
+}
+
+func (ctrl *Controller) RuntimeConfigYAML() (string, error) {
+	buff := bytes.NewBuffer(nil)
+	encoder := yaml.NewEncoder(buff)
+	encoder.SetIndent(4)
+	err := encoder.Encode(ctrl.rc)
+	if err != nil {
+		return "", err
+	}
+
+	return buff.String(), nil
 }

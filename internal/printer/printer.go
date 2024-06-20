@@ -50,17 +50,14 @@ func (c *Printer) Println(s string) {
 	c.write("\n")
 }
 
-// UnknownError printer an error message for an unknown or unexpected error.
+// FatalError printer an error message for an unknown or unexpected error.
 // This is used when an error in the system was unexpected, and the error output
 // should be displayed to the user.
 //
 // If the error implements the ConsoleOutput interface, the ConsoleOutput method
 // will be called to get the error output.
-func (c *Printer) UnknownError(title string, err error) {
+func (c *Printer) FatalError(err error) {
 	bldr := &strings.Builder{}
-
-	bldr.WriteString(styles.Error("An unexpected error occurred"))
-	bldr.WriteString("\n")
 
 	consoleErr, ok := err.(ConsoleOutput)
 	if ok {
@@ -69,7 +66,8 @@ func (c *Printer) UnknownError(title string, err error) {
 		return
 	}
 
-	bldr.WriteString(styles.Padding(styles.Bold(err.Error())))
+	bldr.WriteString("fatal: ")
+	bldr.WriteString(styles.Error(err.Error()))
 	bldr.WriteString("\n")
 
 	c.write(bldr.String())

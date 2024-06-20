@@ -321,7 +321,7 @@ func main() {
 							console.Title(" --- Unknown Error ---")
 							console.LineBreak()
 
-							console.UnknownError("Basic Error", errors.New("this is a basic error's message"))
+							console.FatalError(errors.New("this is a basic error's message"))
 
 							console.LineBreak()
 							console.Title(" --- List ---")
@@ -365,7 +365,7 @@ func main() {
 		case strings.HasPrefix(errstr, "flag provided but not defined"), errors.Is(err, ErrLinterErrors):
 			// ignore
 		default:
-			console.UnknownError("An unexpected error occurred", err)
+			console.FatalError(err)
 		}
 
 		os.Exit(1)

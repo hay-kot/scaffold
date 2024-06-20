@@ -24,7 +24,7 @@ var (
 	Underline   = lipgloss.NewStyle().Underline(true).Render
 	Base, Light = ThemeColorsScaffold.Compile()
 
-	Error   = lipgloss.NewStyle().Foreground(lipgloss.Color(ColorError)).PaddingLeft(1).Render
+	Error   = lipgloss.NewStyle().Foreground(lipgloss.Color(ColorError)).Render
 	Success = lipgloss.NewStyle().Foreground(lipgloss.Color(ColorSuccess)).PaddingLeft(1).Render
 	Subtle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#a3a3a3")).PaddingLeft(1).Render
 )

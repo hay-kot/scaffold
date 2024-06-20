@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/charmbracelet/glamour"
 	"github.com/hay-kot/scaffold/app/commands"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
@@ -348,6 +349,25 @@ func main() {
 								{Key: "settings.theme", Message: "invalid theme 'x-theme'"},
 							})
 
+							return nil
+						},
+					},
+					{
+						Name: "dump",
+						Action: func(ctx *cli.Context) error {
+							rcyml, err := ctrl.RuntimeConfigYAML()
+							if err != nil {
+								return err
+							}
+
+							rcmd := "# Scaffold RC\n\n ```yaml\n" + rcyml + "\n```"
+
+							s, err := glamour.RenderWithEnvironmentConfig(rcmd)
+							if err != nil {
+								return err
+							}
+
+							fmt.Print(s)
 							return nil
 						},
 					},

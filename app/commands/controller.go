@@ -2,6 +2,7 @@
 package commands
 
 import (
+	"bytes"
 	"os"
 
 	"github.com/hay-kot/scaffold/app/core/engine"
@@ -9,6 +10,7 @@ import (
 	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
 	"github.com/hay-kot/scaffold/internal/printer"
 	"github.com/hay-kot/scaffold/internal/styles"
+	"gopkg.in/yaml.v3"
 )
 
 type Flags struct {
@@ -53,4 +55,16 @@ func (ctrl *Controller) ready() {
 	if !ctrl.prepared {
 		panic("controller not prepared")
 	}
+}
+
+func (ctrl *Controller) RuntimeConfigYAML() (string, error) {
+	buff := bytes.NewBuffer(nil)
+	encoder := yaml.NewEncoder(buff)
+	encoder.SetIndent(4)
+	err := encoder.Encode(ctrl.rc)
+	if err != nil {
+		return "", err
+	}
+
+	return buff.String(), nil
 }

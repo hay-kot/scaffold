@@ -200,9 +200,12 @@ func main() {
 				scaferrs := scaffoldrc.RcValidationErrors{}
 				switch {
 				case errors.As(err, &scaferrs):
+					errlist := make([]printer.KeyValueError, 0, len(scaferrs))
 					for _, err := range scaferrs {
-						log.Error().Str("key", err.Key).Msg(err.Cause.Error())
+						errlist = append(errlist, printer.KeyValueError{Key: err.Key, Message: err.Cause.Error()})
 					}
+
+					console.KeyValueValidationError("ScaffoldRC Errors", errlist)
 				default:
 					return fmt.Errorf("unexpected error return from validator: %w", err)
 				}
@@ -362,7 +365,6 @@ func main() {
 		case strings.HasPrefix(errstr, "flag provided but not defined"), errors.Is(err, ErrLinterErrors):
 			// ignore
 		default:
-			log.Error().Err(err).Msg("error occurred")
 			console.UnknownError("An unexpected error occurred", err)
 		}
 

@@ -36,7 +36,7 @@ func NotZero[T Validatable](v T) error {
 		},
 		slicefn: func(slice []string) error {
 			if len(slice) == 0 {
-				return errors.New("input cannot be empty")
+				return errors.New("must select at least one")
 			}
 
 			return nil

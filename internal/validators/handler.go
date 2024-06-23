@@ -21,7 +21,7 @@ func (vh *validatehandler) validate(v any) error {
 		return vh.strfn(val.String())
 	case reflect.Slice:
 		// cast to string slice
-		strSlice := any(v).([]string)
+		strSlice := v.([]string)
 		return vh.slicefn(strSlice)
 	default:
 		panic("unsupported type")

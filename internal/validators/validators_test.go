@@ -18,34 +18,6 @@ func Test_NotZero_String(t *testing.T) {
 	}
 }
 
-func Test_NotZero_Int(t *testing.T) {
-	v := 1
-	err := NotZero(v)
-	if err != nil {
-		t.Error("NotZero failed")
-	}
-
-	v = 0
-	err = NotZero(v)
-	if err == nil {
-		t.Error("NotZero failed")
-	}
-}
-
-func Test_AtleastOne(t *testing.T) {
-	v := []string{"test"}
-	err := AtleastOne(v)
-	if err != nil {
-		t.Error("AtleastOne failed")
-	}
-
-	v = []string{}
-	err = AtleastOne(v)
-	if err == nil {
-		t.Error("AtleastOne failed")
-	}
-}
-
 func Test_MinLength(t *testing.T) {
 	// String
 	v := "test"

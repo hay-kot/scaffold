@@ -64,7 +64,8 @@ questions:
   - name: "multiselect"
     group: selects
     validate:
-      min: 3
+      min: 2
+      max: 3
     prompt:
       message: "Multi Select"
       description: "This is a multi select prompt"

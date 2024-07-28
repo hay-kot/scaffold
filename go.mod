@@ -11,7 +11,7 @@ require (
 	github.com/charmbracelet/glamour v0.7.0
 	github.com/charmbracelet/huh v0.4.2
 	github.com/charmbracelet/huh/spinner v0.0.0-20240618200428-90406d79077d
-	github.com/charmbracelet/lipgloss v0.11.0
+	github.com/charmbracelet/lipgloss v0.12.1
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/go-sprout/sprout v0.4.1
 	github.com/huandu/xstrings v1.5.0
@@ -32,7 +32,7 @@ require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
-	github.com/charmbracelet/x/ansi v0.1.2 // indirect
+	github.com/charmbracelet/x/ansi v0.1.4 // indirect
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240606154654-7c42867b53c7 // indirect
 	github.com/charmbracelet/x/input v0.1.2 // indirect
 	github.com/charmbracelet/x/term v0.1.1 // indirect

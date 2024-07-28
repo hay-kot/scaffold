@@ -4,8 +4,9 @@
 package validators
 
 import (
+	"errors"
 	"fmt"
-	"reflect"
+	"regexp"
 )
 
 type Validator[T any] func(v T) error
@@ -24,80 +25,92 @@ func Combine[T any](validators ...Validator[T]) Validator[T] {
 
 // NotZero validates that the value is not zero.
 // It returns an error if the value is zero.
-func NotZero[T comparable](v T) error {
-	var zero T
-	if v == zero {
-		return fmt.Errorf("value is required")
+func NotZero[T Validatable](v T) error {
+	handler := &validatehandler{
+		strfn: func(str string) error {
+			if str == "" {
+				return errors.New("input cannot be empty")
+			}
+
+			return nil
+		},
+		slicefn: func(slice []string) error {
+			if len(slice) == 0 {
+				return errors.New("must select at least one")
+			}
+
+			return nil
+		},
 	}
 
-	return nil
+	return handler.validate(v)
 }
 
-// Function to get the length of a value using reflection
-func getLength(v interface{}) int {
-	// Get the reflect.Value of the interface
-	val := reflect.ValueOf(v)
+// MinLength validates that the value is at least m long.
+func MinLength[T Validatable](m int) Validator[T] {
+	handler := &validatehandler{
+		strfn: func(str string) error {
+			if len(str) < m {
+				return fmt.Errorf("input must be at least %d characters", m)
+			}
 
-	// Check if the value is a slice, array, string, map, or channel
-	switch val.Kind() {
-	case reflect.Slice, reflect.Array, reflect.String, reflect.Map, reflect.Chan:
-		return val.Len()
-	default:
-		return -1 // Return -1 if the value doesn't support length
-	}
-}
+			return nil
+		},
+		slicefn: func(slice []string) error {
+			if len(slice) < m {
+				return fmt.Errorf("must select at least %d", m)
+			}
 
-// MinLength validates that the value is atleast m long.
-//
-// Supported Types:
-//   - string
-//   - slice
-//   - array
-//   - map
-//   - channel
-func MinLength[T any](m int) Validator[T] {
-	var zero T
-	if getLength(zero) == -1 {
-		panic("unsupported type")
+			return nil
+		},
 	}
 
-	return func(v T) error {
-		if getLength(v) < m {
-			return fmt.Errorf("value must be at least %d long", m)
-		}
-
-		return nil
-	}
+	return func(v T) error { return handler.validate(v) }
 }
 
 // MaxLength validates that the value is at most m long.
-//
-// Supported Types:
-//   - string
-//   - slice
-//   - array
-//   - map
-//   - channel
 func MaxLength[T any](m int) Validator[T] {
-	var zero T
-	if getLength(zero) == -1 {
-		panic("unsupported type")
+	handler := &validatehandler{
+		strfn: func(str string) error {
+			if len(str) > m {
+				return fmt.Errorf("input must be at most %d characters", m)
+			}
+
+			return nil
+		},
+		slicefn: func(slice []string) error {
+			if len(slice) > m {
+				return fmt.Errorf("must select at most %d", m)
+			}
+
+			return nil
+		},
 	}
 
-	return func(v T) error {
-		if getLength(v) > m {
-			return fmt.Errorf("value can be at most %d long", m)
-		}
-
-		return nil
-	}
+	return func(v T) error { return handler.validate(v) }
 }
 
-// AtleastOne validates that atleast one selection is required.
-func AtleastOne[T any](v []T) error {
-	if len(v) == 0 {
-		return fmt.Errorf("atleast one selection is required")
+func Match[T Validatable](re string, msg string) Validator[T] {
+	compiled := regexp.MustCompile(re)
+
+	handler := &validatehandler{
+		strfn: func(str string) error {
+			if !compiled.MatchString(str) {
+				return errors.New(msg)
+			}
+
+			return nil
+		},
+		slicefn: func(slice []string) error {
+			for _, str := range slice {
+				if !compiled.MatchString(str) {
+					return errors.New(msg)
+				}
+			}
+
+			return nil
+		},
 	}
 
-	return nil
+	return func(v T) error { return handler.validate(v) }
 }

@@ -115,8 +115,8 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine, theme *huh.
 				{
 					Name: "Project",
 					Prompt: AnyPrompt{
-						Message:    &msg,
-						Desciption: &decs,
+						Message:     &msg,
+						Description: &decs,
 					},
 					Required: true,
 				},

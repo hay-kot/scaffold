@@ -32,29 +32,34 @@ outer:
 }
 
 type Question struct {
-	Name     string    `yaml:"name"`
-	Group    string    `yaml:"group"`
-	Prompt   AnyPrompt `yaml:"prompt"`
-	When     string    `yaml:"when"`
-	Required bool      `yaml:"required"`
+	Name     string              `yaml:"name"`
+	Group    string              `yaml:"group"`
+	Prompt   AnyPrompt           `yaml:"prompt"`
+	When     string              `yaml:"when"`
+	Required bool                `yaml:"required"`
+	Validate validators.Validate `yaml:"validate"`
 }
 
 func (q Question) Title() string {
+	if q.Prompt.Confirm != nil {
+		return unwrap(q.Prompt.Confirm)
+	}
+
 	return unwrap(q.Prompt.Message)
 }
 
 func (q Question) Description() string {
-	return unwrap(q.Prompt.Desciption)
+	return unwrap(q.Prompt.Description)
 }
 
 type AnyPrompt struct {
-	Message    *string   `yaml:"message"`
-	Desciption *string   `yaml:"description"`
-	Loop       bool      `yaml:"loop"`
-	Default    any       `yaml:"default"`
-	Confirm    *string   `yaml:"confirm"`
-	Multi      bool      `yaml:"multi"`
-	Options    *[]string `yaml:"options"`
+	Message     *string   `yaml:"message"`
+	Description *string   `yaml:"description"`
+	Default     any       `yaml:"default"`
+	Confirm     *string   `yaml:"confirm"`
+	Options     *[]string `yaml:"options"`
+	Loop        bool      `yaml:"loop"`
+	Multi       bool      `yaml:"multi"`
 }
 
 func (p AnyPrompt) IsSelect() bool {
@@ -92,8 +97,9 @@ func (q Question) ToAskable(def any) *Askable {
 			Options(toHuhOptions(q.Prompt.Options)...).
 			Value(&defValue)
 
-		if q.Required {
-			prompt.Validate(validators.AtleastOne)
+		vals := validators.GetValidatorFuncs[[]string](q.Validate)
+		if len(vals) > 0 {
+			prompt.Validate(validators.Combine(vals...))
 		}
 
 		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
@@ -109,8 +115,9 @@ func (q Question) ToAskable(def any) *Askable {
 			Options(toHuhOptions(q.Prompt.Options)...).
 			Value(&defValue)
 
-		if q.Required {
-			prompt.Validate(validators.NotZero)
+		vals := validators.GetValidatorFuncs[string](q.Validate)
+		if len(vals) > 0 {
+			prompt.Validate(validators.Combine(vals...))
 		}
 
 		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
@@ -137,6 +144,11 @@ func (q Question) ToAskable(def any) *Askable {
 			Description(q.Description()).
 			Value(defValue)
 
+		vals := validators.GetValidatorFuncs[[]string](q.Validate)
+		if len(vals) > 0 {
+			prompt.Validate(validators.Combine(vals...))
+		}
+
 		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
 			vars[q.Name] = prompt.GetValue().([]string)
 			return nil
@@ -150,8 +162,9 @@ func (q Question) ToAskable(def any) *Askable {
 			Description(q.Description()).
 			Value(&defValue)
 
-		if q.Required {
-			prompt.Validate(validators.NotZero)
+		vals := validators.GetValidatorFuncs[string](q.Validate)
+		if len(vals) > 0 {
+			prompt.Validate(validators.Combine(vals...))
 		}
 
 		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {
@@ -167,8 +180,9 @@ func (q Question) ToAskable(def any) *Askable {
 			Description(q.Description()).
 			Value(&defValue)
 
-		if q.Required {
-			prompt.Validate(validators.NotZero)
+		vals := validators.GetValidatorFuncs[string](q.Validate)
+		if len(vals) > 0 {
+			prompt.Validate(validators.Combine(vals...))
 		}
 
 		return NewAskable(q.Title(), q.Name, prompt, func(vars engine.Vars) error {

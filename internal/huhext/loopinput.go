@@ -197,3 +197,10 @@ func (l *LoopedInput) WithWidth(v int) huh.Field {
 func (l *LoopedInput) Zoom() bool {
 	return l.input.Zoom()
 }
+
+func (l *LoopedInput) Validate(fn func(v []string) error) *LoopedInput {
+	l.input.Validate(func(s string) error {
+		return fn(l.values)
+	})
+	return l
+}

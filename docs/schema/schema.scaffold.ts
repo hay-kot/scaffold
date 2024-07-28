@@ -46,7 +46,7 @@ type Question = {
    * */
   prompt: Prompt;
   /**
-   * required (when true) will require the user to provide an answer
+   * @deprecated use validate.required instead
    * */
   required?: boolean;
   /**
@@ -57,6 +57,40 @@ type Question = {
    * group is an optional key that can be used to group questions together in a shared view.
    * */
   group?: string;
+  validate?: Validator;
+};
+
+type Validator = {
+  /**
+   * required (when true) will ensure that the user provides a value for the prompt. Only some prompt types support this option.
+   * */
+  required?: boolean;
+  match?: {
+    /**
+     * regex is a regular expression that the user's input must match.
+     */
+    regex: string;
+    /**
+     * message is a message that will be displayed to the user if the input does not match the pattern. Only some prompt types support this option.
+     * */
+    message?: string;
+  };
+  /**
+   * min is the minimum value that the user's input must be greater than or equal to.
+   *
+   * - For strings, this is the minimum length of the string.
+   * - For multi-selects, this is the minimum number of items that must be selected.
+   * - For looped prompts, this is the minimum number of items that must be provided.
+   */
+  min?: number;
+  /**
+   * max is the maximum value that the user's input must be less than or equal to.
+   *
+   * - For strings, this is the maximum length of the string.
+   * - For multi-selects, this is the maximum number of items that can be selected.
+   * - For looped prompts, this is the maximum number of items that can be provided.
+   */
+  max?: number;
 };
 
 type Prompt =

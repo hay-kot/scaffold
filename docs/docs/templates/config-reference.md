@@ -20,9 +20,32 @@ Questions are used to prompt the user for input when generating a scaffold. We s
 
 The name of the variable that will be used in the template. <span v-pre>`{{ .Scaffold.name }}`</span>
 
-### `required`
+### `validate`
 
-Whether or not the question is required.
+The `validate` field is used to configure a validation function for the input. There are several subkeys that can be used to configure the validation.
+
+#### `required`
+
+The `required` field is a boolean that will determine if the input is required. If the input is required and the user does not provide a value, the validation will fail.
+
+#### `min`
+
+The `min` field is an integer that will determine the minimum length of the input. If the input is less than the minimum length, the validation will fail.
+
+- When the input is a text input, this will be the minimum length of the string.
+- When the input is a multi-select, this will be the minimum number of selections.
+- When the input is a looped input, this will be the minimum number of inputs provided.
+
+#### `max`
+
+The `max` field is an integer that will determine that maximum length of the input. It uses the same rules as the `min` field.
+
+#### `match`
+
+Match is a regular expression and message shown to the user on failure. It has two properties:
+
+- `regex` - The regular expression to match against
+- `message` - The message to show the user on failure
 
 ### `when`
 

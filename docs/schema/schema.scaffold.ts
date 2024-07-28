@@ -74,16 +74,24 @@ type Validator = {
      * message is a message that will be displayed to the user if the input does not match the pattern. Only some prompt types support this option.
      * */
     message?: string;
-  }
+  };
   /**
    * min is the minimum value that the user's input must be greater than or equal to.
+   *
+   * - For strings, this is the minimum length of the string.
+   * - For multi-selects, this is the minimum number of items that must be selected.
+   * - For looped prompts, this is the minimum number of items that must be provided.
    */
   min?: number;
   /**
    * max is the maximum value that the user's input must be less than or equal to.
+   *
+   * - For strings, this is the maximum length of the string.
+   * - For multi-selects, this is the maximum number of items that can be selected.
+   * - For looped prompts, this is the maximum number of items that can be provided.
    */
   max?: number;
-}
+};
 
 type Prompt =
   | InputText

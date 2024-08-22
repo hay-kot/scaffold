@@ -8,7 +8,7 @@ import (
 	"text/template"
 	"unicode"
 
-	"github.com/go-sprout/sprout"
+	"github.com/go-sprout/sprout/sprigin"
 	"github.com/rs/zerolog/log"
 )
 
@@ -22,7 +22,7 @@ type Engine struct {
 }
 
 func New() *Engine {
-	fm := sprout.FuncMap()
+	fm := sprigin.FuncMap()
 
 	fm["wraptmpl"] = wraptmpl
 

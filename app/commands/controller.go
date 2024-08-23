@@ -34,7 +34,8 @@ func (f Flags) OutputFS() rwfs.WriteFS {
 type Controller struct {
 	// Flags contains the CLI flags
 	// that are from the root command
-	Flags Flags
+	Flags   Flags
+	Version string
 
 	prepared bool
 	engine   *engine.Engine

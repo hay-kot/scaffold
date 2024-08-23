@@ -76,6 +76,12 @@ tasks:
       - go run main.go new cli
       - go run ./gen/*/main.go
 
+  do:funcs:
+    desc: Runs the main.go program with the cli scaffold
+    cmds:
+      - rm -rf ./gen/*
+      - go run main.go --output-dir=":memory:" new funcs
+
   do:role:
     desc: Runs the main.go program with the role scaffold
     cmds:

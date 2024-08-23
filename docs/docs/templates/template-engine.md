@@ -32,6 +32,40 @@ Wraps a string in `{{` and `}}` so it can be used as a template. This can also b
 
 ::: v-pre
 
+#### `isPlural`
+
+Returns a boolean, `true` if the input is plural, `false` otherwise.
+
+::: v-pre
+    `{{ isPlural "apple" }}` -> `false`
+    `{{ isPlural "apples" }}` -> `true`
+::: v-pre
+
+#### `isSingular`
+
+Returns a boolean, `true` if the input is singular, `false` otherwise.
+
+::: v-pre
+    `{{ isSingular "apple" }}` -> `true`
+    `{{ isSingular "apples" }}` -> `false`
+::: v-pre
+
+#### `toPlural`
+
+Converts a singular word to its plural form.
+
+::: v-pre
+    `{{ toPlural "apple" }}` -> `apples`
+::: v-pre
+
+#### `toSingular`
+
+Converts a plural word to its singular form.
+
+::: v-pre
+    `{{ toSingular "apples" }}` -> `apple`
+::: v-pre
+
 ## Engine Rules
 
 The template process also uses the following rules for rendering:

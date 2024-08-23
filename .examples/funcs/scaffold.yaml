@@ -1,0 +1,19 @@
+messages:
+  post: |
+    # Input {{ .Scaffold.input_str }}
+
+    - isPlural:   {{ isPlural .Scaffold.input_str }}
+    - isSingular: {{ isSingular .Scaffold.input_str }}
+    - toSingular: {{ toSingular .Scaffold.input_str }}
+    - toPlural:   {{ toPlural .Scaffold.input_str }}
+
+questions:
+  - name: input_str
+    validate:
+      match:
+        message: "Input cannot contain whitespace"
+        regex: "^[a-zA-Z0-9]+$"
+    prompt:
+      message: "Enter a Word"
+      description: "this word will be tested for pluralization"
+

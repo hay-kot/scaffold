@@ -8,6 +8,7 @@ import (
 	"text/template"
 	"unicode"
 
+	"github.com/gertd/go-pluralize"
 	"github.com/go-sprout/sprout/sprigin"
 	"github.com/rs/zerolog/log"
 )
@@ -24,7 +25,13 @@ type Engine struct {
 func New() *Engine {
 	fm := sprigin.FuncMap()
 
+	client := pluralize.NewClient()
+
 	fm["wraptmpl"] = wraptmpl
+	fm["isPlural"] = client.IsPlural
+	fm["isSingular"] = client.IsSingular
+	fm["toSingular"] = client.Singular
+	fm["toPlural"] = client.Plural
 
 	return &Engine{
 		fm: fm,

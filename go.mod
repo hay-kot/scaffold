@@ -12,6 +12,7 @@ require (
 	github.com/charmbracelet/huh v0.5.2
 	github.com/charmbracelet/huh/spinner v0.0.0-20240821193529-5fd70815c13f
 	github.com/charmbracelet/lipgloss v0.13.0
+	github.com/gertd/go-pluralize v0.2.1
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/go-sprout/sprout v0.5.1
 	github.com/huandu/xstrings v1.5.0

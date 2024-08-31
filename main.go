@@ -48,7 +48,9 @@ func HomeDir(s ...string) string {
 func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).Level(zerolog.WarnLevel)
 
-	ctrl := &commands.Controller{}
+	ctrl := &commands.Controller{
+		Version: version,
+	}
 	console := printer.New(os.Stdout)
 
 	app := &cli.App{

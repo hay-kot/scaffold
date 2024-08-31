@@ -7,6 +7,7 @@ import (
 )
 
 type ProjectScaffoldFile struct {
+	Metadata  Metadata                  `yaml:"metadata"`
 	Skip      []string                  `yaml:"skip"`
 	Questions []Question                `yaml:"questions"`
 	Rewrites  []Rewrite                 `yaml:"rewrites"`

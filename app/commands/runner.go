@@ -13,6 +13,7 @@ import (
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/hay-kot/scaffold/app/scaffold"
 	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
+	"github.com/rs/zerolog/log"
 )
 
 type runconf struct {
@@ -37,6 +38,15 @@ func (ctrl *Controller) runscaffold(cfg runconf) error {
 	})
 	if err != nil {
 		return err
+	}
+
+	ok, err := p.Conf.Metadata.IsCompatible(log.Logger, ctrl.Version)
+	if err != nil {
+		return err
+	}
+
+	if !ok {
+		return fmt.Errorf("scaffold requires version %s or higher", p.Conf.Metadata.MinimumVersion)
 	}
 
 	if !cfg.noPrompt && p.Conf.Messages.Pre != "" {

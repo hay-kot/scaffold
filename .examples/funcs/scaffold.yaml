@@ -1,3 +1,6 @@
+metadata:
+  minimum_version: "0.4.0"
+
 messages:
   post: |
     # Input {{ .Scaffold.input_str }}
@@ -16,4 +19,3 @@ questions:
     prompt:
       message: "Enter a Word"
       description: "this word will be tested for pluralization"
-

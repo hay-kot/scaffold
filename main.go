@@ -269,9 +269,10 @@ func main() {
 				},
 			},
 			{
-				Name:   "list",
-				Usage:  "list available scaffolds",
-				Action: ctrl.List,
+				Name:    "list",
+				Aliases: []string{"ls"},
+				Usage:   "list available scaffolds",
+				Action:  ctrl.List,
 			},
 			{
 				Name:   "update",

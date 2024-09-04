@@ -41,15 +41,6 @@ func (c *Printer) write(s string) {
 	_, _ = c.writer.Write([]byte(s))
 }
 
-func (c *Printer) Print(s string) {
-	c.write(s)
-}
-
-func (c *Printer) Println(s string) {
-	c.write(s)
-	c.write("\n")
-}
-
 // FatalError printer an error message for an unknown or unexpected error.
 // This is used when an error in the system was unexpected, and the error output
 // should be displayed to the user.

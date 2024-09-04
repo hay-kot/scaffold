@@ -314,8 +314,9 @@ func main() {
 				Action: ctrl.Init,
 			},
 			{
-				Name:  "dev",
-				Usage: "development commands for testing",
+				Name:   "dev",
+				Hidden: true,
+				Usage:  "development commands for testing",
 				Subcommands: []*cli.Command{
 					{
 						Name:  "printer",

@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"os"
@@ -36,7 +37,10 @@ func (f FlagsNew) OutputFS() rwfs.WriteFS {
 
 func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 	if len(args) == 0 {
-		return fmt.Errorf("missing scaffold name")
+		ctrl.printer.FatalError(errors.New("missing scaffold path"))
+		return ctrl.List(FlagsList{
+			OutputDir: flags.OutputDir,
+		})
 	}
 
 	path, err := ctrl.resolve(args[0], flags.OutputDir, flags.NoPrompt, flags.ForceApply)

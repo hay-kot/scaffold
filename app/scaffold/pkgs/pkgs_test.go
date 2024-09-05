@@ -114,3 +114,46 @@ func TestIsRemote(t *testing.T) {
 		}
 	}
 }
+
+func Test_cleanRemoteURL(t *testing.T) {
+	type tcase struct {
+		name  string
+		input string
+		want  string
+	}
+
+	cases := []tcase{
+		{
+			name:  "github url (https)",
+			input: "https://github.com/hay-kot/scaffold",
+			want:  "github.com/hay-kot/scaffold",
+		},
+		{
+			name:  "github url (http)",
+			input: "http://github.com/hay-kot/scaffold",
+			want:  "github.com/hay-kot/scaffold",
+		},
+		{
+			name:  "github url with .git",
+			input: "https://github.com/hay-kot/scaffold.git",
+			want:  "github.com/hay-kot/scaffold",
+		},
+		{
+			name:  "github url with ssh prefix",
+			input: "git@github.com:hay-kot/scaffold.git",
+			want:  "github.com/hay-kot/scaffold",
+		},
+		{
+			name:  "filepath",
+			input: "/path/to/repo",
+			want:  "/path/to/repo",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := cleanRemoteURL(tc.input)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}

@@ -168,7 +168,6 @@ func GetVersion(path string) (Version, error) {
 		return Version{}, err
 	}
 
-	// Should be github.com/hay-kot/scaffold or path
 	repository := path
 
 	// If the repository is a git repository, get the remote url
@@ -176,11 +175,7 @@ func GetVersion(path string) (Version, error) {
 	if err == nil && len(remotes) > 0 {
 		cfg := remotes[0].Config()
 		if len(cfg.URLs) > 0 {
-			v := strings.TrimSuffix(cfg.URLs[0], ".git")
-			v = strings.TrimPrefix(v, "https://")
-			v = strings.TrimPrefix(v, "http://")
-			v = strings.TrimPrefix(v, "git@")
-			repository = v
+			repository = cleanRemoteURL(cfg.URLs[0])
 		}
 	}
 
@@ -188,4 +183,15 @@ func GetVersion(path string) (Version, error) {
 		Repository: repository,
 		Commit:     head.Hash().String(),
 	}, nil
+}
+
+func cleanRemoteURL(v string) string {
+	v = strings.TrimSuffix(v, ".git")
+	v = strings.TrimPrefix(v, "https://")
+	v = strings.TrimPrefix(v, "http://")
+	v = strings.TrimPrefix(v, "git@")
+
+	// handle github.com:hay-kot/scaffold.git
+	v = strings.Replace(v, ":", "/", 1)
+	return v
 }

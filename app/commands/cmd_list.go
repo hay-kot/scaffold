@@ -4,16 +4,19 @@ import (
 	"os"
 
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
-	"github.com/urfave/cli/v2"
 )
 
-func (ctrl *Controller) List(ctx *cli.Context) error {
+type FlagsList struct {
+	OutputDir string
+}
+
+func (ctrl *Controller) List(flags FlagsList) error {
 	systemScaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))
 	if err != nil {
 		return err
 	}
 
-	localScaffolds, err := pkgs.ListLocal(os.DirFS(ctrl.Flags.OutputDir))
+	localScaffolds, err := pkgs.ListLocal(os.DirFS(flags.OutputDir))
 	if err != nil {
 		return err
 	}

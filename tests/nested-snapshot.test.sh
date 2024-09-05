@@ -8,8 +8,8 @@ source tests/assert.sh
 
 # Your script continues as before...
 output=$($1 --log-level="error" \
-    --output-dir=":memory:" \
     new \
+    --output-dir=":memory:" \
     --preset="default" \
     --no-prompt \
     --snapshot="stdout" \

@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/hay-kot/scaffold/app/core/engine"
-	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
 	"github.com/hay-kot/scaffold/internal/printer"
 	"github.com/hay-kot/scaffold/internal/styles"
@@ -14,21 +13,9 @@ import (
 )
 
 type Flags struct {
-	NoClobber      bool
-	Force          bool
 	ScaffoldRCPath string
 	Cache          string
-	OutputDir      string
 	ScaffoldDirs   []string
-}
-
-// OutputFS returns a WriteFS based on the OutputDir flag
-func (f Flags) OutputFS() rwfs.WriteFS {
-	if f.OutputDir == ":memory:" {
-		return rwfs.NewMemoryWFS()
-	}
-
-	return rwfs.NewOsWFS(f.OutputDir)
 }
 
 type Controller struct {

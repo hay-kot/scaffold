@@ -9,6 +9,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/hay-kot/scaffold/app/core/fsast"
+	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/hay-kot/scaffold/app/scaffold"
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
 	"github.com/hay-kot/scaffold/internal/styles"
@@ -16,9 +17,22 @@ import (
 )
 
 type FlagsNew struct {
-	NoPrompt bool
-	Preset   string
-	Snapshot string
+	NoPrompt   bool
+	Preset     string
+	Snapshot   string
+	NoClobber  bool
+	ForceApply bool
+	OutputDir  string
+	RunHooks   bool
+}
+
+// OutputFS returns a WriteFS based on the OutputDir flag
+func (f FlagsNew) OutputFS() rwfs.WriteFS {
+	if f.OutputDir == ":memory:" {
+		return rwfs.NewMemoryWFS()
+	}
+
+	return rwfs.NewOsWFS(f.OutputDir)
 }
 
 func (ctrl *Controller) New(args []string, flags FlagsNew) error {
@@ -26,7 +40,7 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 		return fmt.Errorf("missing scaffold name")
 	}
 
-	path, err := ctrl.resolve(args[0], flags.NoPrompt)
+	path, err := ctrl.resolve(args[0], flags.OutputDir, flags.NoPrompt, flags.ForceApply)
 	if err != nil {
 		return err
 	}
@@ -47,7 +61,7 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 		varfunc = func(p *scaffold.Project) (map[string]any, error) {
 			caseVars, ok := p.Conf.Presets[flags.Preset]
 			if !ok {
-				return nil, fmt.Errorf("case %s not found", flags.Preset)
+				return nil, fmt.Errorf("preset '%s' not found", flags.Preset)
 			}
 
 			project, ok := caseVars["Project"].(string)
@@ -76,13 +90,16 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 		}
 	}
 
-	outfs := ctrl.Flags.OutputFS()
+	outfs := flags.OutputFS()
 
 	err = ctrl.runscaffold(runconf{
 		scaffolddir: path,
 		noPrompt:    flags.NoPrompt,
 		varfunc:     varfunc,
 		outputfs:    outfs,
+		options: scaffold.Options{
+			NoClobber: flags.NoClobber,
+		},
 	})
 	if err != nil {
 		return err
@@ -114,13 +131,13 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 	return nil
 }
 
-func (ctrl *Controller) fuzzyFallBack(str string) ([]string, []string, error) {
+func (ctrl *Controller) fuzzyFallBack(str, outputdir string) ([]string, []string, error) {
 	systemScaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))
 	if err != nil {
 		return nil, nil, err
 	}
 
-	localScaffolds, err := pkgs.ListLocal(os.DirFS(ctrl.Flags.OutputDir))
+	localScaffolds, err := pkgs.ListLocal(os.DirFS(outputdir))
 	if err != nil {
 		return nil, nil, err
 	}

@@ -23,7 +23,6 @@ type FlagsNew struct {
 	NoClobber  bool
 	ForceApply bool
 	OutputDir  string
-	RunHooks   bool
 }
 
 // OutputFS returns a WriteFS based on the OutputDir flag

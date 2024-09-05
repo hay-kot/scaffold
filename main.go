@@ -93,6 +93,11 @@ func main() {
 				Value:   "scaffold",
 				EnvVars: []string{"SCAFFOLD_THEME", "SCAFFOLD_SETTINGS_THEME"},
 			},
+			&cli.StringFlag{
+				Name:    "run-hooks",
+				Usage:   "run hooks (never, always, prompt) when provided overrides scaffold rc",
+				EnvVars: []string{"SCAFFOLD_SETTINGS_RUN_HOOKS"},
+			},
 		},
 		Before: func(ctx *cli.Context) error {
 			ctrl.Flags = commands.Flags{
@@ -251,11 +256,6 @@ func main() {
 						Value:   ".",
 						EnvVars: []string{"SCAFFOLD_OUT"},
 					},
-					&cli.StringFlag{
-						Name:    "run-hooks",
-						Usage:   "run hooks (never, always, prompt) when provided overrides scaffold rc",
-						EnvVars: []string{"SCAFFOLD_SETTINGS_RUN_HOOKS"},
-					},
 				},
 				Action: func(ctx *cli.Context) error {
 					return ctrl.New(ctx.Args().Slice(), commands.FlagsNew{
@@ -265,7 +265,6 @@ func main() {
 						NoClobber:  ctx.Bool("no-clobber"),
 						ForceApply: ctx.Bool("force"),
 						OutputDir:  ctx.String("output-dir"),
-						RunHooks:   ctx.Bool("run-hooks"),
 					})
 				},
 			},

@@ -221,7 +221,7 @@ func main() {
 			{
 				Name:      "new",
 				Usage:     "create a new project from a scaffold",
-				UsageText: "scaffold new [scaffold (url | path)] [flags]",
+				UsageText: "scaffold new [flags] [scaffold (url | path)]",
 				Flags: []cli.Flag{
 					&cli.BoolFlag{
 						Name:  "no-prompt",
@@ -272,17 +272,16 @@ func main() {
 				Name: "list",
 				Flags: []cli.Flag{
 					&cli.StringFlag{
-						Name:    "output-dir",
-						Usage:   "scaffold output directory (use ':memory:' for in-memory filesystem)",
-						Value:   ".",
-						EnvVars: []string{"SCAFFOLD_OUT"},
+						Name:  "cwd",
+						Usage: "current working directory to list scaffolds for",
+						Value: ".",
 					},
 				},
 				Aliases: []string{"ls"},
 				Usage:   "list available scaffolds",
 				Action: func(ctx *cli.Context) error {
 					return ctrl.List(commands.FlagsList{
-						OutputDir: ctx.String("output-dir"),
+						OutputDir: ctx.String("cwd"),
 					})
 				},
 			},

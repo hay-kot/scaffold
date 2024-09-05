@@ -40,8 +40,6 @@ github.com/charmbracelet/bubbletea v1.1.0 h1:FjAl9eAL3HBCHenhz/ZPjkKdScmaS5SK69J
 github.com/charmbracelet/bubbletea v1.1.0/go.mod h1:9Ogk0HrdbHolIKHdjfFpyXJmiCzGwy+FesYkZr7hYU4=
 github.com/charmbracelet/glamour v0.8.0 h1:tPrjL3aRcQbn++7t18wOpgLyl8wrOHUEDS7IZ68QtZs=
 github.com/charmbracelet/glamour v0.8.0/go.mod h1:ViRgmKkf3u5S7uakt2czJ272WSg2ZenlYEZXT2x7Bjw=
-github.com/charmbracelet/huh v0.5.2 h1:ofeNkJ4iaFnzv46Njhx896DzLUe/j0L2QAf8znwzX4c=
-github.com/charmbracelet/huh v0.5.2/go.mod h1:Sf7dY0oAn6N/e3sXJFtFX9hdQLrUdO3z7AYollG9bAM=
 github.com/charmbracelet/huh v0.5.3 h1:3KLP4a/K1/S4dq4xFMTNMt3XWhgMl/yx8NYtygQ0bmg=
 github.com/charmbracelet/huh v0.5.3/go.mod h1:OZC3lshuF+/y8laj//DoZdFSHxC51OrtXLJI8xWVouQ=
 github.com/charmbracelet/huh/spinner v0.0.0-20240829113522-b963c398e1f1 h1:SnxSKJFF/AWJK10hdbkIv/Ict4PJldPuIK8wvOBknes=
@@ -54,8 +52,6 @@ github.com/charmbracelet/x/exp/golden v0.0.0-20240815200342-61de596daa2b h1:MnAM
 github.com/charmbracelet/x/exp/golden v0.0.0-20240815200342-61de596daa2b/go.mod h1:wDlXFlCrmJ8J+swcL/MnGUuYnqgQdW9rhSD61oNMb6U=
 github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0 h1:qko3AQ4gK1MTS/de7F5hPGx6/k1u0w4TeYmBFwzYVP4=
 github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0/go.mod h1:pBhA0ybfXv6hDjQUZ7hk1lVxBiUbupdw5R31yPUViVQ=
-github.com/charmbracelet/x/exp/term v0.0.0-20240524151031-ff83003bf67a h1:k/s6UoOSVynWiw7PlclyGO2VdVs5ZLbMIHiGp4shFZE=
-github.com/charmbracelet/x/exp/term v0.0.0-20240524151031-ff83003bf67a/go.mod h1:YBotIGhfoWhHDlnUpJMkjebGV2pdGRCn1Y4/Nk/vVcU=
 github.com/charmbracelet/x/term v0.2.0 h1:cNB9Ot9q8I711MyZ7myUR5HFWL/lc3OpU8jZ4hwm0x0=
 github.com/charmbracelet/x/term v0.2.0/go.mod h1:GVxgxAbjUrmpvIINHIQnJJKpMlHiZ4cktEQCN6GWyF0=
 github.com/cloudflare/circl v1.3.3/go.mod h1:5XYMA4rFBvNIrhs50XuiBJ15vF2pZn4nnUKZrLbUZFA=

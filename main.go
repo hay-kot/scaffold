@@ -269,9 +269,10 @@ func main() {
 				},
 			},
 			{
-				Name:   "list",
-				Usage:  "list available scaffolds",
-				Action: ctrl.List,
+				Name:    "list",
+				Aliases: []string{"ls"},
+				Usage:   "list available scaffolds",
+				Action:  ctrl.List,
 			},
 			{
 				Name:   "update",
@@ -314,8 +315,9 @@ func main() {
 				Action: ctrl.Init,
 			},
 			{
-				Name:  "dev",
-				Usage: "development commands for testing",
+				Name:   "dev",
+				Hidden: true,
+				Usage:  "development commands for testing",
 				Subcommands: []*cli.Command{
 					{
 						Name:  "printer",

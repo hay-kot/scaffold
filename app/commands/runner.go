@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/hay-kot/scaffold/app/scaffold"
+	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
 	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
 	"github.com/rs/zerolog/log"
 )
@@ -47,6 +48,18 @@ func (ctrl *Controller) runscaffold(cfg runconf) error {
 
 	if !ok {
 		return fmt.Errorf("scaffold requires version %s or higher", p.Conf.Metadata.MinimumVersion)
+	}
+
+	version, err := pkgs.GetVersion(cfg.scaffolddir)
+	if err != nil {
+		log.Debug().Err(err).Msg("failed to get version")
+	}
+
+	if !version.IsZero() {
+		if p.Conf.Messages.Pre != "" {
+			p.Conf.Messages.Pre += "\n---\n"
+		}
+		p.Conf.Messages.Pre += fmt.Sprintf("_version %s_", version)
 	}
 
 	if !cfg.noPrompt && p.Conf.Messages.Pre != "" {

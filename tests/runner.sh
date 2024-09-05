@@ -1,12 +1,13 @@
 #!/bin/bash
 export SCAFFOLD_NO_CLOBBER="true"
 export SCAFFOLD_OUT="gen"
+export SCAFFOLD_CACHE="./scaffold/.cache"
 export SCAFFOLD_DIR=".scaffold,.examples"
 
 checkmark="✓"
 crossmark="✗"
 
-# build main.go into random temp path
+# build main.go into temp path
 go build -o /tmp/scaffold-test ./main.go 
 
 echo "Running Script Tests"

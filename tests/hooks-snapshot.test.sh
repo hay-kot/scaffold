@@ -5,11 +5,11 @@ source tests/assert.sh
 
 # Your script continues as before...
 output=$($1 --log-level="error" \
-    --run-hooks="always" \
     new \
     --preset="default" \
     --no-prompt \
     --snapshot="stdout" \
+    --run-hooks="always" \
     hooks)
 
 # Call the function to assert the snapshot

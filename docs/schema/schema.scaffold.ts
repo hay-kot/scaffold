@@ -11,9 +11,9 @@ export interface Schema {
   };
   rewrites?: Rewrite[];
   /**
-   * skips is an array of globs that will be used to skip template rendering for files that match the glob.
+   * skip is an array of globs that will be used to skip template rendering for files that match the glob.
    * */
-  skips?: string[];
+  skip?: string[];
   inject?: Inject[];
   messages?: {
     /**

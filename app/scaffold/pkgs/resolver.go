@@ -25,6 +25,7 @@ type Resolver struct {
 	shorts map[string]string
 	cache  string
 	cwd    string
+	subdir string
 }
 
 func NewResolver(shorts map[string]string, cache, cwd string, opts ...ResolverOption) *Resolver {
@@ -54,6 +55,10 @@ func NewResolver(shorts map[string]string, cache, cwd string, opts ...ResolverOp
 	}
 
 	return r
+}
+
+func (r *Resolver) SetupSubdir(subdir string) {
+	r.subdir = subdir
 }
 
 func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProvider) (path string, err error) {
@@ -90,6 +95,14 @@ func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProv
 	return path, nil
 }
 
+func withSubdir(path string, subdir string) string {
+	if subdir != "" {
+		return filepath.Join(path, subdir)
+	}
+
+	return path
+}
+
 func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (path string, err error) {
 	parsedPath, err := ParseRemote(remoteRef)
 	if err != nil {
@@ -102,7 +115,7 @@ func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (p
 
 	switch {
 	case err == nil:
-		path = dir
+		path = withSubdir(dir, r.subdir)
 	case os.IsNotExist(err):
 		cfg := &git.CloneOptions{
 			URL:      remoteRef,
@@ -125,7 +138,7 @@ func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (p
 			return "", fmt.Errorf("failed to clone repository: %w", err)
 		}
 
-		path = clonedPath
+		path = withSubdir(clonedPath, r.subdir)
 	default:
 		return "", fmt.Errorf("failed to check if repository is cached: %w", err)
 	}

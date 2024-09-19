@@ -19,6 +19,7 @@ type FlagsNew struct {
 	NoPrompt bool
 	Preset   string
 	Snapshot string
+	Subdir   string
 }
 
 func (ctrl *Controller) New(args []string, flags FlagsNew) error {
@@ -26,7 +27,7 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 		return fmt.Errorf("missing scaffold name")
 	}
 
-	path, err := ctrl.resolve(args[0], flags.NoPrompt)
+	path, err := ctrl.resolve(args[0], flags.NoPrompt, flags.Subdir)
 	if err != nil {
 		return err
 	}
@@ -83,6 +84,7 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 		noPrompt:    flags.NoPrompt,
 		varfunc:     varfunc,
 		outputfs:    outfs,
+		subdir:      flags.Subdir,
 	})
 	if err != nil {
 		return err

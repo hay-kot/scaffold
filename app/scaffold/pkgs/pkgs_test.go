@@ -8,49 +8,75 @@ import (
 
 func TestParsePath(t *testing.T) {
 	tests := []struct {
-		name    string
-		input   string
-		want    string
-		wantErr bool
+		name       string
+		input      string
+		wantRepo   string
+		wantSubdir string
+		wantErr    bool
 	}{
 		{
-			name:    "empty",
-			input:   "",
-			want:    "",
-			wantErr: true,
+			name:       "empty",
+			input:      "",
+			wantRepo:   "",
+			wantSubdir: "",
+			wantErr:    true,
 		},
 		{
-			name:    "no slash",
-			input:   "foo",
-			want:    "foo",
-			wantErr: true,
+			name:       "no slash",
+			input:      "foo",
+			wantRepo:   "foo",
+			wantSubdir: "",
+			wantErr:    true,
 		},
 		{
-			name:  "github url",
-			input: "https://github.com/hay-kot/scaffold",
-			want:  "github.com/hay-kot/scaffold",
+			name:       "github url",
+			input:      "https://github.com/hay-kot/scaffold",
+			wantRepo:   "github.com/hay-kot/scaffold",
+			wantSubdir: "",
 		},
 		{
-			name:  "github url with .git",
-			input: "https://github.com/hay-kot/scaffold.git",
-			want:  "github.com/hay-kot/scaffold",
+			name:       "github url with .git",
+			input:      "https://github.com/hay-kot/scaffold.git",
+			wantRepo:   "github.com/hay-kot/scaffold",
+			wantSubdir: "",
 		},
 		{
-			name:  "github url with .git",
-			input: "https://github.com/hay-kot/scaffold.git@1.0.2",
-			want:  "github.com/hay-kot/scaffold@1.0.2",
+			name:       "github url with .git",
+			input:      "https://github.com/hay-kot/scaffold.git@1.0.2",
+			wantRepo:   "github.com/hay-kot/scaffold@1.0.2",
+			wantSubdir: "",
+		},
+
+		{
+			name:       "github url with subdir",
+			input:      "https://github.com/hay-kot/scaffold#example0",
+			wantRepo:   "github.com/hay-kot/scaffold",
+			wantSubdir: "example0",
+		},
+		{
+			name:       "github url with .git and nested subdir",
+			input:      "https://github.com/hay-kot/scaffold.git#nested/example1",
+			wantRepo:   "github.com/hay-kot/scaffold",
+			wantSubdir: "nested/example1",
+		},
+		{
+			name:       "github url with .git and subdir",
+			input:      "https://github.com/hay-kot/scaffold.git@1.0.2#example1",
+			wantRepo:   "github.com/hay-kot/scaffold@1.0.2",
+			wantSubdir: "example1",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseRemote(tt.input)
+			gotRepo, gotSubdir, err := ParseRemote(tt.input)
 
 			switch {
 			case tt.wantErr:
 				assert.Error(t, err)
 			default:
 				assert.NoError(t, err)
-				assert.Equal(t, tt.want, got)
+				assert.Equal(t, tt.wantRepo, gotRepo)
+				assert.Equal(t, tt.wantSubdir, gotSubdir)
 			}
 		})
 	}

@@ -89,7 +89,7 @@ func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProv
 
 	_, err = os.Stat(path)
 	if err != nil {
-		return "", ErrNoMatchingScaffold
+		return "", err
 	}
 
 	return path, nil

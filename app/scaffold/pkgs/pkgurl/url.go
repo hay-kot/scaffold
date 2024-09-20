@@ -9,7 +9,7 @@ var (
 	isSchemeRegExp = regexp.MustCompile(`^[^:]+://`)
 
 	// Ref: https://github.com/git/git/blob/master/Documentation/urls.txt#L37
-	scpLikeURLRegExp = regexp.MustCompile(`^(?:(?P<user>[^@]+)@)?(?P<host>[^:\s]+):(?:(?P<port>[0-9]{1,5}):)?(?P<path>[^\\].*)$`)
+	scpLikeURLRegExp = regexp.MustCompile(`^(?:(?P<user>[^@]+)@)?(?P<host>[^:\s]+):(?:(?P<port>[0-9]{1,5}):)?(?P<path>[^\\][^#]*)(#(?P<hash>.*))?$`)
 )
 
 // MatchesScheme returns true if the given string matches a URL-like
@@ -34,9 +34,9 @@ func IsRemoteEndpoint(url string) bool {
 
 // FindScpLikeComponents returns the user, host, port and path of the
 // given SCP-like URL.
-func FindScpLikeComponents(url string) (user, host, port, path string) {
+func FindScpLikeComponents(url string) (user, host, port, path, hash string) {
 	m := scpLikeURLRegExp.FindStringSubmatch(url)
-	return m[1], m[2], m[3], m[4]
+	return m[1], m[2], m[3], m[4], m[6]
 }
 
 // IsLocalEndpoint returns true if the given URL string specifies a

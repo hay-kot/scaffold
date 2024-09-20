@@ -9,7 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (ctrl *Controller) resolve(argPath string, noPrompt bool, subDir string) (string, error) {
+func (ctrl *Controller) resolve(argPath string, noPrompt bool) (string, error) {
 	if argPath == "" {
 		return "", fmt.Errorf("path is required")
 	}
@@ -25,7 +25,6 @@ func (ctrl *Controller) resolve(argPath string, noPrompt bool, subDir string) (s
 	}
 
 	resolver := pkgs.NewResolver(ctrl.rc.Shorts, ctrl.Flags.Cache, ".")
-	resolver.SetupSubdir(subDir)
 
 	if v, ok := ctrl.rc.Aliases[argPath]; ok {
 		argPath = v

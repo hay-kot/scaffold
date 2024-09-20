@@ -259,18 +259,12 @@ func main() {
 						Usage: "path or `stdout` to save the output ast",
 						Value: "",
 					},
-					&cli.StringFlag{
-						Name:  "subdir",
-						Usage: "For remote URLs, treat the scaffold as a list of templates and use its subdirectory",
-						Value: "",
-					},
 				},
 				Action: func(ctx *cli.Context) error {
 					return ctrl.New(ctx.Args().Slice(), commands.FlagsNew{
 						NoPrompt: ctx.Bool("no-prompt"),
 						Preset:   ctx.String("preset"),
 						Snapshot: ctx.String("snapshot"),
-						Subdir:   ctx.String("subdir"),
 					})
 				},
 			},

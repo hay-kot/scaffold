@@ -27,8 +27,6 @@ type runconf struct {
 	varfunc func(*scaffold.Project) (map[string]any, error)
 	// outputdir is the output directory or filesystem.
 	outputfs rwfs.WriteFS
-	// subdir to read template from. if specified the scaffold is treated as a template collection
-	subdir string
 }
 
 // runscaffold runs the scaffold. This method exists outside of the `new` receiver function

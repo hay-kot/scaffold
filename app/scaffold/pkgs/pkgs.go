@@ -15,69 +15,84 @@ import (
 )
 
 // ParseRemote parses a remote endpoint and returns a filesystem path representing the
-// repository.
+// repository. In addition, it returns the subdirectory of the repository to be used, if any.
 //
 // Examples:
 //
-//	ParseRemote("https://github.com/hay-kot/scaffold-go-cli")
-//	github.com
-//	└── hay-kot
-//	    └── scaffold-go-cli
-//			└── repository files
-func ParseRemote(urlStr string) (string, error) {
+//		ParseRemote("https://github.com/hay-kot/scaffold-go-cli")
+//		github.com
+//		└── hay-kot
+//		    └── scaffold-go-cli
+//				     └── repository files
+//
+//		ParseRemote("https://github.com/hay-kot/scaffold-go-cli#subdir")
+//		github.com
+//		└── hay-kot
+//		    └── scaffold-go-cli
+//			 	    └── subdir
+//	              └── files to use
+func ParseRemote(urlStr string) (string, string, error) {
 	var (
-		host string
-		user string
-		repo string
-		err  error
+		host   string
+		user   string
+		repo   string
+		subdir string
+		err    error
 	)
 
 	switch {
 	case pkgurl.MatchesScheme(urlStr):
-		host, user, repo, err = parseRemoteURL(urlStr)
+		host, user, repo, subdir, err = parseRemoteURL(urlStr)
 	case pkgurl.MatchesScpLike(urlStr):
-		host, user, repo, err = parseRemoteScpLike(urlStr)
+		host, user, repo, subdir, err = parseRemoteScpLike(urlStr)
 	default:
-		return "", fmt.Errorf("failed to parse url: matches neither scheme nor scp-like url structure")
+		return "", "", fmt.Errorf("failed to parse url: matches neither scheme nor scp-like url structure")
 	}
 
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return filepath.Join(host, user, repo), nil
+	return filepath.Join(host, user, repo), subdir, nil
 }
 
 // Parses a remote URL endpoint into its host, user, and repo name
 // parts
-func parseRemoteURL(urlStr string) (string, string, string, error) {
-	url, err := url.ParseRequestURI(urlStr)
+func parseRemoteURL(urlStr string) (string, string, string, string, error) {
+	// Split the url by the hashbang separator, if it exists
+	urlParts := strings.Split(urlStr, "#")
+
+	url, err := url.ParseRequestURI(urlParts[0])
 	if err != nil {
-		return "", "", "", fmt.Errorf("failed to parse url: %w", err)
+		return "", "", "", "", fmt.Errorf("failed to parse url: %w", err)
 	}
 
 	host := url.Host
 	split := strings.Split(url.Path, "/")
+	fragment := ""
+	if len(urlParts) > 1 {
+		fragment = urlParts[1]
+	}
 
 	// Remove .git from repo name if it exists but keeps @tag or @branch intact
 	split[len(split)-1] = strings.Replace(split[len(split)-1], ".git", "", 1)
 
 	if len(split) < 3 {
-		return "", "", "", fmt.Errorf("invalid url")
+		return "", "", "", "", fmt.Errorf("invalid url")
 	}
 
 	user := split[1]
 	repo := split[2]
 
-	return host, user, repo, nil
+	return host, user, repo, fragment, nil
 }
 
 // Parses a remote SCP-like endpoint into its host, user, and repo name
 // parts
-func parseRemoteScpLike(urlStr string) (string, string, string, error) {
-	user, host, _, path := pkgurl.FindScpLikeComponents(urlStr)
+func parseRemoteScpLike(urlStr string) (string, string, string, string, error) {
+	user, host, _, path, hash := pkgurl.FindScpLikeComponents(urlStr)
 
-	return host, user, strings.TrimSuffix(path, ".git"), nil
+	return host, user, strings.TrimSuffix(path, ".git"), hash, nil
 }
 
 // IsRemote checks if the string is a remote url or an alias for a remote url

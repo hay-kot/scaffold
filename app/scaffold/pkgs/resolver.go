@@ -25,7 +25,6 @@ type Resolver struct {
 	shorts map[string]string
 	cache  string
 	cwd    string
-	subdir string
 }
 
 func NewResolver(shorts map[string]string, cache, cwd string, opts ...ResolverOption) *Resolver {
@@ -57,10 +56,6 @@ func NewResolver(shorts map[string]string, cache, cwd string, opts ...ResolverOp
 	return r
 }
 
-func (r *Resolver) SetupSubdir(subdir string) {
-	r.subdir = subdir
-}
-
 func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProvider) (path string, err error) {
 	remoteRef, isRemote := IsRemote(arg, r.shorts)
 
@@ -83,13 +78,13 @@ func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProv
 	default:
 		path, err = r.resolveCwd(arg, checkDirs)
 		if err != nil {
-			return "", err
+			return "", ErrNoMatchingScaffold
 		}
 	}
 
 	_, err = os.Stat(path)
 	if err != nil {
-		return "", err
+		return "", ErrNoMatchingScaffold
 	}
 
 	return path, nil

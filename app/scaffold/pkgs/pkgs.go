@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -128,8 +129,29 @@ func IsRemote(str string, shorts map[string]string) (expanded string, ok bool) {
 }
 
 // Update updates a git repository to the latest commit
-func Update(path string) (updated bool, err error) {
-	repo, err := git.PlainOpen(path)
+func Update(cacheRoot string, scaffoldPath string) (updated bool, err error) {
+	// The package may be in a nested directory of the repository, so we need to find the root
+	// of the repository
+
+	scaffoldPathParts := strings.Split(scaffoldPath, string(filepath.Separator))
+
+	repoPath := ""
+	gitDirFound := false
+
+	// Assuming a minimum of 2 parts in the path i.e. git.host.com/repo
+	for i := len(scaffoldPathParts); i > 1; i-- {
+		repoPath = filepath.Join(cacheRoot, filepath.Join(scaffoldPathParts[:i]...))
+		if _, err := os.Stat(filepath.Join(repoPath, ".git")); err == nil {
+			gitDirFound = true
+			break
+		}
+	}
+
+	if !gitDirFound {
+		return false, fmt.Errorf("no git repository found for %s", scaffoldPath)
+	}
+
+	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
 		return false, err
 	}

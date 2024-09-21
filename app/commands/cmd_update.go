@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/charmbracelet/huh/spinner"
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
@@ -30,7 +29,7 @@ func (ctrl *Controller) Update(ctx *cli.Context) error {
 
 	workfn := func() {
 		for _, s := range scaffolds {
-			isUpdated, err := pkgs.Update(filepath.Join(ctrl.Flags.Cache, s))
+			isUpdated, err := pkgs.Update(ctrl.Flags.Cache, s)
 			if err != nil {
 				failed = append(failed, updateStatus{
 					repository: s,

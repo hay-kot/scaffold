@@ -90,14 +90,6 @@ func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProv
 	return path, nil
 }
 
-func withSubdir(path string, subdir string) string {
-	if subdir != "" {
-		return filepath.Join(path, subdir)
-	}
-
-	return path
-}
-
 func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (path string, err error) {
 	parsedPath, subdir, err := ParseRemote(remoteRef)
 	if err != nil {
@@ -110,7 +102,7 @@ func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (p
 
 	switch {
 	case err == nil:
-		path = withSubdir(dir, subdir)
+		path = filepath.Join(dir, subdir)
 	case os.IsNotExist(err):
 		cfg := &git.CloneOptions{
 			URL:      remoteRef,
@@ -133,7 +125,7 @@ func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (p
 			return "", fmt.Errorf("failed to clone repository: %w", err)
 		}
 
-		path = withSubdir(clonedPath, subdir)
+		path = filepath.Join(clonedPath, subdir)
 	default:
 		return "", fmt.Errorf("failed to check if repository is cached: %w", err)
 	}

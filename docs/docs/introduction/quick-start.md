@@ -24,5 +24,7 @@ go install github.com/hay-kot/scaffold@latest
 scaffold new <scaffold> [flags]
 ```
 
+Where `<scaffold>` is [a path or a URL to a scaffold](../user-guide/scaffold-resolution.md)
+
 See scaffold --help for all available commands and flags
 

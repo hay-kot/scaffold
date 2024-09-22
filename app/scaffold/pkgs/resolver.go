@@ -112,7 +112,10 @@ func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (p
 
 		auth, ok := authprovider.Authenticator(remoteRef)
 		if ok {
-			log.Debug().Msg("matching auth provider found")
+			log.Debug().
+				Str("url", remoteRef).
+				Str("provider", auth.Name()).
+				Msg("matching auth provider found")
 			cfg.Auth = auth
 		}
 

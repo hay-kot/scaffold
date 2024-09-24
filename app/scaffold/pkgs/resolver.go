@@ -91,18 +91,18 @@ func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProv
 }
 
 func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (path string, err error) {
-	parsedPath, subdir, err := ParseRemote(remoteRef)
+	pkg, err := ParseRemote(remoteRef)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse path: %w", err)
 	}
 
-	dir := filepath.Join(r.cache, parsedPath)
+	cloneDir := pkg.CloneDir(r.cache)
 
-	_, err = os.Stat(dir)
+	_, err = os.Stat(cloneDir)
 
 	switch {
 	case err == nil:
-		path = filepath.Join(dir, subdir)
+		path = pkg.ScaffoldDir(r.cache)
 	case os.IsNotExist(err):
 		cfg := &git.CloneOptions{
 			URL:      remoteRef,
@@ -120,15 +120,15 @@ func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (p
 		}
 
 		// Clone Repository to cache and set path to cache path
-		clonedPath, err := r.cloner.Clone(dir, false, cfg)
+		_, err := r.cloner.Clone(cloneDir, false, cfg)
 		if err != nil {
 			// ensure directory is cleaned up
-			_ = os.RemoveAll(dir)
+			_ = os.RemoveAll(cloneDir)
 
 			return "", fmt.Errorf("failed to clone repository: %w", err)
 		}
 
-		path = filepath.Join(clonedPath, subdir)
+		path = pkg.ScaffoldDir(r.cache)
 	default:
 		return "", fmt.Errorf("failed to check if repository is cached: %w", err)
 	}

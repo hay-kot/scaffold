@@ -105,9 +105,9 @@ func ListSystem(f fs.FS) ([]PackageList, error) {
 		return nil, err
 	}
 
-  if current.Root != "" {
-    pkgs = append(pkgs, current)
-  }
+	if current.Root != "" {
+		pkgs = append(pkgs, current)
+	}
 
 	return pkgs, nil
 }

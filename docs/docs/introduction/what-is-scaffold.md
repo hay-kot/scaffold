@@ -26,6 +26,10 @@ What set's Scaffold apart from projects like cookiecutter is the ability to defi
     - CRUD API endpoint stubs
     - Other commonly structured code folders
 
+- **Shared remote templates**
+
+  Templates that add files to a project don't have to be nested under `.scaffolds`. For example, if you are building a tool which users can add to existing project and that tool needs configugration, you can host those tool's scaffolds in a remote repository
+
 See the [examples](https://github.com/hay-kot/scaffold/tree/main/.examples) folder for some examples of how to use Scaffold.
 
 ## Features

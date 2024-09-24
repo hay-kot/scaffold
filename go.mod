@@ -14,7 +14,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/gertd/go-pluralize v0.2.1
 	github.com/go-git/go-git/v5 v5.12.0
-	github.com/go-sprout/sprout v0.5.1
+	github.com/go-sprout/sprout v0.6.0
 	github.com/hashicorp/go-version v1.7.0
 	github.com/huandu/xstrings v1.5.0
 	github.com/psanford/memfs v0.0.0-20230130182539-4dbf7e3e865e

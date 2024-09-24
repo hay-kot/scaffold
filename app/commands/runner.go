@@ -27,6 +27,7 @@ type runconf struct {
 	varfunc func(*scaffold.Project) (map[string]any, error)
 	// outputdir is the output directory or filesystem.
 	outputfs rwfs.WriteFS
+	options  scaffold.Options
 }
 
 // runscaffold runs the scaffold. This method exists outside of the `new` receiver function
@@ -34,9 +35,7 @@ type runconf struct {
 // as possible.
 func (ctrl *Controller) runscaffold(cfg runconf) error {
 	scaffoldFS := os.DirFS(cfg.scaffolddir)
-	p, err := scaffold.LoadProject(scaffoldFS, scaffold.Options{
-		NoClobber: ctrl.Flags.NoClobber,
-	})
+	p, err := scaffold.LoadProject(scaffoldFS, cfg.options)
 	if err != nil {
 		return err
 	}

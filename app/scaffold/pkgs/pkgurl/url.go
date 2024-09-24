@@ -39,7 +39,6 @@ func (p Parts) PathParts() []string {
 //   - Path="hay-kot" => user="", repo="", ok=false
 func (p Parts) RepoOwnerAndName() (user, repo string, ok bool) {
 	parts := p.PathParts()
-	fmt.Printf("parts: %v\n", parts)
 	if len(parts) < 2 {
 		return "", "", false
 	}

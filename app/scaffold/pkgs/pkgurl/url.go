@@ -38,8 +38,6 @@ func (p Parts) PathParts() []string {
 //   - Path="hay-kot/scaffold-go-cli" => user="hay-kot", repo="scaffold-go-cli", ok=true
 //   - Path="hay-kot" => user="", repo="", ok=false
 func (p Parts) RepoOwnerAndName() (user, repo string, ok bool) {
-	fmt.Println("version: ", p.Version)
-	fmt.Println("path: ", p.Path)
 	parts := p.PathParts()
 	fmt.Printf("parts: %v\n", parts)
 	if len(parts) < 2 {

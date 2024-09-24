@@ -7,7 +7,7 @@ require (
 	github.com/bradleyjkemp/cupaloy/v2 v2.8.0
 	github.com/catppuccin/go v0.2.0
 	github.com/charmbracelet/bubbles v0.19.0
-	github.com/charmbracelet/bubbletea v1.1.0
+	github.com/charmbracelet/bubbletea v1.1.1
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/charmbracelet/huh v0.5.3
 	github.com/charmbracelet/huh/spinner v0.0.0-20240829113522-b963c398e1f1

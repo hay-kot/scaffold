@@ -8,6 +8,9 @@ env:
   SCAFFOLD_SETTINGS_LOG_LEVEL: "debug"
   SCAFFOLD_SETTINGS_LOG_FILE: "./scaffold.log"
 
+dotenv:
+  - .env
+
 tasks:
   run:
     desc: Runs the main application and supports passing CLI args

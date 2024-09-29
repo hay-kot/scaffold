@@ -125,7 +125,18 @@ func (ctrl *Controller) fuzzyFallBack(str string) ([]string, []string, error) {
 		return nil, nil, err
 	}
 
-	systemMatches := fuzzy.Find(str, systemScaffolds)
+	systemScaffoldsStrings := make([]string, 0, len(systemScaffolds))
+	for _, s := range systemScaffolds {
+		if len(s.SubPackages) > 0 {
+			for _, sub := range s.SubPackages {
+				systemScaffoldsStrings = append(systemScaffoldsStrings, fmt.Sprintf("%s#%s", s.Root, sub))
+			}
+		} else {
+			systemScaffoldsStrings = append(systemScaffoldsStrings, s.Root)
+		}
+	}
+
+	systemMatches := fuzzy.Find(str, systemScaffoldsStrings)
 	systemMatchesOutput := make([]string, len(systemMatches))
 	for i, match := range systemMatches {
 		systemMatchesOutput[i] = match.Str

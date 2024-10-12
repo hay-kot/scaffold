@@ -114,9 +114,9 @@ func MigrateLegacyPaths() error {
 		}
 	}
 
-	legacyFilepath, exists = CacheDirLegacy()
+	legacyDirectory, exists := CacheDirLegacy()
 	if exists {
-		err := migrateCacheDir(legacyFilepath)
+		err := migrateCacheDir(legacyDirectory)
 		if err != nil {
 			return err
 		}

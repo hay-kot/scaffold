@@ -15,7 +15,7 @@ func Update(cacheRoot string, scaffoldPath string) (updated bool, err error) {
 	// The package may be in a nested directory of the repository, so we need to find the root
 	// of the repository
 
-	scaffoldPathParts := strings.Split(scaffoldPath, string(filepath.Separator))
+	scaffoldPathParts := strings.Split(filepath.ToSlash(scaffoldPath), "/")
 
 	repoPath := ""
 	gitDirFound := false

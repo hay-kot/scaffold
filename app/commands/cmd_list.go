@@ -26,7 +26,7 @@ func (ctrl *Controller) List(ctx *cli.Context) error {
 	}
 
 	if len(systemScaffolds) > 0 {
-		pkgs := []printer.ListTree{}
+		treelist := []printer.ListTree{}
 
 		for _, s := range systemScaffolds {
 			subs := make([]printer.ListTree, len(s.SubPackages))
@@ -36,13 +36,13 @@ func (ctrl *Controller) List(ctx *cli.Context) error {
 				}
 			}
 
-			pkgs = append(pkgs, printer.ListTree{
+			treelist = append(treelist, printer.ListTree{
 				Text:     s.Root,
 				Children: subs,
 			})
 		}
 
-		ctrl.printer.ListTree("System Scaffolds", pkgs)
+		ctrl.printer.ListTree("System Scaffolds", treelist)
 	}
 
 	ctrl.printer.LineBreak()

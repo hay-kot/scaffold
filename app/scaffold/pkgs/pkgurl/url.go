@@ -31,7 +31,7 @@ func (p Parts) PathParts() []string {
 	return strings.Split(p.Path, "/")
 }
 
-// RepoOwnerAndName returns the owner and name of the repository if the URL format contains exactly two parts. Otherwise,
+// RepoOwnerAndName returns the owner and name of the repository if the URL path contains at least two parts. Otherwise,
 // it returns false.
 //
 // Example:

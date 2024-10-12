@@ -29,7 +29,7 @@ type Resolver struct {
 	cwd    string
 }
 
-var commitHashRegex = regexp.MustCompile(`^[0-9a-f]{40}$`)
+var commitHashRegex = regexp.MustCompile(`^[0-9a-f]{7,40}$`)
 
 func isGitCommitHash(s string) bool {
 	return commitHashRegex.MatchString(s)
@@ -53,7 +53,7 @@ func NewResolver(shorts map[string]string, cache, cwd string, opts ...ResolverOp
 				return "", fmt.Errorf("failed to get worktree: %w", err)
 			}
 
-			if version != "" && strings.ToLower(version) != "head" {
+			if version != "" && !strings.EqualFold(version, "head") {
 				if isGitCommitHash(version) {
 					err := wt.Checkout(&git.CheckoutOptions{
 						Hash:  plumbing.NewHash(version),

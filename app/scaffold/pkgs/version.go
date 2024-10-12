@@ -32,22 +32,22 @@ func (v Version) IsZero() bool {
 func GetVersion(path string) (Version, error) {
 	repo, err := git.PlainOpen(path)
 	if err != nil {
-		return Version{}, err
+		return Version{}, fmt.Errorf("failed to open git repository: %w", err)
 	}
 
 	head, err := repo.Head()
 	if err != nil {
-		return Version{}, err
+		return Version{}, fmt.Errorf("failed to get HEAD: %w", err)
 	}
 
 	repository := path
 
 	// If the repository is a git repository, get the remote url
-	remotes, err := repo.Remotes()
-	if err == nil && len(remotes) > 0 {
-		cfg := remotes[0].Config()
-		if len(cfg.URLs) > 0 {
-			repository = cleanRemoteURL(cfg.URLs[0])
+	remote, err := repo.Remote("origin")
+	if err == nil {
+		urls := remote.Config().URLs
+		if len(urls) > 0 {
+			repository = cleanRemoteURL(urls[0])
 		}
 	}
 

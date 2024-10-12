@@ -22,7 +22,7 @@ type Package struct {
 // CloneDir returns the directory where the repository will be cloned.
 func (p Package) CloneDir(root string) string {
 	versionstr := ""
-	if p.Version != "" && strings.EqualFold(p.Version, "head") {
+	if p.Version != "" && !strings.EqualFold(p.Version, "head") {
 		versionstr = "@" + p.Version
 	}
 

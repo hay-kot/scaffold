@@ -11,6 +11,7 @@ import (
 	"github.com/hay-kot/scaffold/app/commands"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
+	"github.com/hay-kot/scaffold/internal/appdirs"
 	"github.com/hay-kot/scaffold/internal/printer"
 	"github.com/hay-kot/scaffold/internal/styles"
 	"github.com/rs/zerolog"
@@ -36,15 +37,6 @@ func build() string {
 	return fmt.Sprintf("%s (%s) %s", version, short, date)
 }
 
-func HomeDir(s ...string) string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatal().Err(err).Msg("failed to get home directory")
-	}
-
-	return filepath.Join(append([]string{home}, s...)...)
-}
-
 func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).Level(zerolog.WarnLevel)
 
@@ -61,7 +53,7 @@ func main() {
 			&cli.PathFlag{
 				Name:    "scaffoldrc",
 				Usage:   "path to scaffoldrc file",
-				Value:   HomeDir(".scaffold/scaffoldrc.yml"),
+				Value:   appdirs.RCFilepath(),
 				EnvVars: []string{"SCAFFOLDRC"},
 			},
 			&cli.StringSliceFlag{
@@ -73,7 +65,7 @@ func main() {
 			&cli.PathFlag{
 				Name:    "cache",
 				Usage:   "path to the local scaffold directory default",
-				Value:   HomeDir(".scaffold/cache"),
+				Value:   appdirs.CacheDir(),
 				EnvVars: []string{"SCAFFOLD_CACHE"},
 			},
 			&cli.StringFlag{
@@ -383,6 +375,18 @@ func main() {
 							}
 
 							fmt.Print(s)
+							return nil
+						},
+					},
+					{
+						Name: "migrate",
+						Action: func(ctx *cli.Context) error {
+							err := appdirs.MigrateLegacyPaths()
+							if err != nil {
+								return err
+							}
+
+							log.Info().Msg("migrated legacy paths")
 							return nil
 						},
 					},

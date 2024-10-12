@@ -35,5 +35,5 @@ body:
   - type: textarea
     id: version
     attributes:
-      label: Package Version
+      label: Scaffold Version (`scaffold --version`)
       placeholder: e.g. v0.1.1

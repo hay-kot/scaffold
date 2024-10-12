@@ -1,0 +1,40 @@
+name: Feature Request
+description: "Submit a new feature request"
+title: "YOUR DESCRIPTIVE TITLE GOES HERE"
+labels: ["feature", "triage"]
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: First Check
+      description: |
+        Please confirm and check all the following prior to submission. If you do not do this, your
+        issue may be closed.
+      options:
+        - label: I used the GitHub search to find a similar requests and didn't find it.
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Please provide a concise description of the problem that would be addressed by this feature.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Please provide a concise description of the feature that would resolve your issue.
+    validations:
+      required: true
+  - type: textarea
+    id: considerations
+    attributes:
+      label: Please consider and list out some caveats or tradeoffs made in your design decision
+    validations:
+      required: true
+  - type: checkboxes
+    id: additional-information
+    attributes:
+      label: Additional Information
+      options:
+        - label: If this is accepted I'm willing to submit a PR to provide this feature
+        - label: If this is accepted I'm willing to help maintain this feature

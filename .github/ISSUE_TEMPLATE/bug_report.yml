@@ -1,0 +1,39 @@
+---
+name: Bug Report
+description: "Submit a bug for the latest version"
+title: "YOUR DESCRIPTIVE TITLE GOES HERE"
+labels: ["bug", "triage"]
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: First Check
+      description: |
+        Please confirm and check all the following prior to submission. If you do not do this, your
+        issue may be closed.
+      options:
+        - label: This is not a feature request.
+          required: true
+        - label: I added a very descriptive title to this issue (title field is above this).
+          required: true
+        - label: I used the GitHub search to find a similar issue and didn't find it.
+          required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What is the issue you are experiencing?
+      placeholder: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce (or failing test case)
+      placeholder: 1) ... 2) ... 3) ...
+    validations:
+      required: true
+  - type: textarea
+    id: version
+    attributes:
+      label: Scaffold Version (`scaffold --version`)
+      placeholder: e.g. v0.1.1

@@ -32,3 +32,5 @@ docs/docs/.vitepress/cache/
 docs/docs/public/schema.scaffoldrc.json
 docs/docs/public/schema.json
 
+.env
+.cache

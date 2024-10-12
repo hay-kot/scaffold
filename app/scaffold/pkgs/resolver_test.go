@@ -23,7 +23,7 @@ func TestResolver_Resolve_Remote(t *testing.T) {
 	tempcache := filepath.Join(tempdir, "cache")
 	packagepath := filepath.Join(tempcache, "github.com", "hay-kot", "scaffold-go-cli")
 
-	clonefn := ClonerFunc(func(path string, isBare bool, cfg *git.CloneOptions) (string, error) {
+	clonefn := ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
 		t.Helper()
 
 		err := os.MkdirAll(packagepath, 0o755)
@@ -57,7 +57,7 @@ func TestResolver_Resolve_Remote_Subdirectory(t *testing.T) {
 	repopath := filepath.Join(tempcache, "github.com", "hay-kot", "scaffold-go-cli")
 	subdirpath := filepath.Join(repopath, "subdir")
 
-	clonefn := ClonerFunc(func(path string, isBare bool, cfg *git.CloneOptions) (string, error) {
+	clonefn := ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
 		t.Helper()
 
 		err := os.MkdirAll(subdirpath, 0o755)

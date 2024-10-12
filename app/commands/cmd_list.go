@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
+	"github.com/hay-kot/scaffold/internal/printer"
 	"github.com/urfave/cli/v2"
 )
 
@@ -25,7 +26,23 @@ func (ctrl *Controller) List(ctx *cli.Context) error {
 	}
 
 	if len(systemScaffolds) > 0 {
-		ctrl.printer.List("System Scaffolds", systemScaffolds)
+		treelist := []printer.ListTree{}
+
+		for _, s := range systemScaffolds {
+			subs := make([]printer.ListTree, len(s.SubPackages))
+			for i := range s.SubPackages {
+				subs[i] = printer.ListTree{
+					Text: s.SubPackages[i],
+				}
+			}
+
+			treelist = append(treelist, printer.ListTree{
+				Text:     s.Root,
+				Children: subs,
+			})
+		}
+
+		ctrl.printer.ListTree("System Scaffolds", treelist)
 	}
 
 	ctrl.printer.LineBreak()

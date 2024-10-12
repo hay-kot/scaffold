@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParsePath(t *testing.T) {
+func TestParseRemote(t *testing.T) {
 	tests := []struct {
 		name       string
 		input      string
@@ -14,20 +14,8 @@ func TestParsePath(t *testing.T) {
 		wantSubdir string
 		wantErr    bool
 	}{
-		{
-			name:       "empty",
-			input:      "",
-			wantRepo:   "",
-			wantSubdir: "",
-			wantErr:    true,
-		},
-		{
-			name:       "no slash",
-			input:      "foo",
-			wantRepo:   "foo",
-			wantSubdir: "",
-			wantErr:    true,
-		},
+		{name: "empty", input: "", wantRepo: "", wantSubdir: "", wantErr: true},
+		{name: "no slash", input: "foo", wantRepo: "foo", wantSubdir: "", wantErr: true},
 		{
 			name:       "github url",
 			input:      "https://github.com/hay-kot/scaffold",
@@ -41,12 +29,11 @@ func TestParsePath(t *testing.T) {
 			wantSubdir: "",
 		},
 		{
-			name:       "github url with .git",
+			name:       "github url with .git and version",
 			input:      "https://github.com/hay-kot/scaffold.git@1.0.2",
 			wantRepo:   "github.com/hay-kot/scaffold@1.0.2",
 			wantSubdir: "",
 		},
-
 		{
 			name:       "github url with subdir",
 			input:      "https://github.com/hay-kot/scaffold#example0",
@@ -60,23 +47,29 @@ func TestParsePath(t *testing.T) {
 			wantSubdir: "nested/example1",
 		},
 		{
-			name:       "github url with .git and subdir",
+			name:       "github url with .git, version, and subdir",
 			input:      "https://github.com/hay-kot/scaffold.git@1.0.2#example1",
 			wantRepo:   "github.com/hay-kot/scaffold@1.0.2",
+			wantSubdir: "example1",
+		},
+		{
+			name:       "scp like url",
+			input:      "git@github.com:hay-kot/scaffold@v1.0.0#example1",
+			wantRepo:   "github.com/hay-kot/scaffold@v1.0.0",
 			wantSubdir: "example1",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotRepo, gotSubdir, err := ParseRemote(tt.input)
+			pkg, err := ParseRemote(tt.input)
 
 			switch {
 			case tt.wantErr:
 				assert.Error(t, err)
 			default:
 				assert.NoError(t, err)
-				assert.Equal(t, tt.wantRepo, gotRepo)
-				assert.Equal(t, tt.wantSubdir, gotSubdir)
+				assert.Equal(t, tt.wantRepo, pkg.CloneDir("")) // Compare relativePath to the expected repository path
+				assert.Equal(t, tt.wantSubdir, pkg.Subdir)     // Compare Subdir to the expected subdirectory
 			}
 		})
 	}

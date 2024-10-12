@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/rs/zerolog/log"
 )
 
@@ -27,12 +29,18 @@ type Resolver struct {
 	cwd    string
 }
 
+var commitHashRegex = regexp.MustCompile(`^[0-9a-f]{7,40}$`)
+
+func isGitCommitHash(s string) bool {
+	return commitHashRegex.MatchString(s)
+}
+
 func NewResolver(shorts map[string]string, cache, cwd string, opts ...ResolverOption) *Resolver {
 	r := &Resolver{
 		shorts: shorts,
 		cache:  cache,
 		cwd:    cwd,
-		cloner: ClonerFunc(func(path string, isBare bool, cfg *git.CloneOptions) (string, error) {
+		cloner: ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
 			// Clone Repository to cache and set path to cache path
 			r, err := git.PlainClone(path, isBare, cfg)
 			if err != nil {
@@ -43,6 +51,39 @@ func NewResolver(shorts map[string]string, cache, cwd string, opts ...ResolverOp
 			wt, err := r.Worktree()
 			if err != nil {
 				return "", fmt.Errorf("failed to get worktree: %w", err)
+			}
+
+			if version != "" && !strings.EqualFold(version, "head") {
+				if isGitCommitHash(version) {
+					err := wt.Checkout(&git.CheckoutOptions{
+						Hash:  plumbing.NewHash(version),
+						Force: true,
+					})
+					if err == nil {
+						return wt.Filesystem.Root(), nil
+					}
+				} else {
+					// try checkout tag
+					tag, err := r.Tag(version)
+					if err == nil {
+						err := wt.Checkout(&git.CheckoutOptions{
+							Hash:  tag.Hash(),
+							Force: true,
+						})
+						if err == nil {
+							return wt.Filesystem.Root(), nil
+						}
+					}
+
+					// try checkout branch
+					err = wt.Checkout(&git.CheckoutOptions{
+						Branch: plumbing.NewBranchReferenceName(version),
+						Force:  true,
+					})
+					if err != nil {
+						return "", fmt.Errorf("failed to checkout branch/tag '%s': %w", version, err)
+					}
+				}
 			}
 
 			return wt.Filesystem.Root(), nil
@@ -91,41 +132,48 @@ func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProv
 }
 
 func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (path string, err error) {
-	parsedPath, subdir, err := ParseRemote(remoteRef)
+	pkg, err := ParseRemote(remoteRef)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse path: %w", err)
 	}
 
-	dir := filepath.Join(r.cache, parsedPath)
+	cloneDir := pkg.CloneDir(r.cache)
 
-	_, err = os.Stat(dir)
+	_, err = os.Stat(cloneDir)
+
+	remoteRef = strings.TrimSuffix(remoteRef, pkg.Version)
+	remoteRef = strings.TrimSuffix(remoteRef, "@")
 
 	switch {
 	case err == nil:
-		path = filepath.Join(dir, subdir)
+		path = pkg.ScaffoldDir(r.cache)
 	case os.IsNotExist(err):
 		cfg := &git.CloneOptions{
 			URL:      remoteRef,
 			Progress: os.Stdout,
 			Auth:     nil,
+			Tags:     git.AllTags,
 		}
 
 		auth, ok := authprovider.Authenticator(remoteRef)
 		if ok {
-			log.Debug().Msg("matching auth provider found")
+			log.Debug().
+				Str("url", remoteRef).
+				Str("provider", auth.Name()).
+				Msg("matching auth provider found")
 			cfg.Auth = auth
 		}
 
 		// Clone Repository to cache and set path to cache path
-		clonedPath, err := r.cloner.Clone(dir, false, cfg)
+		_, err := r.cloner.Clone(cloneDir, pkg.Version, false, cfg)
 		if err != nil {
 			// ensure directory is cleaned up
-			_ = os.RemoveAll(dir)
+			_ = os.RemoveAll(cloneDir)
 
 			return "", fmt.Errorf("failed to clone repository: %w", err)
 		}
 
-		path = filepath.Join(clonedPath, subdir)
+		path = pkg.ScaffoldDir(r.cache)
 	default:
 		return "", fmt.Errorf("failed to check if repository is cached: %w", err)
 	}

@@ -29,10 +29,10 @@ func (ctrl *Controller) Update(ctx *cli.Context) error {
 
 	workfn := func() {
 		for _, s := range scaffolds {
-			isUpdated, err := pkgs.Update(ctrl.Flags.Cache, s)
+			isUpdated, err := pkgs.Update(ctrl.Flags.Cache, s.Root)
 			if err != nil {
 				failed = append(failed, updateStatus{
-					repository: s,
+					repository: s.Root,
 					message:    err.Error(),
 				})
 
@@ -40,12 +40,12 @@ func (ctrl *Controller) Update(ctx *cli.Context) error {
 			}
 
 			if !isUpdated {
-				uptodate = append(uptodate, s)
+				uptodate = append(uptodate, s.Root)
 
 				continue
 			}
 
-			updated = append(updated, s)
+			updated = append(updated, s.Root)
 		}
 	}
 

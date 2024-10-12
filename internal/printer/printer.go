@@ -106,6 +106,37 @@ func (c *Printer) StatusList(title string, items []StatusListItem) {
 	c.write(bldr.String())
 }
 
+type ListTree struct {
+	Text     string
+	Children []ListTree
+}
+
+func (c *Printer) ListTree(title string, list []ListTree) {
+	bldr := strings.Builder{}
+
+	bldr.WriteString(styles.Padding(styles.Bold(c.base(title))))
+	bldr.WriteString("\n")
+
+	var printTree func(tree ListTree, depth int)
+	printTree = func(tree ListTree, depth int) {
+		bldr.WriteString(strings.Repeat("   ", depth))
+		bldr.WriteString(styles.Dot)
+		bldr.WriteString(" ")
+		bldr.WriteString(tree.Text)
+		bldr.WriteString("\n")
+
+		for _, child := range tree.Children {
+			printTree(child, depth+1)
+		}
+	}
+
+	for _, tree := range list {
+		printTree(tree, 1)
+	}
+
+	c.write(bldr.String())
+}
+
 // List prints a list of items with a title.
 //
 //	Example:

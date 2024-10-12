@@ -91,7 +91,7 @@ func main() {
 				Name:    "theme",
 				Usage:   "theme to use for the scaffold output",
 				Value:   "scaffold",
-				EnvVars: []string{"SCAFFOLD_THEME", "SCAFFOLD_SETTINGS_THEME"},
+				EnvVars: []string{"SCAFFOLD_SETTINGS_THEME", "SCAFFOLD_THEME"},
 			},
 			&cli.StringFlag{
 				Name:    "run-hooks",

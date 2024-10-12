@@ -1,7 +1,7 @@
 // Package appdirs provides a cross-platform way to find application directories for
 // the configuration, cache, and any other application-specific directories.
 //
-// This package largely exists because of the legacu behavior of the scaffold CLI where
+// This package largely exists because of the legacy behavior of the scaffold CLI where
 // we want to preserve user locations for configuration if it exists, but move forward
 // to use the XDG Base Directory Specification for new installations.
 package appdirs

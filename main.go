@@ -76,24 +76,6 @@ func main() {
 				Value:   HomeDir(".scaffold/cache"),
 				EnvVars: []string{"SCAFFOLD_CACHE"},
 			},
-			&cli.BoolFlag{
-				Name:    "no-clobber",
-				Usage:   "do not overwrite existing files",
-				EnvVars: []string{"SCAFFOLD_NO_CLOBBER"},
-				Value:   true,
-			},
-			&cli.BoolFlag{
-				Name:    "force",
-				Usage:   "apply changes when git tree is dirty",
-				Value:   true,
-				EnvVars: []string{"SCAFFOLD_FORCE"},
-			},
-			&cli.StringFlag{
-				Name:    "output-dir",
-				Usage:   "scaffold output directory (use ':memory:' for in-memory filesystem)",
-				Value:   ".",
-				EnvVars: []string{"SCAFFOLD_OUT"},
-			},
 			&cli.StringFlag{
 				Name:    "log-level",
 				Usage:   "log level (debug, info, warn, error, fatal, panic)",
@@ -109,7 +91,7 @@ func main() {
 				Name:    "theme",
 				Usage:   "theme to use for the scaffold output",
 				Value:   "scaffold",
-				EnvVars: []string{"SCAFFOLD_THEME", "SCAFFOLD_SETTINGS_THEME"},
+				EnvVars: []string{"SCAFFOLD_SETTINGS_THEME", "SCAFFOLD_THEME"},
 			},
 			&cli.StringFlag{
 				Name:    "run-hooks",
@@ -119,9 +101,6 @@ func main() {
 		},
 		Before: func(ctx *cli.Context) error {
 			ctrl.Flags = commands.Flags{
-				NoClobber:      ctx.Bool("no-clobber"),
-				Force:          ctx.Bool("force"),
-				OutputDir:      ctx.String("output-dir"),
 				Cache:          ctx.String("cache"),
 				ScaffoldRCPath: ctx.String("scaffoldrc"),
 				ScaffoldDirs:   ctx.StringSlice("scaffold-dir"),
@@ -242,7 +221,7 @@ func main() {
 			{
 				Name:      "new",
 				Usage:     "create a new project from a scaffold",
-				UsageText: "scaffold new [scaffold (url | path)] [flags]",
+				UsageText: "scaffold new [flags] [scaffold (url | path)]",
 				Flags: []cli.Flag{
 					&cli.BoolFlag{
 						Name:  "no-prompt",
@@ -259,20 +238,52 @@ func main() {
 						Usage: "path or `stdout` to save the output ast",
 						Value: "",
 					},
+					&cli.BoolFlag{
+						Name:    "no-clobber",
+						Usage:   "do not overwrite existing files",
+						EnvVars: []string{"SCAFFOLD_NO_CLOBBER"},
+						Value:   true,
+					},
+					&cli.BoolFlag{
+						Name:    "force",
+						Usage:   "apply changes when git tree is dirty",
+						Value:   true,
+						EnvVars: []string{"SCAFFOLD_FORCE"},
+					},
+					&cli.StringFlag{
+						Name:    "output-dir",
+						Usage:   "scaffold output directory (use ':memory:' for in-memory filesystem)",
+						Value:   ".",
+						EnvVars: []string{"SCAFFOLD_OUT"},
+					},
 				},
 				Action: func(ctx *cli.Context) error {
 					return ctrl.New(ctx.Args().Slice(), commands.FlagsNew{
-						NoPrompt: ctx.Bool("no-prompt"),
-						Preset:   ctx.String("preset"),
-						Snapshot: ctx.String("snapshot"),
+						NoPrompt:   ctx.Bool("no-prompt"),
+						Preset:     ctx.String("preset"),
+						Snapshot:   ctx.String("snapshot"),
+						NoClobber:  ctx.Bool("no-clobber"),
+						ForceApply: ctx.Bool("force"),
+						OutputDir:  ctx.String("output-dir"),
 					})
 				},
 			},
 			{
-				Name:    "list",
+				Name: "list",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "cwd",
+						Usage: "current working directory to list scaffolds for",
+						Value: ".",
+					},
+				},
 				Aliases: []string{"ls"},
 				Usage:   "list available scaffolds",
-				Action:  ctrl.List,
+				Action: func(ctx *cli.Context) error {
+					return ctrl.List(commands.FlagsList{
+						OutputDir: ctx.String("cwd"),
+					})
+				},
 			},
 			{
 				Name:   "update",

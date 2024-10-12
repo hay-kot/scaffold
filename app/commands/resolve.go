@@ -9,15 +9,20 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (ctrl *Controller) resolve(argPath string, noPrompt bool) (string, error) {
+func (ctrl *Controller) resolve(
+	argPath string,
+	outputdir string,
+	noPrompt bool,
+	force bool,
+) (string, error) {
 	if argPath == "" {
 		return "", fmt.Errorf("path is required")
 	}
 
 	// Status() call for go-git is too slow to be used here
 	// https://github.com/go-git/go-git/issues/181
-	if !ctrl.Flags.Force {
-		ok := checkWorkingTree(ctrl.Flags.OutputDir)
+	if !force {
+		ok := checkWorkingTree(outputdir)
 		if !ok {
 			log.Warn().Msg("working tree is dirty, use --force to apply changes")
 			return "", nil
@@ -54,7 +59,7 @@ func (ctrl *Controller) resolve(argPath string, noPrompt bool) (string, error) {
 				return "", err
 			}
 
-			systemMatches, localMatches, err := ctrl.fuzzyFallBack(argPath)
+			systemMatches, localMatches, err := ctrl.fuzzyFallBack(argPath, outputdir)
 			if err != nil {
 				return "", err
 			}

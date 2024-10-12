@@ -10,6 +10,15 @@ export interface Schema {
      * `prompt`.
      * */
     run_hooks?: "always" | "never" | "prompt";
+    /**
+     * the log level for the scaffold. The default is `warn`.
+     * */
+    log_level?: "debug" | "info" | "warn" | "error";
+    /**
+     * the log file path for the scaffold. The default is none. When provided without a `/` prefix
+     * the path is relative to scaffoldrc file.
+     * */
+    log_file?: string;
   };
   /**
    * The aliases section allows you to define key/value pairs as shortcuts for a scaffold path.

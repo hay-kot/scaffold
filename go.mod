@@ -21,7 +21,7 @@ require (
 	github.com/rs/zerolog v1.33.0
 	github.com/sahilm/fuzzy v0.1.1
 	github.com/stretchr/testify v1.9.0
-	github.com/urfave/cli/v2 v2.27.4
+	github.com/urfave/cli/v2 v2.27.5
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -38,7 +38,7 @@ require (
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0 // indirect
 	github.com/charmbracelet/x/term v0.2.0 // indirect
 	github.com/cloudflare/circl v1.3.8 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.11.0 // indirect

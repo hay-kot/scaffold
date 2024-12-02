@@ -20,7 +20,7 @@ require (
 	github.com/psanford/memfs v0.0.0-20241019191636-4ef911798f9b
 	github.com/rs/zerolog v1.33.0
 	github.com/sahilm/fuzzy v0.1.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v2 v2.27.5
 	gopkg.in/yaml.v3 v3.0.1
 )

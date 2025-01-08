@@ -325,7 +325,12 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 	// Do Injection Jobs
 
 	for _, injection := range args.Project.Conf.Inject {
-		f, err := args.WriteFS.Open(injection.Path)
+		path, err := eng.TmplString(injection.Path, vars)
+		if err != nil {
+			return err
+		}
+
+		f, err := args.WriteFS.Open(path)
 		if err != nil {
 			return err
 		}
@@ -345,7 +350,7 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 			return err
 		}
 
-		err = args.WriteFS.WriteFile(injection.Path, outbytes, os.ModePerm)
+		err = args.WriteFS.WriteFile(path, outbytes, os.ModePerm)
 		if err != nil {
 			return err
 		}

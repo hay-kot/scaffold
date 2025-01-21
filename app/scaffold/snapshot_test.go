@@ -41,6 +41,11 @@ func Test_RenderRWFileSystem(t *testing.T) {
 				"feature": "true",
 			},
 		},
+		{
+			name: "injected",
+			fs:   InjectedFiles(),
+			p:    InjectedFilesProject(),
+		},
 	}
 
 	vars := engine.Vars{

@@ -22,6 +22,9 @@ var (
 	//  4. Empty files are ignored
 	dynamicFiles embed.FS
 
+	//go:embed testdata/projects/injected_files/*
+	injectedFiles embed.FS
+
 	//go:embed testdata/projects/nested_scaffold/*
 	// Validates That:
 	//  1. Nested directories are created
@@ -91,6 +94,31 @@ func DynamicFilesProject() *Project {
 		Conf: &ProjectScaffoldFile{
 			Skip: []string{
 				"copy.txt",
+			},
+		},
+	}
+}
+
+func InjectedFiles() fs.FS {
+	f, _ := fs.Sub(injectedFiles, "testdata/projects/injected_files")
+	return f
+}
+
+func InjectedFilesProject() *Project {
+	return &Project{
+		NameTemplate: "{{ .Project }}",
+		Name:         "NewProject",
+		Conf: &ProjectScaffoldFile{
+			Computed: map[string]string{
+				"Site": "{{ .Project }}/site.yaml",
+			},
+			Inject: []Injectable{
+				{
+					Name:     "test1",
+					Path:     "{{ .Computed.Site }}",
+					At:       "# start",
+					Template: "injected: true",
+				},
 			},
 		},
 	}

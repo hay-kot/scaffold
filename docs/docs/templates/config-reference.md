@@ -209,7 +209,7 @@ The name of the injection
 
 ### `path`
 
-The relative path to the file to inject into from the output directory
+The relative path to the file to inject into from the output directory. Path may be a literal or a template.
 
 ### `at`
 

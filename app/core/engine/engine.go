@@ -18,6 +18,18 @@ var ErrTemplateIsEmpty = fmt.Errorf("template is empty")
 
 type Vars map[string]any
 
+type opts struct {
+	delimLeft  string
+	delimRight string
+}
+
+func WithDelims(left string, right string) func(*opts) {
+	return func(o *opts) {
+		o.delimLeft = left
+		o.delimRight = right
+	}
+}
+
 type Engine struct {
 	fm template.FuncMap
 }
@@ -38,8 +50,11 @@ func New() *Engine {
 	}
 }
 
-func (e *Engine) parse(tmpl string) (*template.Template, error) {
-	return template.New("scaffold").Funcs(e.fm).Parse(tmpl)
+func (e *Engine) parse(tmpl string, opt opts) (*template.Template, error) {
+	return template.New("scaffold").
+		Funcs(e.fm).
+		Delims(opt.delimLeft, opt.delimRight).
+		Parse(tmpl)
 }
 
 func isTemplate(s string) bool {
@@ -51,7 +66,12 @@ func (e *Engine) TmplString(str string, vars any) (string, error) {
 		return str, nil
 	}
 
-	tmpl, err := e.parse(str)
+	opt := opts{
+		delimLeft:  "{{",
+		delimRight: "}}",
+	}
+
+	tmpl, err := e.parse(str, opt)
 	if err != nil {
 		log.Err(err).Msg("failed to parse template")
 		return "", err
@@ -70,7 +90,7 @@ func (e *Engine) TmplString(str string, vars any) (string, error) {
 
 // Factory returns a new template from the provided reader.
 // if the reader is empty, an ErrTemplateIsEmpty is returned.
-func (e *Engine) Factory(reader io.Reader) (*template.Template, error) {
+func (e *Engine) Factory(reader io.Reader, opfns ...func(*opts)) (*template.Template, error) {
 	if reader == nil {
 		return nil, fmt.Errorf("reader is nil")
 	}
@@ -84,7 +104,16 @@ func (e *Engine) Factory(reader io.Reader) (*template.Template, error) {
 		return nil, ErrTemplateIsEmpty
 	}
 
-	return e.parse(string(out))
+	opt := opts{
+		delimLeft:  "{{",
+		delimRight: "}}",
+	}
+
+	for _, fn := range opfns {
+		fn(&opt)
+	}
+
+	return e.parse(string(out), opt)
 }
 
 func (e *Engine) Render(w io.Writer, tmpl *template.Template, vars any) error {

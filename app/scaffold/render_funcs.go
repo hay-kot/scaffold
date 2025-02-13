@@ -270,7 +270,23 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 			return err
 		}
 
-		tmpl, err := eng.Factory(f)
+		delimLeft := "{{"
+		delimRight := "}}"
+
+		for _, delimOverride := range args.Project.Conf.Delimiters {
+			match, err := doublestar.Match(delimOverride.Glob, outpath)
+			if err != nil {
+				_ = f.Close()
+				return err
+			}
+
+			if match {
+				delimLeft = delimOverride.Left
+				delimRight = delimOverride.Right
+			}
+		}
+
+		tmpl, err := eng.Factory(f, engine.WithDelims(delimLeft, delimRight))
 		if err != nil {
 			_ = f.Close()
 
@@ -283,7 +299,7 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 
 		buff := bytes.NewBuffer(nil)
 
-		err = eng.Render(buff, tmpl, vars)
+		err = tmpl.Execute(buff, vars)
 		if err != nil {
 			_ = f.Close()
 			return err

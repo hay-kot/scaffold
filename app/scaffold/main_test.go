@@ -14,6 +14,9 @@ import (
 var (
 	tEngine = engine.New()
 
+	//go:embed testdata/projects/custom_delims
+	customDelimsFiles embed.FS
+
 	//go:embed testdata/projects/dynamic_files/*
 	// Validates That:
 	//  1. Files are created
@@ -134,6 +137,27 @@ func InvalidStructureProject() *Project {
 		NameTemplate: "{{ .Project }}",
 		Name:         "NewProject",
 		Conf:         &ProjectScaffoldFile{},
+	}
+}
+
+func CustomDelimsFiles() fs.FS {
+	f, _ := fs.Sub(customDelimsFiles, "testdata/projects/custom_delims")
+	return f
+}
+
+func CustomDelimsProject() *Project {
+	return &Project{
+		NameTemplate: "{{ .Project }}",
+		Name:         "NewProject",
+		Conf: &ProjectScaffoldFile{
+			Delimiters: []Delimiters{
+				{
+					Glob:  "**/*custom.txt",
+					Left:  "[[",
+					Right: "]]",
+				},
+			},
+		},
 	}
 }
 

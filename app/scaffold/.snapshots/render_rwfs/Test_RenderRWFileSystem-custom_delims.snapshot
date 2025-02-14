@@ -1,0 +1,10 @@
+NewProject:  (type=dir)
+	custom.txt:  (type=file)
+		This should be project name = NewProject
+		This should render as is = {{ .Project }}
+		
+	standard.txt:  (type=file)
+		This should be project name = NewProject
+		This should render as is = [[ .Project ]]
+		
+

@@ -7,15 +7,22 @@ import (
 )
 
 type ProjectScaffoldFile struct {
-	Metadata  Metadata                  `yaml:"metadata"`
-	Skip      []string                  `yaml:"skip"`
-	Questions []Question                `yaml:"questions"`
-	Rewrites  []Rewrite                 `yaml:"rewrites"`
-	Computed  map[string]string         `yaml:"computed"`
-	Messages  Messages                  `yaml:"messages"`
-	Inject    []Injectable              `yaml:"inject"`
-	Features  []Feature                 `yaml:"features"`
-	Presets   map[string]map[string]any `yaml:"presets"`
+	Metadata   Metadata                  `yaml:"metadata"`
+	Skip       []string                  `yaml:"skip"`
+	Questions  []Question                `yaml:"questions"`
+	Rewrites   []Rewrite                 `yaml:"rewrites"`
+	Computed   map[string]string         `yaml:"computed"`
+	Messages   Messages                  `yaml:"messages"`
+	Inject     []Injectable              `yaml:"inject"`
+	Features   []Feature                 `yaml:"features"`
+	Presets    map[string]map[string]any `yaml:"presets"`
+	Delimiters []Delimiters              `yaml:"delimiters"`
+}
+
+type Delimiters struct {
+	Glob  string `yaml:"glob"`
+	Left  string `yaml:"left"`
+	Right string `yaml:"right"`
 }
 
 func ReadScaffoldFile(reader io.Reader) (*ProjectScaffoldFile, error) {

@@ -29,12 +29,29 @@ export interface Schema {
   /**
    * presets is a map of key/value pairs that can be used to provide default values for the questions. Generally, this is only used for testing scaffolds, but could be used for other purposes.
    * */
-  presents?: {
+  presets?: {
     [key: string]: {
       [key: string]: string;
     };
   };
+
+  /**
+   * delimiters is a list of delimiter overrides for files. Useful for when you have a go template within a file you want to template using scaffold.
+   * */
+  delimiters?: Delimiters[];
 }
+
+type Delimiters = {
+  glob: string;
+  /**
+   * left delimiter e.g '{{', '[['
+   * */
+  left: string;
+  /**
+   * right delimiter e.g '}}', ']]'
+   * */
+  right: string;
+};
 
 type Question = {
   /**

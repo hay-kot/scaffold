@@ -34,3 +34,5 @@ docs/docs/public/schema.json
 
 .env
 .cache
+
+.DS_Store

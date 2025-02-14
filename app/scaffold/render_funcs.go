@@ -270,7 +270,34 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 			return err
 		}
 
-		tmpl, err := eng.Factory(f)
+		delimLeft := "{{"
+		delimRight := "}}"
+
+		for _, delimOverride := range args.Project.Conf.Delimiters {
+			match, err := doublestar.Match(delimOverride.Glob, outpath)
+			if err != nil {
+				_ = f.Close()
+				return err
+			}
+
+			if !match {
+				continue
+			}
+
+			log.Debug().Str("outputh", outpath).Str("glob", delimOverride.Glob).Msg("matched delimiter override")
+
+			if delimOverride.Left == "" || delimOverride.Right == "" {
+				log.Error().
+					Str("left", delimOverride.Left).
+					Str("right", delimOverride.Right).
+					Msg("override delimiters must not be empty")
+			}
+
+			delimLeft = delimOverride.Left
+			delimRight = delimOverride.Right
+		}
+
+		tmpl, err := eng.Factory(f, engine.WithDelims(delimLeft, delimRight))
 		if err != nil {
 			_ = f.Close()
 
@@ -283,7 +310,7 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 
 		buff := bytes.NewBuffer(nil)
 
-		err = eng.Render(buff, tmpl, vars)
+		err = tmpl.Execute(buff, vars)
 		if err != nil {
 			_ = f.Close()
 			return err

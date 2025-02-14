@@ -56,6 +56,7 @@ a {
 }
 
 .feature-grid {
+  cursor: pointer;
   width: 100%;
   display: grid;
   margin: 2rem 0;

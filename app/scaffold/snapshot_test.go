@@ -46,6 +46,11 @@ func Test_RenderRWFileSystem(t *testing.T) {
 			fs:   InjectedFiles(),
 			p:    InjectedFilesProject(),
 		},
+		{
+			name: "custom delims",
+			fs:   CustomDelimsFiles(),
+			p:    CustomDelimsProject(),
+		},
 	}
 
 	vars := engine.Vars{

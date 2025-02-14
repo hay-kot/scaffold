@@ -296,3 +296,16 @@ presets:
 ::: tip Presets and Testing
 Presets can be used in conjunction with the `new` command for testing purposes. See [Testing Scaffolds](./testing-scaffolds.md) for more information.
 :::
+
+## `delimiters`
+
+delimiters is a list of delimiter overrides for files. Useful for when you have a go template within a file you want to template using scaffold.
+
+For example, you may have a goreleaser configuration that makes heavy use of go templates and want to conditionally render some parts of the configuration. Using custom delimiters allows you to leave to the `.goreleaser.yaml` file largely untouched and use custom opening `[[` and closing `]]` brackets for the scaffold template portions.
+
+```yaml
+delimiters:
+  - glob: "**.goreleaser"
+    left: "[["
+    right: "]]"
+```

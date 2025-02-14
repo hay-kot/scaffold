@@ -69,13 +69,15 @@ func (l *LoopedInput) GetKey() string {
 
 // GetValue implements huh.Field.
 func (l *LoopedInput) GetValue() any {
+	tmp := make([]string, len(l.values))
+	copy(tmp, l.values)
 	lastval := l.input.GetValue().(string)
 
 	if lastval != "" {
-		l.values = append(l.values, lastval)
+		tmp = append(tmp, lastval)
 	}
 
-	return l.values
+	return tmp
 }
 
 // Init implements huh.Field.

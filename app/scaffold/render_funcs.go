@@ -274,7 +274,11 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 		delimRight := "}}"
 
 		for _, delimOverride := range args.Project.Conf.Delimiters {
-			match, err := doublestar.Match(delimOverride.Glob, outpath)
+			// Use relative path for matching so that the config writers don't have to
+			// specify every file as **/*.goreleaser.yml instead of just *.goreleaser.yml
+			// to match things at the root of the project file.
+			relativePath := strings.TrimPrefix(path, args.Project.NameTemplate+"/")
+			match, err := doublestar.Match(delimOverride.Glob, relativePath)
 			if err != nil {
 				_ = f.Close()
 				return err

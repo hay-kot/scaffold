@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -93,6 +94,22 @@ func (ctrl *Controller) Lint(pfpath string) error {
 			if injection.Mode != "before" && injection.Mode != "after" {
 				errs = append(errs, fmt.Errorf("invalid injection mode: %s", injection.Mode))
 			}
+		}
+	}
+
+	// Validate delim patterns
+	for _, delim := range pf.Delimiters {
+		ok := doublestar.ValidatePathPattern(delim.Glob)
+		if !ok {
+			errs = append(errs, fmt.Errorf("invalid delim glob pattern: %s", delim))
+		}
+
+		if delim.Left == "" {
+			errs = append(errs, errors.New("invalid left delimiter"))
+		}
+
+		if delim.Right == "" {
+			errs = append(errs, errors.New("invalid right delimiter"))
 		}
 	}
 

@@ -7,7 +7,7 @@ require (
 	github.com/bradleyjkemp/cupaloy/v2 v2.8.0
 	github.com/catppuccin/go v0.2.0
 	github.com/charmbracelet/bubbles v0.20.0
-	github.com/charmbracelet/bubbletea v1.2.5-0.20241205214244-9306010a31ee
+	github.com/charmbracelet/bubbletea v1.3.3
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/charmbracelet/huh v0.6.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20250109160224-6c6b31916f8e
@@ -34,7 +34,7 @@ require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
-	github.com/charmbracelet/x/ansi v0.4.5 // indirect
+	github.com/charmbracelet/x/ansi v0.8.0 // indirect
 	github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0 // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/cloudflare/circl v1.3.8 // indirect
@@ -78,8 +78,8 @@ require (
 	github.com/yuin/goldmark-emoji v1.0.3 // indirect
 	golang.org/x/crypto v0.32.0 // indirect
 	golang.org/x/net v0.34.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/term v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

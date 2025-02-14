@@ -280,10 +280,21 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 				return err
 			}
 
-			if match {
-				delimLeft = delimOverride.Left
-				delimRight = delimOverride.Right
+			if !match {
+				continue
 			}
+
+			log.Debug().Str("outputh", outpath).Str("glob", delimOverride.Glob).Msg("matched delimiter override")
+
+			if delimOverride.Left == "" || delimOverride.Right == "" {
+				log.Error().
+					Str("left", delimOverride.Left).
+					Str("right", delimOverride.Right).
+					Msg("override delimiters must not be empty")
+			}
+
+			delimLeft = delimOverride.Left
+			delimRight = delimOverride.Right
 		}
 
 		tmpl, err := eng.Factory(f, engine.WithDelims(delimLeft, delimRight))

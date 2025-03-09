@@ -17,7 +17,6 @@ type ProjectScaffoldFile struct {
 	Features   []Feature                 `yaml:"features"`
 	Presets    map[string]map[string]any `yaml:"presets"`
 	Delimiters []Delimiters              `yaml:"delimiters"`
-	Partials   string                    `yaml:"partials"` // Folder containing partials
 }
 
 type Delimiters struct {

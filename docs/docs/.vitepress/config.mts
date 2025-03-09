@@ -25,41 +25,47 @@ export default withMermaid(
         {
           text: "Introduction",
           items: [
-            {
-              text: "What is Scaffold?",
-              link: "/introduction/what-is-scaffold",
-            },
+            { text: "What is Scaffold?", link: "/introduction/what-is-scaffold", },
             { text: "Quick Start", link: "/introduction/quick-start" },
             { text: "Terminology", link: "/introduction/terminology" },
           ],
         },
         {
-          text: "User Guide",
-          items: [
-            { text: "User Configuration", link: "/user-guide/scaffold-rc" },
-            {
-              text: "Scaffold Resolution",
-              link: "/user-guide/scaffold-resolution",
-            },
-            {
-              text: "Featured Scaffolds",
-              link: "/user-guide/featured-scaffolds",
-            },
-          ],
+          text: "Project Scaffolds",
+          items:[
+            { text: "Usage", link:"/projects/using-projects"},
+            { text: "Creating", link:"/projects/creating-projects"},
+            { text: "Available Templates", link:"/projects/featured-scaffolds"}
+          ]
         },
         {
-          text: "Creating Scaffolds",
-          items: [
-            { text: "Scaffold File", link: "/templates/scaffold-file" },
-            { text: "File Reference", link: "/templates/config-reference" },
-            { text: "Template Engine", link: "/templates/template-engine" },
-            { text: "Hooks", link: "/templates/hooks" },
-            { text: "Testing Scaffolds", link: "/templates/testing-scaffolds" },
-          ],
+          text: "Template Scaffolds",
+          items:[
+            { text: "Usage", link:"/templates/usage"},
+          ]
+        },
+        {
+          text: "Configuration",
+          items:[
+            { text: "Scaffold Config", link: "/configuration/scaffold-file"},
+            { text: "User Config", link: "/configuration/scaffold-rc"}
+          ]
+        },
+        {
+          text: "Template System",
+          items:[
+            { text: "Template Engine", link:"/template-system/template-engine"},
+            { text: "Partials", link:"/template-system/partials"},
+          ]
         },
         {
           text: "Advanced",
-          items: [{ text: "Editor Support", link: "/advanced/editor-support" }],
+          items:[
+            { text: "Editor Support", link: "/advanced/editor-support"},
+            { text: "Hooks", link: "/advanced/hooks"},
+            { text: "Scaffold Resolution", link: "/advanced/scaffold-resolution"},
+            { text: "Testing Scaffolds", link: "/advanced/testing-scaffolds"},
+          ]
         },
       ],
 

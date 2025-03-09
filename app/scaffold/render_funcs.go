@@ -191,6 +191,8 @@ func BuildVars(eng *engine.Engine, project *Project, vars engine.Vars) (engine.V
 // RenderRWFS renders a rwfs.RFS to a rwfs.WriteFS by compiling all files in the rwfs.ReadFS
 // and writing the compiled files to the WriteFS.
 func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
+	const PartialsDir = "partials"
+
 	guards := []filepathGuard{
 		guardRewrite(args),
 		guardRenderPath(eng, vars),
@@ -199,11 +201,11 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 		guardFeatureFlag(eng, args, vars),
 	}
 
-	_, err := args.ReadFS.Open("partials")
+	_, err := args.ReadFS.Open(PartialsDir)
 	if err == nil {
 		// Turn partials directory into a FS and then
 		// add it to the engine so partials can be used.
-		partialsFS, err := fs.Sub(args.ReadFS, "partials")
+		partialsFS, err := fs.Sub(args.ReadFS, PartialsDir)
 		if err != nil {
 			return fmt.Errorf("failed to create partials FS: %w", err)
 		}

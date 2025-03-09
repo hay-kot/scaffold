@@ -174,12 +174,10 @@ func (e *Engine) RegisterPartialsFS(rfs fs.FS, dirname string) error {
 			return fmt.Errorf("failed to walk partials directory: %w", err)
 		}
 
-		// Skip directories
 		if d.IsDir() {
 			return nil
 		}
 
-		// Read the file content
 		content, err := fs.ReadFile(rfs, path)
 		if err != nil {
 			return fmt.Errorf("failed to read partial file %s: %w", path, err)
@@ -193,10 +191,8 @@ func (e *Engine) RegisterPartialsFS(rfs fs.FS, dirname string) error {
 			name = strings.TrimSuffix(name, ext)
 		}
 
-		// Replace path separators with forward slashes for consistency
 		name = filepath.ToSlash(name)
 
-		// Register the partial
 		return e.RegisterPartial(name, string(content))
 	})
 }

@@ -4,6 +4,8 @@ package engine
 import (
 	"fmt"
 	"io"
+	"io/fs"
+	"path/filepath"
 	"strings"
 	"text/template"
 	"unicode"
@@ -31,23 +33,46 @@ func WithDelims(left string, right string) func(*opts) {
 }
 
 type Engine struct {
-	fm template.FuncMap
+	fm       template.FuncMap
+	partials map[string]*template.Template // Store partial templates
 }
 
 func New() *Engine {
 	fm := sprigin.FuncMap()
 
+	e := &Engine{
+		fm:       fm,
+		partials: map[string]*template.Template{},
+	}
+
+	// Template Utilities
+	fm["wraptmpl"] = wraptmpl
+
+	// Pluralize
 	client := pluralize.NewClient()
 
-	fm["wraptmpl"] = wraptmpl
 	fm["isPlural"] = client.IsPlural
 	fm["isSingular"] = client.IsSingular
 	fm["toSingular"] = client.Singular
 	fm["toPlural"] = client.Plural
 
-	return &Engine{
-		fm: fm,
+	// Re-usable Partials
+	fm["partial"] = func(name string, data any) (string, error) {
+		tmpl, exists := e.partials[name]
+		if !exists {
+			return "", fmt.Errorf("partial not found: %s", name)
+		}
+
+		var buf strings.Builder
+		err := tmpl.Execute(&buf, data)
+		if err != nil {
+			return "", err
+		}
+
+		return buf.String(), nil
 	}
+
+	return e
 }
 
 func (e *Engine) parse(tmpl string, opt opts) (*template.Template, error) {
@@ -122,6 +147,81 @@ func (e *Engine) Render(w io.Writer, tmpl *template.Template, vars any) error {
 		return err
 	}
 
+	return nil
+}
+
+// RegisterPartialsFS walks a [fs.FS] and registers all files as partials for the engine.
+// It will use a relative path from the specified directory for each partial within the fs.
+// If dirname is provided, that prefix will be removed from partial names.
+//
+// Example with dirname = "templates":
+//
+//	├── templates/
+//	│   ├── common/
+//	│   │    ├── snippet1.tmpl
+//	│   │    └── snippet2.tmpl
+//	│   ├── header.tmpl
+//	│   └── footer.tmpl
+//
+// This structure will register the following partials
+// - common/snippet1
+// - common/snippet2
+// - header
+// - footer
+func (e *Engine) RegisterPartialsFS(rfs fs.FS, dirname string) error {
+	return fs.WalkDir(rfs, dirname, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return fmt.Errorf("failed to walk partials directory: %w", err)
+		}
+
+		// Skip directories
+		if d.IsDir() {
+			return nil
+		}
+
+		// Read the file content
+		content, err := fs.ReadFile(rfs, path)
+		if err != nil {
+			return fmt.Errorf("failed to read partial file %s: %w", path, err)
+		}
+
+		// Get the partial name by removing the file extension and prefix
+		name := path
+
+		// Remove file extension
+		if ext := filepath.Ext(name); ext != "" {
+			name = strings.TrimSuffix(name, ext)
+		}
+
+		// Replace path separators with forward slashes for consistency
+		name = filepath.ToSlash(name)
+
+		// Register the partial
+		return e.RegisterPartial(name, string(content))
+	})
+}
+
+func (e *Engine) RegisterPartial(name string, content string, opfns ...func(*opts)) error {
+	if !IsValidIdentifier(name) {
+		return fmt.Errorf("invalid partial name: %s", name)
+	}
+
+	opt := opts{
+		delimLeft:  "{{",
+		delimRight: "}}",
+	}
+
+	for _, fn := range opfns {
+		fn(&opt)
+	}
+
+	tmpl, err := e.parse(content, opt)
+	if err != nil {
+		return fmt.Errorf("failed to parse partial template %s: %w", name, err)
+	}
+
+	log.Debug().Str("name", name).Msg("registering partial")
+	e.partials[name] = tmpl
 	return nil
 }
 

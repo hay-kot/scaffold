@@ -199,10 +199,11 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 		guardFeatureFlag(eng, args, vars),
 	}
 
-	if args.Project.Conf.Partials != "" {
+	_, err := args.ReadFS.Open("partials")
+	if err == nil {
 		// Turn partials directory into a FS and then
 		// add it to the engine so partials can be used.
-		partialsFS, err := fs.Sub(args.ReadFS, filepath.Join(args.Project.NameTemplate, args.Project.Conf.Partials))
+		partialsFS, err := fs.Sub(args.ReadFS, "partials")
 		if err != nil {
 			return fmt.Errorf("failed to create partials FS: %w", err)
 		}
@@ -213,25 +214,17 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 		}
 	}
 
-	err := fs.WalkDir(args.ReadFS, args.Project.NameTemplate, func(path string, d fs.DirEntry, err error) error {
+	err = fs.WalkDir(args.ReadFS, args.Project.NameTemplate, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 
-		// Use relative path for matching so that the config writers don't have to
-		// specify every file as **/*.goreleaser.yml instead of just *.goreleaser.yml
-		// to match things at the root of the project file.
-		relativePath := strings.TrimPrefix(path, args.Project.NameTemplate+"/")
-
-		// Always Skip Partials if provided
-		if args.Project.Conf.Partials != "" {
-			if strings.HasPrefix(relativePath, args.Project.Conf.Partials) {
-				log.Debug().Str("path", path).Msg("considered partial, skipping rendering")
-				return nil
-			}
-		}
-
 		if args.Project.Conf != nil && len(args.Project.Conf.Skip) > 0 {
+			// Use relative path for matching so that the config writers don't have to
+			// specify every file as **/*.goreleaser.yml instead of just *.goreleaser.yml
+			// to match things at the root of the project file.
+			relativePath := strings.TrimPrefix(path, args.Project.NameTemplate+"/")
+
 			for _, pattern := range args.Project.Conf.Skip {
 				match, err := doublestar.PathMatch(pattern, relativePath)
 				if err != nil {

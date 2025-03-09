@@ -174,7 +174,6 @@ func PartialsProject() *Project {
 		NameTemplate: "{{ .Project }}",
 		Name:         "NewProject",
 		Conf: &ProjectScaffoldFile{
-			Partials: "partials",
 			Computed: map[string]string{
 				"Greeting": "Hello, World!",
 			},

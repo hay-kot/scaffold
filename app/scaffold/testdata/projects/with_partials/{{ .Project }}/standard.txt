@@ -1,1 +1,0 @@
-{{ partial "mypartial" . }}{{ partial "mypartial" . }}{{ partial "mypartial" . }}

@@ -17,9 +17,6 @@ var (
 	//go:embed testdata/projects/custom_delims
 	customDelimsFiles embed.FS
 
-	//go:embed testdata/projects/with_partials
-	partialsFiles embed.FS
-
 	//go:embed testdata/projects/dynamic_files/*
 	// Validates That:
 	//  1. Files are created
@@ -159,24 +156,6 @@ func CustomDelimsProject() *Project {
 					Left:  "[[",
 					Right: "]]",
 				},
-			},
-		},
-	}
-}
-
-func PartialsFiles() fs.FS {
-	f, _ := fs.Sub(partialsFiles, "testdata/projects/with_partials")
-	return f
-}
-
-func PartialsProject() *Project {
-	return &Project{
-		NameTemplate: "{{ .Project }}",
-		Name:         "NewProject",
-		Conf: &ProjectScaffoldFile{
-			Partials: "partials",
-			Computed: map[string]string{
-				"Greeting": "Hello, World!",
 			},
 		},
 	}

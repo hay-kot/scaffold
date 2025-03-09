@@ -2,7 +2,6 @@ package scaffold
 
 import (
 	"io/fs"
-	"maps"
 	"testing"
 
 	"github.com/bradleyjkemp/cupaloy/v2"
@@ -52,11 +51,6 @@ func Test_RenderRWFileSystem(t *testing.T) {
 			fs:   CustomDelimsFiles(),
 			p:    CustomDelimsProject(),
 		},
-		{
-			name: "partials",
-			fs:   PartialsFiles(),
-			p:    PartialsProject(),
-		},
 	}
 
 	vars := engine.Vars{
@@ -71,7 +65,9 @@ func Test_RenderRWFileSystem(t *testing.T) {
 
 	for _, tt := range tests {
 		if tt.vars != nil {
-			maps.Copy(vars, tt.vars)
+			for k, v := range tt.vars {
+				vars[k] = v
+			}
 		}
 
 		t.Run(tt.name, func(t *testing.T) {

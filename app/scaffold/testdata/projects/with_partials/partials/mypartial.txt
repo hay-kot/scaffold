@@ -1,0 +1,1 @@
+From My Partial, {{ .Computed.Greeting }}

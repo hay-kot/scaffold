@@ -10,7 +10,7 @@ require (
 	github.com/charmbracelet/bubbletea v1.3.4
 	github.com/charmbracelet/glamour v0.9.0
 	github.com/charmbracelet/huh v0.6.0
-	github.com/charmbracelet/huh/spinner v0.0.0-20250313000648-36d9de46d64e
+	github.com/charmbracelet/huh/spinner v0.0.0-20250315225456-0761ac7eb2e8
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/gertd/go-pluralize v0.2.1
 	github.com/go-git/go-git/v5 v5.14.0

@@ -3,6 +3,7 @@ package scaffold
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -190,6 +191,8 @@ func BuildVars(eng *engine.Engine, project *Project, vars engine.Vars) (engine.V
 // RenderRWFS renders a rwfs.RFS to a rwfs.WriteFS by compiling all files in the rwfs.ReadFS
 // and writing the compiled files to the WriteFS.
 func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
+	const PartialsDir = "partials"
+
 	guards := []filepathGuard{
 		guardRewrite(args),
 		guardRenderPath(eng, vars),
@@ -198,17 +201,33 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 		guardFeatureFlag(eng, args, vars),
 	}
 
-	err := fs.WalkDir(args.ReadFS, args.Project.NameTemplate, func(path string, d fs.DirEntry, err error) error {
+	_, err := args.ReadFS.Open(PartialsDir)
+	if err == nil {
+		// Turn partials directory into a FS and then
+		// add it to the engine so partials can be used.
+		partialsFS, err := fs.Sub(args.ReadFS, PartialsDir)
+		if err != nil {
+			return fmt.Errorf("failed to create partials FS: %w", err)
+		}
+
+		err = eng.RegisterPartialsFS(partialsFS, ".")
+		if err != nil {
+			return fmt.Errorf("failed to register partials FS: %w", err)
+		}
+	}
+
+	err = fs.WalkDir(args.ReadFS, args.Project.NameTemplate, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 
 		if args.Project.Conf != nil && len(args.Project.Conf.Skip) > 0 {
+			// Use relative path for matching so that the config writers don't have to
+			// specify every file as **/*.goreleaser.yml instead of just *.goreleaser.yml
+			// to match things at the root of the project file.
+			relativePath := strings.TrimPrefix(path, args.Project.NameTemplate+"/")
+
 			for _, pattern := range args.Project.Conf.Skip {
-				// Use relative path for matching so that the config writers don't have to
-				// specify every file as **/*.goreleaser.yml instead of just *.goreleaser.yml
-				// to match things at the root of the project file.
-				relativePath := strings.TrimPrefix(path, args.Project.NameTemplate+"/")
 				match, err := doublestar.PathMatch(pattern, relativePath)
 				if err != nil {
 					return err

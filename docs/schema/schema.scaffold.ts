@@ -39,6 +39,11 @@ export interface Schema {
    * delimiters is a list of delimiter overrides for files. Useful for when you have a go template within a file you want to template using scaffold.
    * */
   delimiters?: Delimiters[];
+
+  /**
+   * partials is a directory name in the project folder that contains partial templates that can be included in the main template.
+   * */
+  partials?: string;
 }
 
 type Delimiters = {

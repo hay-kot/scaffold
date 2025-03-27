@@ -8,7 +8,7 @@ require (
 	github.com/catppuccin/go v0.3.0
 	github.com/charmbracelet/bubbles v0.20.1-0.20250320170029-54f28b650198
 	github.com/charmbracelet/bubbletea v1.3.4
-	github.com/charmbracelet/glamour v0.9.0
+	github.com/charmbracelet/glamour v0.9.1
 	github.com/charmbracelet/huh v0.6.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20250327021907-684a9cf11922
 	github.com/charmbracelet/lipgloss v1.1.0

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"os"
@@ -12,12 +13,15 @@ import (
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
 	"github.com/hay-kot/scaffold/internal/appdirs"
+	"github.com/hay-kot/scaffold/internal/completions"
 	"github.com/hay-kot/scaffold/internal/printer"
 	"github.com/hay-kot/scaffold/internal/styles"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/urfave/cli/v2"
 )
+
+var ErrCompletions = errors.New("completions generated")
 
 var (
 	// Build information. Populated at build-time via -ldflags flag.
@@ -45,11 +49,37 @@ func main() {
 	}
 	console := printer.New(os.Stdout)
 
+	prepareFlags := func(ctx *cli.Context) {
+		ctrl.Flags = commands.Flags{
+			Cache:          ctx.String("cache"),
+			ScaffoldRCPath: ctx.String("scaffoldrc"),
+			ScaffoldDirs:   ctx.StringSlice("scaffold-dir"),
+		}
+	}
+
 	app := &cli.App{
-		Name:    "scaffold",
-		Usage:   "scaffold projects and files from your terminal",
-		Version: build(),
+		EnableBashCompletion: true,
+		Name:                 "scaffold",
+		Usage:                "scaffold projects and files from your terminal",
+		Version:              build(),
 		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:  "completion",
+				Usage: "generate shell completions",
+				Value: "",
+				Action: func(ctx *cli.Context, s string) error {
+					switch s {
+					case "zsh":
+						fmt.Println(completions.Zsh)
+					case "bash":
+						fmt.Println(completions.Bash)
+					default:
+						return fmt.Errorf("unknown shell: %s", s)
+					}
+
+					return ErrCompletions
+				},
+			},
 			&cli.PathFlag{
 				Name:    "scaffoldrc",
 				Usage:   "path to scaffoldrc file",
@@ -92,11 +122,7 @@ func main() {
 			},
 		},
 		Before: func(ctx *cli.Context) error {
-			ctrl.Flags = commands.Flags{
-				Cache:          ctx.String("cache"),
-				ScaffoldRCPath: ctx.String("scaffoldrc"),
-				ScaffoldDirs:   ctx.StringSlice("scaffold-dir"),
-			}
+			prepareFlags(ctx)
 
 			dir := filepath.Dir(ctrl.Flags.ScaffoldRCPath)
 			if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -259,6 +285,20 @@ func main() {
 						OutputDir:  ctx.String("output-dir"),
 					})
 				},
+				BashComplete: func(ctx *cli.Context) {
+					prepareFlags(ctx) // call because Before hook not called for completions
+
+					opts, err := ctrl.ListPlain(commands.FlagsList{
+						OutputDir: cmp.Or(ctx.String("output-dir"), "."),
+					})
+					if err != nil {
+						return
+					}
+
+					for _, o := range opts {
+						fmt.Println(o)
+					}
+				},
 			},
 			{
 				Name: "list",
@@ -403,6 +443,9 @@ func main() {
 		// without direct string comparison :(
 		case strings.HasPrefix(errstr, "flag provided but not defined"), errors.Is(err, ErrLinterErrors):
 			// ignore
+		case errors.Is(err, ErrCompletions):
+			// using error to signal termination but no actual error.
+			os.Exit(0)
 		default:
 			console.FatalError(err)
 		}

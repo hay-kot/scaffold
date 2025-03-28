@@ -3,6 +3,7 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
@@ -15,8 +16,15 @@ func (ctrl *Controller) resolve(
 	noPrompt bool,
 	force bool,
 ) (string, error) {
+	argPath = strings.TrimSpace(argPath)
+
 	if argPath == "" {
 		return "", fmt.Errorf("path is required")
+	}
+
+	if strings.HasPrefix(argPath, "github.com") || strings.HasPrefix(argPath, "gitlab.com") || strings.HasPrefix(argPath, "bitbucket.org") {
+		// probably mean https://...
+		argPath = "https://" + argPath
 	}
 
 	// Status() call for go-git is too slow to be used here

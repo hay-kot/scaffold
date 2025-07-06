@@ -1,10 +1,12 @@
 # This is an example .goreleaser.yml file with some sensible defaults.
 # Make sure to check the documentation at https://goreleaser.com
 version: 2
+
 before:
   hooks:
     # You may remove this if you don't use go modules.
     - go mod tidy
+
 builds:
   - env:
       - CGO_ENABLED=0
@@ -14,7 +16,7 @@ builds:
       - darwin
 
 archives:
-  - format: tar.gz
+  - formats: [tar.gz]
     # this name template makes the OS and Arch compatible with the results of uname.
     name_template: >-
       {{ .ProjectName }}_
@@ -26,11 +28,14 @@ archives:
     # use zip for windows archives
     format_overrides:
       - goos: windows
-        format: zip
+        formats: [zip]
+
 checksum:
   name_template: "checksums.txt"
+
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
+
 changelog:
   sort: asc
   filters:
@@ -38,15 +43,14 @@ changelog:
       - "^docs:"
       - "^test:"
 
-brews:
-  - repository:
-      owner: hay-kot
-      name: homebrew-scaffold-tap
+homebrew_casks:
+  - name: scaffold
+    homepage: "https://hay-kot.github.io/scaffold/"
     description: "Scaffold is a tool for creating new projects from pre-defined templates."
     license: MIT
     dependencies:
-      - name: go
-        type: optional
-      - name: git
-    test: |
-      system "#{bin}/scaffold version"
+      - formula: go
+      - formula: git
+    repository:
+      owner: hay-kot
+      name: homebrew-scaffold-tap

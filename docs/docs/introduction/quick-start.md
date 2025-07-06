@@ -11,7 +11,7 @@ Scaffold is a single-binary written in Go, it can be installed via Homebrew or G
 
 ```sh
 brew tap hay-kot/scaffold-tap
-brew install scaffold
+brew install scaffold --cask
 ```
 
 ### Go
@@ -107,6 +107,7 @@ questions:
 ```
 
 For detailed information on creating scaffolds, see:
+
 - [Creating Projects](../projects/creating-projects.md)
 - [Scaffold File Configuration](../configuration/scaffold-file.md)
 - [Template Engine](../template-system/template-engine.md)

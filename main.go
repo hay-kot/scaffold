@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -16,7 +17,7 @@ import (
 	"github.com/hay-kot/scaffold/internal/styles"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var (
@@ -45,79 +46,79 @@ func main() {
 	}
 	console := printer.New(os.Stdout)
 
-	app := &cli.App{
+	app := &cli.Command{
 		Name:    "scaffold",
 		Usage:   "scaffold projects and files from your terminal",
 		Version: build(),
 		Flags: []cli.Flag{
-			&cli.PathFlag{
+			&cli.StringFlag{
 				Name:    "scaffoldrc",
 				Usage:   "path to scaffoldrc file",
 				Value:   appdirs.RCFilepath(),
-				EnvVars: []string{"SCAFFOLDRC"},
+				Sources: cli.EnvVars("SCAFFOLDRC"),
 			},
 			&cli.StringSliceFlag{
 				Name:    "scaffold-dir",
 				Usage:   "paths to directories containing scaffold templates",
-				Value:   cli.NewStringSlice("./.scaffold"),
-				EnvVars: []string{"SCAFFOLD_DIR"},
+				Value:   []string{"./.scaffold"},
+				Sources: cli.EnvVars("SCAFFOLD_DIR"),
 			},
-			&cli.PathFlag{
+			&cli.StringFlag{
 				Name:    "cache",
 				Usage:   "path to the local scaffold directory default",
 				Value:   appdirs.CacheDir(),
-				EnvVars: []string{"SCAFFOLD_CACHE"},
+				Sources: cli.EnvVars("SCAFFOLD_CACHE"),
 			},
 			&cli.StringFlag{
 				Name:    "log-level",
 				Usage:   "log level (debug, info, warn, error, fatal, panic)",
 				Value:   "warn",
-				EnvVars: []string{"SCAFFOLD_LOG_LEVEL", "SCAFFOLD_SETTINGS_LOG_LEVEL"},
+				Sources: cli.EnvVars("SCAFFOLD_LOG_LEVEL", "SCAFFOLD_SETTINGS_LOG_LEVEL"),
 			},
 			&cli.StringFlag{
 				Name:    "log-file",
 				Usage:   "log file to write to (use 'stdout' for stdout)",
-				EnvVars: []string{"SCAFFOLD_SETTINGS_LOG_FILE"},
+				Sources: cli.EnvVars("SCAFFOLD_SETTINGS_LOG_FILE"),
 			},
 			&cli.StringFlag{
 				Name:    "theme",
 				Usage:   "theme to use for the scaffold output",
 				Value:   "scaffold",
-				EnvVars: []string{"SCAFFOLD_SETTINGS_THEME", "SCAFFOLD_THEME"},
+				Sources: cli.EnvVars("SCAFFOLD_SETTINGS_THEME", "SCAFFOLD_THEME"),
 			},
 			&cli.StringFlag{
 				Name:    "run-hooks",
 				Usage:   "run hooks (never, always, prompt) when provided overrides scaffold rc",
-				EnvVars: []string{"SCAFFOLD_SETTINGS_RUN_HOOKS"},
+				Sources: cli.EnvVars("SCAFFOLD_SETTINGS_RUN_HOOKS"),
 			},
 		},
-		Before: func(ctx *cli.Context) error {
+		Before: func(ctx context.Context, c *cli.Command) (context.Context, error) {
 			ctrl.Flags = commands.Flags{
-				Cache:          ctx.String("cache"),
-				ScaffoldRCPath: ctx.String("scaffoldrc"),
-				ScaffoldDirs:   ctx.StringSlice("scaffold-dir"),
+				Cache:          c.String("cache"),
+				ScaffoldRCPath: c.String("scaffoldrc"),
+				ScaffoldDirs:   c.StringSlice("scaffold-dir"),
 			}
 
 			dir := filepath.Dir(ctrl.Flags.ScaffoldRCPath)
 			if err := os.MkdirAll(dir, 0o755); err != nil {
-				return fmt.Errorf("failed to create scaffoldrc directory: %w", err)
+				return ctx, fmt.Errorf("failed to create scaffoldrc directory: %w", err)
 			}
 
 			if _, err := os.Stat(ctrl.Flags.ScaffoldRCPath); os.IsNotExist(err) {
 				if err := os.WriteFile(ctrl.Flags.ScaffoldRCPath, []byte{}, 0o644); err != nil {
-					return fmt.Errorf("failed to create scaffoldrc file: %w", err)
+					return ctx, fmt.Errorf("failed to create scaffoldrc file: %w", err)
 				}
 			}
 
-			if err := os.MkdirAll(ctx.String("cache"), 0o755); err != nil {
-				return fmt.Errorf("failed to create cache directory: %w", err)
+			if err := os.MkdirAll(c.String("cache"), 0o755); err != nil {
+				return ctx, fmt.Errorf("failed to create cache directory: %w", err)
 			}
 
 			// Parse scaffoldrc file
 			scaffoldrcFile, err := os.Open(ctrl.Flags.ScaffoldRCPath)
 			if err != nil {
 				if !errors.Is(err, os.ErrNotExist) {
-					return fmt.Errorf("failed to open scaffoldrc file: %w", err)
+					return ctx, fmt.Errorf("failed to open scaffoldrc file: %w", err)
 				}
 				log.Debug().Msg("scaffoldrc file does not exist, skipping")
 			}
@@ -127,39 +128,39 @@ func main() {
 			if scaffoldrcFile != nil {
 				rc, err = scaffoldrc.New(scaffoldrcFile)
 				if err != nil {
-					return err
+					return ctx, err
 				}
 			}
 
 			//
 			// Override Settings with Flags
 			//
-			if ctx.IsSet("theme") {
-				rc.Settings.Theme = styles.HuhTheme(ctx.String("theme"))
+			if c.IsSet("theme") {
+				rc.Settings.Theme = styles.HuhTheme(c.String("theme"))
 			}
 
-			if ctx.IsSet("run-hooks") {
-				rc.Settings.RunHooks = scaffoldrc.ParseRunHooksOption(ctx.String("run-hooks"))
+			if c.IsSet("run-hooks") {
+				rc.Settings.RunHooks = scaffoldrc.ParseRunHooksOption(c.String("run-hooks"))
 			}
 
-			if ctx.IsSet("log-level") {
-				level, err := zerolog.ParseLevel(ctx.String("log-level"))
+			if c.IsSet("log-level") {
+				level, err := zerolog.ParseLevel(c.String("log-level"))
 				if err != nil {
-					return fmt.Errorf("failed to parse log level: %w", err)
+					return ctx, fmt.Errorf("failed to parse log level: %w", err)
 				}
 
 				log.Logger = log.Level(level)
 			}
 
-			if ctx.IsSet("log-file") {
-				rc.Settings.LogFile = ctx.String("log-file")
+			if c.IsSet("log-file") {
+				rc.Settings.LogFile = c.String("log-file")
 
 				if !strings.HasPrefix(rc.Settings.LogFile, "/") {
 					// If the file path is not absolute, we want to make it absolute
 					// so that it is relative to the cwd and not the scaffoldrc file.
 					absLogFilePath, err := filepath.Abs(rc.Settings.LogFile)
 					if err != nil {
-						return err
+						return ctx, err
 					}
 
 					rc.Settings.LogFile = absLogFilePath
@@ -181,7 +182,7 @@ func main() {
 
 					console.KeyValueValidationError("ScaffoldRC Errors", errlist)
 				default:
-					return fmt.Errorf("unexpected error return from validator: %w", err)
+					return ctx, fmt.Errorf("unexpected error return from validator: %w", err)
 				}
 			}
 
@@ -194,7 +195,7 @@ func main() {
 
 				f, err := os.OpenFile(logpath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 				if err != nil {
-					return fmt.Errorf("failed to open log file: %w", err)
+					return ctx, fmt.Errorf("failed to open log file: %w", err)
 				}
 
 				log.Logger = log.Output(zerolog.ConsoleWriter{
@@ -207,7 +208,7 @@ func main() {
 			console = console.WithBase(styles.Base).WithLight(styles.Light)
 
 			ctrl.Prepare(engine.New(), rc)
-			return nil
+			return ctx, nil
 		},
 		Commands: []*cli.Command{
 			{
@@ -233,30 +234,30 @@ func main() {
 					&cli.BoolFlag{
 						Name:    "no-clobber",
 						Usage:   "do not overwrite existing files",
-						EnvVars: []string{"SCAFFOLD_NO_CLOBBER"},
+						Sources: cli.EnvVars("SCAFFOLD_NO_CLOBBER"),
 						Value:   true,
 					},
 					&cli.BoolFlag{
 						Name:    "force",
 						Usage:   "apply changes when git tree is dirty",
 						Value:   true,
-						EnvVars: []string{"SCAFFOLD_FORCE"},
+						Sources: cli.EnvVars("SCAFFOLD_FORCE"),
 					},
 					&cli.StringFlag{
 						Name:    "output-dir",
 						Usage:   "scaffold output directory (use ':memory:' for in-memory filesystem)",
 						Value:   ".",
-						EnvVars: []string{"SCAFFOLD_OUT"},
+						Sources: cli.EnvVars("SCAFFOLD_OUT"),
 					},
 				},
-				Action: func(ctx *cli.Context) error {
-					return ctrl.New(ctx.Args().Slice(), commands.FlagsNew{
-						NoPrompt:   ctx.Bool("no-prompt"),
-						Preset:     ctx.String("preset"),
-						Snapshot:   ctx.String("snapshot"),
-						NoClobber:  ctx.Bool("no-clobber"),
-						ForceApply: ctx.Bool("force"),
-						OutputDir:  ctx.String("output-dir"),
+				Action: func(ctx context.Context, c *cli.Command) error {
+					return ctrl.New(c.Args().Slice(), commands.FlagsNew{
+						NoPrompt:   c.Bool("no-prompt"),
+						Preset:     c.String("preset"),
+						Snapshot:   c.String("snapshot"),
+						NoClobber:  c.Bool("no-clobber"),
+						ForceApply: c.Bool("force"),
+						OutputDir:  c.String("output-dir"),
 					})
 				},
 			},
@@ -271,9 +272,9 @@ func main() {
 				},
 				Aliases: []string{"ls"},
 				Usage:   "list available scaffolds",
-				Action: func(ctx *cli.Context) error {
+				Action: func(ctx context.Context, c *cli.Command) error {
 					return ctrl.List(commands.FlagsList{
-						OutputDir: ctx.String("cwd"),
+						OutputDir: c.String("cwd"),
 					})
 				},
 			},
@@ -286,8 +287,8 @@ func main() {
 				Name:      "lint",
 				Usage:     "lint a scaffoldrc file",
 				UsageText: "scaffold lint [scaffold file]",
-				Action: func(ctx *cli.Context) error {
-					pfpath := ctx.Args().First()
+				Action: func(ctx context.Context, c *cli.Command) error {
+					pfpath := c.Args().First()
 					if pfpath == "" {
 						return errors.New("no file provided")
 					}
@@ -321,11 +322,11 @@ func main() {
 				Name:   "dev",
 				Hidden: true,
 				Usage:  "development commands for testing",
-				Subcommands: []*cli.Command{
+				Commands: []*cli.Command{
 					{
 						Name:  "printer",
 						Usage: "demos the printer",
-						Action: func(ctx *cli.Context) error {
+						Action: func(ctx context.Context, c *cli.Command) error {
 							console.Title(" --- Unknown Error ---")
 							console.LineBreak()
 
@@ -361,7 +362,7 @@ func main() {
 					},
 					{
 						Name: "dump",
-						Action: func(ctx *cli.Context) error {
+						Action: func(ctx context.Context, c *cli.Command) error {
 							rcyml, err := ctrl.RuntimeConfigYAML()
 							if err != nil {
 								return err
@@ -380,7 +381,7 @@ func main() {
 					},
 					{
 						Name: "migrate",
-						Action: func(ctx *cli.Context) error {
+						Action: func(ctx context.Context, c *cli.Command) error {
 							err := appdirs.MigrateLegacyPaths()
 							if err != nil {
 								return err
@@ -395,7 +396,7 @@ func main() {
 		},
 	}
 
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(context.Background(), os.Args); err != nil {
 		errstr := err.Error()
 
 		switch {

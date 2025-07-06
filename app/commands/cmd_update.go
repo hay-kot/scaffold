@@ -1,13 +1,14 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/charmbracelet/huh/spinner"
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
 	"github.com/hay-kot/scaffold/internal/printer"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 type updateStatus struct {
@@ -15,7 +16,7 @@ type updateStatus struct {
 	message    string
 }
 
-func (ctrl *Controller) Update(ctx *cli.Context) error {
+func (ctrl *Controller) Update(ctx context.Context, c *cli.Command) error {
 	ctrl.ready()
 
 	scaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))

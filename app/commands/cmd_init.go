@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"context"
 	"embed"
 	"io"
 	"os"
@@ -8,13 +9,13 @@ import (
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 //go:embed init/*
 var initFiles embed.FS
 
-func (ctrl *Controller) Init(ctx *cli.Context) error {
+func (ctrl *Controller) Init(_ context.Context, c *cli.Command) error {
 	// get current directory
 	dir, err := os.Getwd()
 	if err != nil {

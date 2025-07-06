@@ -5,7 +5,6 @@
 
 Scaffold uses a resolution system to find the correct scaffold to use when generating a project. This system may seem _complicated_ at first, however I reason that it is flexible enough to handle most use cases without being overly un-intuitive.
 
-
 ## Short summary
 
 The scaffold argument can be one of the following
@@ -17,7 +16,7 @@ The scaffold argument can be one of the following
 - A remote repo url, e.g. `https://github.com/hay-kot/scaffold-go-cli`
 - A remote repo subdirectory, e.g. `https://github.com/org/repo#subdirectory`
 
-> Note that the resolved path must have a `scaffold.yaml` or `scaffold.yml` [configuration file](../templates/scaffold-file.md) present
+> Note that the resolved path must have a `scaffold.yaml` or `scaffold.yml` [configuration file](../configuration/scaffold-file.md) present
 
 ## Full resolution diagram
 

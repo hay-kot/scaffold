@@ -294,7 +294,7 @@ presets:
 ```
 
 ::: tip Presets and Testing
-Presets can be used in conjunction with the `new` command for testing purposes. See [Testing Scaffolds](./testing-scaffolds.md) for more information.
+Presets can be used in conjunction with the `new` command for testing purposes. See [Testing Scaffolds](../advanced/testing-scaffolds.md) for more information.
 :::
 
 ## `delimiters`

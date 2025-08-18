@@ -1,0 +1,4 @@
+# This file should only be included when engine_type is "k0s"
+# k0s configuration
+engine: [[ .Scaffold.engine ]]
+type: k0s

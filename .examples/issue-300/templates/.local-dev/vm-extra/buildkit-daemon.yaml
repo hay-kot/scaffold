@@ -1,0 +1,4 @@
+# This file should only be included when builder is "buildkit"
+# buildkit configuration
+builder: [[ .Scaffold.builder ]]
+enabled: true

@@ -2,6 +2,7 @@ package scaffold
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -15,6 +16,7 @@ import (
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/huandu/xstrings"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -122,29 +124,50 @@ func guardFeatureFlag(e *engine.Engine, args *RWFSArgs, vars engine.Vars) filepa
 		return guardNoOp
 	}
 
-	return func(outpath string, f fs.DirEntry) (newOutpath string, err error) {
-		for _, feature := range args.Project.Conf.Features {
-			render, err := e.TmplString(feature.Value, vars)
-			if err != nil {
-				return "", err
-			}
+	// Pre-render all feature flag values
+	type featureState struct {
+		enabled  bool
+		patterns []string
+	}
 
-			booly, _ := strconv.ParseBool(render)
-			if !booly {
-				for _, pattern := range feature.Globs {
+	featureStates := make([]featureState, 0, len(args.Project.Conf.Features))
+	for _, feature := range args.Project.Conf.Features {
+		render, err := e.TmplString(feature.Value, vars)
+		if err != nil {
+			log.Warn().Err(err).Str("feature", feature.Value).Msg("failed to render feature template, skipping")
+			continue
+		}
+
+		enabled, err := strconv.ParseBool(render)
+		if err != nil {
+			log.Warn().Err(err).Str("feature", feature.Value).Str("value", render).Msg("invalid feature flag value, defaulting to false")
+			enabled = false
+		}
+
+		log.Debug().Str("template", feature.Value).Str("rendered", render).Bool("parsed", enabled).Msg("feature value eval")
+
+		featureStates = append(featureStates, featureState{
+			enabled:  enabled,
+			patterns: feature.Globs,
+		})
+	}
+
+	return func(outpath string, f fs.DirEntry) (newOutpath string, err error) {
+		for _, state := range featureStates {
+			// If feature is disabled, check if file should be skipped
+			if !state.enabled {
+				for _, pattern := range state.patterns {
 					match, err := doublestar.Match(pattern, outpath)
 					if err != nil {
-						log.Debug().Err(err).Str("path", outpath).Str("pattern", pattern).Msg("feature pattern match")
+						log.Debug().Err(err).Str("path", outpath).Str("pattern", pattern).Msg("feature pattern match error")
 						return "", err
 					}
-
 					if match {
 						return "", errSkipRender
 					}
 				}
 			}
 		}
-
 		return outpath, nil
 	}
 }
@@ -185,6 +208,16 @@ func BuildVars(eng *engine.Engine, project *Project, vars engine.Vars) (engine.V
 
 	iVars["Computed"] = computed
 
+	if log.Logger.GetLevel() == zerolog.DebugLevel {
+		b, err := json.MarshalIndent(iVars, "  ", "  ")
+		if err != nil {
+			log.Logger.Err(err).Msg("failed to unmarshal iVars")
+		}
+
+		log.Logger.Debug().Msg("dumping iVars")
+		fmt.Println("  " + string(b))
+	}
+
 	return iVars, nil
 }
 
@@ -192,14 +225,6 @@ func BuildVars(eng *engine.Engine, project *Project, vars engine.Vars) (engine.V
 // and writing the compiled files to the WriteFS.
 func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 	const PartialsDir = "partials"
-
-	guards := []filepathGuard{
-		guardRewrite(args),
-		guardRenderPath(eng, vars),
-		guardNoClobber(args),
-		guardDirectories(args),
-		guardFeatureFlag(eng, args, vars),
-	}
 
 	_, err := args.ReadFS.Open(PartialsDir)
 	if err == nil {
@@ -269,18 +294,30 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 
 		outpath := path
 
-		for i, guard := range guards {
-			outpath, err = guard(outpath, d)
+		guards := map[string]filepathGuard{
+			"rewrite":       guardRewrite(args),
+			"render path":   guardRenderPath(eng, vars),
+			"no clobber":    guardNoClobber(args),
+			"directories":   guardDirectories(args),
+			"feature flags": guardFeatureFlag(eng, args, vars),
+		}
+
+		for key, guard := range guards {
+			newpath, err := guard(outpath, d)
 			if err != nil {
 				if errors.Is(err, errSkipRender) || errors.Is(err, errSkipWrite) {
+					log.Debug().Str("outpath", outpath).Str("guard", key).Msg("skipping write/render")
 					return nil
 				}
 
-				log.Debug().Err(err).Str("outpath", outpath).Int("guard", i).Msg("guard failed")
+				log.Debug().Err(err).Str("outpath", outpath).Str("guard", key).Msg("guard failed")
 				return err
 			}
 
-			log.Debug().Str("outpath", outpath).Int("guard", i).Msg("guard")
+			if outpath != newpath {
+				log.Debug().Str("outpath", outpath).Str("newpath", newpath).Str("guard", key).Msg("guard executed with outpath change")
+				outpath = newpath
+			}
 		}
 
 		f, err := args.ReadFS.Open(path)

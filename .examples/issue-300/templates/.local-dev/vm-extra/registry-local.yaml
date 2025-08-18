@@ -1,0 +1,4 @@
+# This file should only be included when registry is "local"
+# local registry configuration
+registry: [[ .Scaffold.registry ]]
+port: 5000

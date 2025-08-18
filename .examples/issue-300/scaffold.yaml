@@ -1,0 +1,85 @@
+# yaml-language-server: $schema=https://hay-kot.github.io/scaffold/schema.json
+
+messages:
+  pre: |
+    # Scaffold .local-dev starter kit
+    - Git-clone this template, then tweak questions & prompts for your own stack.
+
+  post: |
+    # Get Started
+  
+    ```sh
+    cd {{ .ProjectKebab }}
+    task pr
+    ```
+
+questions:
+  - name: engine
+    required: true
+    prompt:
+      message: 'Local development runtime / orchestrator?'
+      description: 'Regardless of choice, everything runs inside of Lima VM.'
+      options:
+        - 'dockerd / compose'
+        - 'containerd / compose'
+        - 'k0s / kubernetes'
+
+  - name: cli
+    prompt:
+      confirm: 'Use host-native CLI tools?'
+      description: |
+        Yes – commands like `kubectl`, `docker`, `nerdctl` on your computer connect to the Lima VM via socket.  
+        No  – the same commands run inside the VM (transparently aliased for you).
+      default: false
+
+  - name: builder
+    when: '{{ hasPrefix "containerd" .engine }}'
+    prompt:
+      message: 'Builder'
+      description: 'How images are produced.'
+      default: 'buildkit'
+      options:
+        - 'buildkit'
+
+  - name: builder
+    when: '{{ hasPrefix "k0s" .engine }}'
+    prompt:
+      message: 'Builder'
+      description: 'How images are produced.'
+      default: 'buildkit'
+      options:
+        - 'buildkit'
+        - 'in-cluster'
+
+  - name: registry
+    when: '{{ not (hasPrefix "dockerd" .engine) }}'
+    prompt:
+      message: 'Registry'
+      description: 'Where built images will be pushed for the local runtime.'
+      default: 'local'
+      options:
+        - 'local'
+        - 'ttl.sh (ephemeral)'
+        - 'ghcr.io'
+        - 'docker.io'
+
+computed:
+  engine_type: '{{ regexSplit "[^\\w]+" .Scaffold.engine -1 | first}}'
+  is_kubernetes: '{{ hasSuffix "kubernetes" .Scaffold.engine }}'
+
+features:
+  - value: '{{ eq .builder "buildkit" }}'
+    globs:
+      - '**/.local-dev/vm-extra/**/*buildkit*'
+
+  - value: '{{ eq .Scaffold.builder "buildkit" }}'
+    globs:
+      - '**/.local-dev/vm-extra/**/*registry*'
+
+delimiters:
+  - glob: '**/.local-dev/**/*.yaml'
+    left: '[['
+    right: ']]'
+  - glob: 'Taskfile.yaml'
+    left: '[['
+    right: ']]'

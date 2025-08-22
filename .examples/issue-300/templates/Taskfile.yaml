@@ -1,0 +1,19 @@
+# Example Taskfile
+version: '3'
+
+vars:
+  PROJECT: [[ .ProjectKebab ]]
+  ENGINE: [[ .Scaffold.engine ]]
+  BUILDER: [[ .Scaffold.builder ]]
+  REGISTRY: [[ .Scaffold.registry ]]
+  IS_KUBERNETES: [[ .Computed.is_kubernetes ]]
+
+tasks:
+  pr:
+    desc: Print project configuration
+    cmds:
+      - echo "Project: {{.PROJECT}}"
+      - echo "Engine: {{.ENGINE}}"
+      - echo "Builder: {{.BUILDER}}"
+      - echo "Registry: {{.REGISTRY}}"
+      - echo "Is Kubernetes: {{.IS_KUBERNETES}}"

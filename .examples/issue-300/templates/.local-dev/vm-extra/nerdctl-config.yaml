@@ -1,0 +1,4 @@
+# This file should only be included when engine_type is "containerd"
+# nerdctl configuration
+engine: [[ .Scaffold.engine ]]
+type: containerd

@@ -6,7 +6,6 @@ env:
   SCAFFOLD_OUT: "gen"
   SCAFFOLD_DIR: ".scaffold,.examples"
   SCAFFOLD_SETTINGS_LOG_LEVEL: "debug"
-  SCAFFOLD_SETTINGS_LOG_FILE: "./scaffold.log"
 
 dotenv:
   - .env
@@ -85,6 +84,12 @@ tasks:
     cmds:
       - rm -rf ./gen/*
       - go run main.go new --output-dir=":memory:" funcs
+
+  do:issue-300:
+    desc: Runs the main.go program with the cli scaffold
+    cmds:
+      - rm -rf ./gen/*
+      - go run main.go new --output-dir=":memory:" issue-300
 
   do:role:
     desc: Runs the main.go program with the role scaffold

@@ -294,28 +294,33 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 
 		outpath := path
 
-		guards := map[string]filepathGuard{
-			"rewrite":       guardRewrite(args),
-			"render path":   guardRenderPath(eng, vars),
-			"no clobber":    guardNoClobber(args),
-			"directories":   guardDirectories(args),
-			"feature flags": guardFeatureFlag(eng, args, vars),
+		type guard struct {
+			name  string
+			guard filepathGuard
 		}
 
-		for key, guard := range guards {
-			newpath, err := guard(outpath, d)
+		guards := []guard{
+			{"rewrite", guardRewrite(args)},
+			{"render path", guardRenderPath(eng, vars)},
+			{"no clobber", guardNoClobber(args)},
+			{"directories", guardDirectories(args)},
+			{"feature flags", guardFeatureFlag(eng, args, vars)},
+		}
+
+		for _, guard := range guards {
+			newpath, err := guard.guard(outpath, d)
 			if err != nil {
 				if errors.Is(err, errSkipRender) || errors.Is(err, errSkipWrite) {
-					log.Debug().Str("outpath", outpath).Str("guard", key).Msg("skipping write/render")
+					log.Debug().Str("outpath", outpath).Str("guard", guard.name).Msg("skipping write/render")
 					return nil
 				}
 
-				log.Debug().Err(err).Str("outpath", outpath).Str("guard", key).Msg("guard failed")
+				log.Debug().Err(err).Str("outpath", outpath).Str("guard", guard.name).Msg("guard failed")
 				return err
 			}
 
 			if outpath != newpath {
-				log.Debug().Str("outpath", outpath).Str("newpath", newpath).Str("guard", key).Msg("guard executed with outpath change")
+				log.Debug().Str("outpath", outpath).Str("newpath", newpath).Str("guard", guard.name).Msg("guard executed with outpath change")
 				outpath = newpath
 			}
 		}

@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
+	"github.com/hay-kot/scaffold/app/core/apperrors"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/huandu/xstrings"
@@ -31,6 +32,40 @@ var (
 	errFileExists = errors.New("file exists and no-clobber is set to true")
 	errSkipWrite  = errors.New("skip write")
 )
+
+// addFileContextToError reads the file content and adds context lines to the template error
+func addFileContextToError(terr *apperrors.TemplateError, rfs rwfs.ReadFS, path string) *apperrors.TemplateError {
+	if terr.LineNumber <= 0 {
+		return terr
+	}
+
+	content, err := fs.ReadFile(rfs, path)
+	if err != nil {
+		return terr
+	}
+
+	lines := strings.Split(string(content), "\n")
+	if terr.LineNumber > len(lines) {
+		return terr
+	}
+
+	contextLines := []string{}
+
+	// Line before (if exists)
+	if terr.LineNumber > 1 {
+		contextLines = append(contextLines, lines[terr.LineNumber-2])
+	}
+
+	// Error line
+	contextLines = append(contextLines, lines[terr.LineNumber-1])
+
+	// Line after (if exists)
+	if terr.LineNumber < len(lines) {
+		contextLines = append(contextLines, lines[terr.LineNumber])
+	}
+
+	return terr.WithContext(contextLines)
+}
 
 type filepathGuard func(outpath string, f fs.DirEntry) (newOutpath string, err error)
 
@@ -328,7 +363,10 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 				return nil
 			}
 
-			return err
+			// Wrap template parse error with file context
+			terr := apperrors.WrapTemplateError(err, path).WithDelimiters(delimLeft, delimRight)
+			terr = addFileContextToError(terr, args.ReadFS, path)
+			return terr
 		}
 
 		buff := bytes.NewBuffer(nil)
@@ -336,7 +374,10 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 		err = tmpl.Execute(buff, vars)
 		if err != nil {
 			_ = f.Close()
-			return err
+			// Wrap template execution error with file context
+			terr := apperrors.WrapTemplateError(err, path).WithDelimiters(delimLeft, delimRight)
+			terr = addFileContextToError(terr, args.ReadFS, path)
+			return terr
 		}
 
 		// Skip empty files

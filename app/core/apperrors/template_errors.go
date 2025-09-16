@@ -1,6 +1,7 @@
 package apperrors
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strconv"
@@ -157,12 +158,12 @@ func (e *TemplateError) getCleanErrorMessage() string {
 
 	// Clean up common template error messages to be more readable
 	replacements := map[string]string{
-		"function \"": "function '",
-		"\" not defined": "' is not defined",
-		"unexpected ": "unexpected token ",
+		"function \"":     "function '",
+		"\" not defined":  "' is not defined",
+		"unexpected ":     "unexpected token ",
 		"unclosed action": "unclosed template action (missing closing delimiter)",
-		"bad character": "invalid character",
-		"expected": "expected",
+		"bad character":   "invalid character",
+		"expected":        "expected",
 	}
 
 	for old, new := range replacements {
@@ -179,14 +180,15 @@ func WrapTemplateError(err error, filePath string) *TemplateError {
 	}
 
 	// If it's already a TemplateError, just update the file path if needed
-	if te, ok := err.(*TemplateError); ok {
+	var te *TemplateError
+	if errors.As(err, &te) {
 		if filePath != "" && te.FilePath == "" {
 			te.FilePath = filePath
 		}
 		return te
 	}
 
-	te := &TemplateError{
+	te = &TemplateError{
 		FilePath: filePath,
 		Original: err,
 	}

@@ -1,0 +1,46 @@
+{{- define "renderTree" -}}
+{{- $item := .item -}}
+{{- $indent := .indent -}}
+{{- $name := .name -}}
+{{- $type := typeOf $item -}}
+
+{{- /* Print current item with type and explicit newline */ -}}
+{{- printf "%s%s:  (type=%s)\n" $indent $name $type -}}
+
+{{- /* Handle different types recursively */ -}}
+{{- if eq $type "map[string]interface {}" -}}
+{{- range $key, $value := $item -}}
+{{- $newIndent := printf "%s%s" $indent (repeat 8 " ") -}}
+{{- template "renderTree" (dict "item" $value "indent" $newIndent "name" $key) -}}
+{{- end -}}
+{{- else if hasPrefix $type "[]" -}}
+{{- range $index, $value := $item -}}
+{{- $newIndent := printf "%s%s" $indent (repeat 8 " ") -}}
+{{- $indexName := printf "[%d]" $index -}}
+{{- template "renderTree" (dict "item" $value "indent" $newIndent "name" $indexName) -}}
+{{- end -}}
+{{- else if has (list "string" "float64" "int" "int64" "bool") $type -}}
+{{- /* For primitive types, show the value with explicit newline */ -}}
+{{- printf "%s%svalue: %v\n" $indent (repeat 8 " ") $item -}}
+{{- else -}}
+{{- /* For other complex types, try to introspect */ -}}
+{{- $kind := kindOf $item -}}
+{{- if eq $kind "map" -}}
+{{- range $key, $value := $item -}}
+{{- $newIndent := printf "%s%s" $indent (repeat 8 " ") -}}
+{{- template "renderTree" (dict "item" $value "indent" $newIndent "name" $key) -}}
+{{- end -}}
+{{- else if eq $kind "slice" -}}
+{{- range $index, $value := $item -}}
+{{- $newIndent := printf "%s%s" $indent (repeat 8 " ") -}}
+{{- $indexName := printf "[%d]" $index -}}
+{{- template "renderTree" (dict "item" $value "indent" $newIndent "name" $indexName) -}}
+{{- end -}}
+{{- else -}}
+{{- printf "%s%svalue: %v\n" $indent (repeat 8 " ") $item -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- /* Start the recursive rendering */ -}}
+{{- template "renderTree" (dict "item" .Scaffold "indent" "" "name" "root") -}}

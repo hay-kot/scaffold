@@ -98,6 +98,11 @@ tasks:
       - rm -rf ./gen/*
       - go run main.go new --output-dir=":memory:" prompts
 
+  do:template-errors:
+    desc: Tests template error handling and display
+    cmds:
+      - go run main.go new --output-dir=":memory:" --preset default --no-prompt .examples/template-errors
+
   docs:
     dir: docs
     desc: Starts the development server for the documentation

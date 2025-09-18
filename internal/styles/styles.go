@@ -15,7 +15,7 @@ const (
 
 const (
 	ColorSuccess = "#22c55e"
-	ColorError   = "#ef4444"
+	ColorError   = "#d75f6b"
 )
 
 var (

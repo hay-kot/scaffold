@@ -1,0 +1,12 @@
+name: Template Error Example
+description: A scaffold to demonstrate improved template error messages
+
+questions:
+  - name: project_name
+    prompt:
+      message: "Project name?"
+      default: "my-app"
+
+presets:
+  default:
+    project_name: "test-app"

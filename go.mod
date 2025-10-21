@@ -14,13 +14,13 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834
 	github.com/gertd/go-pluralize v0.2.1
 	github.com/go-git/go-git/v5 v5.16.2
-	github.com/go-sprout/sprout v1.0.1
+	github.com/go-sprout/sprout v1.0.2
 	github.com/hashicorp/go-version v1.7.0
 	github.com/huandu/xstrings v1.5.0
 	github.com/psanford/memfs v0.0.0-20241019191636-4ef911798f9b
 	github.com/rs/zerolog v1.34.0
 	github.com/sahilm/fuzzy v0.1.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/urfave/cli/v3 v3.3.8
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -77,11 +77,11 @@ require (
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/yuin/goldmark v1.7.12 // indirect
 	github.com/yuin/goldmark-emoji v1.0.6 // indirect
-	golang.org/x/crypto v0.39.0 // indirect
-	golang.org/x/net v0.41.0 // indirect
-	golang.org/x/sync v0.15.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/term v0.32.0 // indirect
-	golang.org/x/text v0.26.0 // indirect
+	golang.org/x/crypto v0.41.0 // indirect
+	golang.org/x/net v0.42.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
+	golang.org/x/sys v0.35.0 // indirect
+	golang.org/x/term v0.34.0 // indirect
+	golang.org/x/text v0.28.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )

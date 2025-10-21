@@ -62,10 +62,10 @@ func (ctrl *Controller) RuntimeConfigYAML() (string, error) {
 // loadLocalScaffolds loads scaffolds from all configured scaffold directories.
 // It warns when a directory doesn't exist or contains no scaffolds, but continues processing.
 func (ctrl *Controller) loadLocalScaffolds() ([]string, error) {
+	const Indent = " " // indent warnings to match list output
 	localScaffolds := []string{}
 
 	for _, dir := range ctrl.Flags.ScaffoldDirs {
-		const Indent = " " // indent warnings to match list output
 		// Check if directory exists
 		_, err := os.Stat(dir)
 		if os.IsNotExist(err) {

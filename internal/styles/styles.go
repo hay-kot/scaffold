@@ -19,10 +19,10 @@ const (
 )
 
 var (
-	Bold        = lipgloss.NewStyle().Bold(true).Render
-	Padding     = lipgloss.NewStyle().PaddingLeft(1).Render
-	Underline   = lipgloss.NewStyle().Underline(true).Render
-	Base, Light = ThemeColorsScaffold.Compile()
+	Bold                = lipgloss.NewStyle().Bold(true).Render
+	Padding             = lipgloss.NewStyle().PaddingLeft(1).Render
+	Underline           = lipgloss.NewStyle().Underline(true).Render
+	Base, Light, Warning = ThemeColorsScaffold.Compile()
 
 	Error   = lipgloss.NewStyle().Foreground(lipgloss.Color(ColorError)).Render
 	Success = lipgloss.NewStyle().Foreground(lipgloss.Color(ColorSuccess)).PaddingLeft(1).Render

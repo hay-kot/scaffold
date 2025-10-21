@@ -2,6 +2,7 @@ package huhext
 
 import (
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -102,6 +103,11 @@ func (l *LoopedInput) Run() error {
 	return l.input.Run()
 }
 
+// RunAccessible implements huh.Field.
+func (l *LoopedInput) RunAccessible(w io.Writer, r io.Reader) error {
+	return l.input.RunAccessible(w, r)
+}
+
 // Skip implements huh.Field.
 func (l *LoopedInput) Skip() bool {
 	return l.input.Skip()
@@ -161,7 +167,7 @@ func (l *LoopedInput) View() string {
 
 // WithAccessible implements huh.Field.
 func (l *LoopedInput) WithAccessible(b bool) huh.Field {
-	l.input.WithAccessible(b)
+	l.input.WithAccessible(b) //nolint:staticcheck
 	return l
 }
 

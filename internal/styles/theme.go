@@ -2,6 +2,7 @@ package styles
 
 import (
 	"slices"
+
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 )

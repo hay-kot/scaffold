@@ -37,8 +37,8 @@ func TestListFromFS(t *testing.T) {
 		{
 			name: "multiple scaffolds",
 			fs: fstest.MapFS{
-				"cli/scaffold.yaml":        &fstest.MapFile{Data: []byte("name: cli")},
-				"api/scaffold.yaml":        &fstest.MapFile{Data: []byte("name: api")},
+				"cli/scaffold.yaml":         &fstest.MapFile{Data: []byte("name: cli")},
+				"api/scaffold.yaml":         &fstest.MapFile{Data: []byte("name: api")},
 				"microservice/scaffold.yml": &fstest.MapFile{Data: []byte("name: microservice")},
 			},
 			want: []string{"cli", "api", "microservice"},

@@ -214,7 +214,22 @@ func main() {
 			{
 				Name:      "new",
 				Usage:     "create a new project from a scaffold",
-				UsageText: "scaffold new [flags] [scaffold (url | path)]",
+				UsageText: "scaffold new [flags] [scaffold (url | path)] [variables...]",
+				Description: `Create a new project from a scaffold template.
+
+Pass variables via CLI using key[:type]=value format:
+  • key=value           - string (default)
+  • key:int=123         - integer
+  • key:bool=true       - boolean
+  • key:[]string=a,b,c  - array (escape commas: a\,b)
+  • key:json={...}      - JSON object
+
+Examples:
+  scaffold new github.com/hay-kot/scaffold-go-cli
+  scaffold new mytemplate Project=MyApp Port:int=8080
+  scaffold new --preset dev mytemplate Project=MyApp Features:[]string=auth,api
+
+Note: CLI variables override preset values.`,
 				Flags: []cli.Flag{
 					&cli.BoolFlag{
 						Name:  "no-prompt",

@@ -17,9 +17,14 @@ func (ctrl *Controller) List(flags FlagsList) error {
 		return err
 	}
 
-	localScaffolds, err := pkgs.ListLocal(os.DirFS(flags.OutputDir))
-	if err != nil {
-		return err
+	// Collect scaffolds from all configured scaffold directories
+	localScaffolds := []string{}
+	for _, dir := range ctrl.Flags.ScaffoldDirs {
+		scaffolds, err := pkgs.ListFromFS(os.DirFS(dir))
+		if err != nil {
+			return err
+		}
+		localScaffolds = append(localScaffolds, scaffolds...)
 	}
 
 	ctrl.printer.LineBreak()

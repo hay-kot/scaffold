@@ -1,6 +1,8 @@
 package styles
 
 import (
+	"slices"
+
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -28,13 +30,7 @@ func (t HuhTheme) IsValid() bool {
 		HuhThemeScaffold,
 	}
 
-	for _, v := range valid {
-		if t == v {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(valid, t)
 }
 
 // SetGlobalStyles sets the global style reference based on the theme.

@@ -141,13 +141,9 @@ func (ctrl *Controller) fuzzyFallBack(str, outputdir string) ([]string, []string
 	}
 
 	// Collect scaffolds from all configured scaffold directories
-	localScaffolds := []string{}
-	for _, dir := range ctrl.Flags.ScaffoldDirs {
-		scaffolds, err := pkgs.ListFromFS(os.DirFS(dir))
-		if err != nil {
-			return nil, nil, err
-		}
-		localScaffolds = append(localScaffolds, scaffolds...)
+	localScaffolds, err := ctrl.loadLocalScaffolds()
+	if err != nil {
+		return nil, nil, err
 	}
 
 	systemScaffoldsStrings := make([]string, 0, len(systemScaffolds))

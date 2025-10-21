@@ -13,17 +13,19 @@ type ConsoleOutput interface {
 }
 
 type Printer struct {
-	writer io.Writer
-	base   styles.RenderFunc
-	light  styles.RenderFunc
+	writer  io.Writer
+	base    styles.RenderFunc
+	light   styles.RenderFunc
+	warning styles.RenderFunc
 }
 
 func New(writer io.Writer) *Printer {
-	base, light := styles.ThemeColorsScaffold.Compile()
+	base, light, warning := styles.ThemeColorsScaffold.Compile()
 	return &Printer{
-		writer: writer,
-		base:   base,
-		light:  light,
+		writer:  writer,
+		base:    base,
+		light:   light,
+		warning: warning,
 	}
 }
 
@@ -34,6 +36,11 @@ func (c *Printer) WithBase(style styles.RenderFunc) *Printer {
 
 func (c *Printer) WithLight(style styles.RenderFunc) *Printer {
 	c.light = style
+	return c
+}
+
+func (c *Printer) WithWarning(style styles.RenderFunc) *Printer {
+	c.warning = style
 	return c
 }
 
@@ -163,6 +170,12 @@ func (c *Printer) List(title string, items []string) {
 }
 
 func (c *Printer) LineBreak() {
+	c.write("\n")
+}
+
+// Warning prints a warning message using the theme's warning color.
+func (c *Printer) Warning(message string) {
+	c.write(c.warning(message))
 	c.write("\n")
 }
 

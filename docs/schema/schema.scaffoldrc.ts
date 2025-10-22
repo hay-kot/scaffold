@@ -3,7 +3,7 @@ export interface Schema {
     /**
      * The theme for use in the scaffold. The default is `scaffold`.
      * */
-    theme?: "scaffold" | "charm" | "dracula" | "base16" | "catpuccino";
+    theme?: "scaffold" | "charm" | "dracula" | "base16" | "catpuccino" | "tokyo-night";
     /**
      * The behavior for running hooks. `prompt` will ask the user if they want to run the hooks ,
      * `always` will always run the hooks, and `never` will never run the hooks. The default is

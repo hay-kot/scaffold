@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"strings"
 
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/hay-kot/scaffold/app/argparse"
 	"github.com/hay-kot/scaffold/app/core/fsast"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/hay-kot/scaffold/app/scaffold"
@@ -53,7 +53,7 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 	}
 
 	rest := args[1:]
-	argvars, err := parseArgVars(rest)
+	argvars, err := argparse.Parse(rest)
 	if err != nil {
 		return err
 	}
@@ -62,22 +62,31 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 	switch {
 	case flags.NoPrompt:
 		varfunc = func(p *scaffold.Project) (map[string]any, error) {
-			caseVars, ok := p.Conf.Presets[flags.Preset]
-			if !ok {
-				return nil, fmt.Errorf("preset '%s' not found", flags.Preset)
+			// Start with preset if specified
+			var baseVars map[string]any
+			if flags.Preset != "" {
+				presetVars, ok := p.Conf.Presets[flags.Preset]
+				if !ok {
+					return nil, fmt.Errorf("preset '%s' not found", flags.Preset)
+				}
+				baseVars = presetVars
+			} else {
+				baseVars = make(map[string]any)
 			}
 
-			project, ok := caseVars["Project"].(string)
+			// Merge CLI arguments, which take precedence over presets
+			vars := scaffold.MergeMaps(baseVars, argvars)
+
+			// Ensure Project name is set
+			project, ok := vars["Project"].(string)
 			if !ok || project == "" {
 				// Generate 4 random digits
 				name := fmt.Sprintf("scaffold-test-%04d", rand.Intn(10000))
-				caseVars["Project"] = name
+				vars["Project"] = name
 				project = name
 			}
 			p.Name = project
 
-			// Test cases do not use rc.Defaults
-			vars := scaffold.MergeMaps(caseVars, argvars)
 			return vars, nil
 		}
 
@@ -183,19 +192,4 @@ func basicAuthAuthorizer(pkgurl, username, password string) pkgs.AuthProviderFun
 			Password: password,
 		}, true
 	}
-}
-
-func parseArgVars(args []string) (map[string]any, error) {
-	vars := make(map[string]any, len(args))
-
-	for _, v := range args {
-		if !strings.Contains(v, "=") {
-			return nil, fmt.Errorf("variable %s is not in the form of key=value", v)
-		}
-
-		kv := strings.Split(v, "=")
-		vars[kv[0]] = kv[1]
-	}
-
-	return vars, nil
 }

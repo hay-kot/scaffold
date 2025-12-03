@@ -278,7 +278,14 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 					return err
 				}
 
-				outpath, err := eng.TmplString(path, vars)
+				// Apply path transformation guards (rewrite and render) to skipped files
+				// so that rewrites like "templates/..." -> "output/..." are respected.
+				outpath := path
+				outpath, err = guardRewrite(args)(outpath, d)
+				if err != nil {
+					return err
+				}
+				outpath, err = guardRenderPath(eng, vars)(outpath, d)
 				if err != nil {
 					return err
 				}

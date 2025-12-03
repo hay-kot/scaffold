@@ -57,6 +57,11 @@ func Test_RenderRWFileSystem(t *testing.T) {
 			fs:   PartialsFiles(),
 			p:    PartialsProject(),
 		},
+		{
+			name: "skip with rewrite",
+			fs:   SkipWithRewriteFiles(),
+			p:    SkipWithRewriteProject(),
+		},
 	}
 
 	vars := engine.Vars{

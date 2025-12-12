@@ -15,7 +15,7 @@ require (
 	github.com/gertd/go-pluralize v0.2.1
 	github.com/go-git/go-git/v5 v5.16.4
 	github.com/go-sprout/sprout v1.0.2
-	github.com/hashicorp/go-version v1.7.0
+	github.com/hashicorp/go-version v1.8.0
 	github.com/huandu/xstrings v1.5.0
 	github.com/psanford/memfs v0.0.0-20241019191636-4ef911798f9b
 	github.com/rs/zerolog v1.34.0

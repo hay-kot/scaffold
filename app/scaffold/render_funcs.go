@@ -229,17 +229,24 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 	const PartialsDir = "partials"
 
 	// Path guards apply to all files (skipped and rendered)
+	rewriteGuard := guardRewrite(args)
+	renderPathGuard := guardRenderPath(eng, vars)
+	noClobberGuard := guardNoClobber(args)
+
 	pathGuards := []filepathGuard{
-		guardRewrite(args),
-		guardRenderPath(eng, vars),
-		guardNoClobber(args),
+		rewriteGuard,
+		renderPathGuard,
+		noClobberGuard,
 	}
 
 	// Full guard chain for rendered files only
-	guards := append(pathGuards,
+	guards := []filepathGuard{
+		rewriteGuard,
+		renderPathGuard,
+		noClobberGuard,
 		guardDirectories(args),
 		guardFeatureFlag(eng, args, vars),
-	)
+	}
 
 	_, err := args.ReadFS.Open(PartialsDir)
 	if err == nil {

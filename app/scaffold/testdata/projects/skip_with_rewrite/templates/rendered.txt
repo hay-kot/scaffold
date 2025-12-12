@@ -1,0 +1,3 @@
+Project: {{ .Project }}
+This file should be rendered normally.
+

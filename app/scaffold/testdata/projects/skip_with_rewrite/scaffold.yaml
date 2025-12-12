@@ -1,0 +1,3 @@
+# Test case for skip + rewrite interaction
+# Verifies that skipped files still have their paths rewritten
+

@@ -47,6 +47,12 @@ var (
 	// Validates That:
 	//  1. Conditional feature flags block files from being rendered
 	featureFlag embed.FS
+
+	//go:embed testdata/projects/skip_with_rewrite/*
+	// Validates That:
+	//  1. Skipped files still have their paths rewritten
+	//  2. Skipped files are copied without template rendering
+	skipWithRewriteFiles embed.FS
 )
 
 func FeatureFlagFiles() fs.FS {
@@ -176,6 +182,33 @@ func PartialsProject() *Project {
 		Conf: &ProjectScaffoldFile{
 			Computed: map[string]string{
 				"Greeting": "Hello, World!",
+			},
+		},
+	}
+}
+
+func SkipWithRewriteFiles() fs.FS {
+	f, _ := fs.Sub(skipWithRewriteFiles, "testdata/projects/skip_with_rewrite")
+	return f
+}
+
+func SkipWithRewriteProject() *Project {
+	return &Project{
+		NameTemplate: "templates",
+		Name:         "templates",
+		Conf: &ProjectScaffoldFile{
+			Skip: []string{
+				"*.gotmpl",
+			},
+			Rewrites: []Rewrite{
+				{
+					From: "templates/skipped.gotmpl",
+					To:   "output/{{ .Project }}/skipped.gotmpl",
+				},
+				{
+					From: "templates/rendered.txt",
+					To:   "output/{{ .Project }}/rendered.txt",
+				},
 			},
 		},
 	}

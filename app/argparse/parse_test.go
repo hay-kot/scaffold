@@ -307,6 +307,18 @@ func Test_Parse_StringSliceValues(t *testing.T) {
 				"items": []string{"hello,world", "foo,bar", "normal"},
 			},
 		},
+		{
+			name: "escaped_backslash",
+			args: []string{`paths:[]string=C:\\Users,D:\\Data`},
+			want: map[string]any{
+				"paths": []string{`C:\Users`, `D:\Data`},
+			},
+		},
+		{
+			name:    "trailing_backslash",
+			args:    []string{`items:[]string=a,b\`},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -693,10 +705,11 @@ func Test_Parse_EdgeCases(t *testing.T) {
 
 func Test_splitEscaped(t *testing.T) {
 	tests := []struct {
-		name  string
-		input string
-		sep   rune
-		want  []string
+		name    string
+		input   string
+		sep     rune
+		want    []string
+		wantErr bool
 	}{
 		{
 			name:  "no_escapes",
@@ -717,10 +730,10 @@ func Test_splitEscaped(t *testing.T) {
 			want:  []string{"normal", "has,comma", "another"},
 		},
 		{
-			name:  "trailing_escape",
-			input: `a,b\,`,
+			name:  "escaped_backslash",
+			input: `a\\b,c`,
 			sep:   ',',
-			want:  []string{"a", "b,"},
+			want:  []string{`a\b`, "c"},
 		},
 		{
 			name:  "empty_elements",
@@ -740,12 +753,28 @@ func Test_splitEscaped(t *testing.T) {
 			sep:   ',',
 			want:  []string{""},
 		},
+		{
+			name:    "trailing_backslash",
+			input:   `a,b\`,
+			sep:     ',',
+			wantErr: true,
+		},
+		{
+			name:    "only_backslash",
+			input:   `\`,
+			sep:     ',',
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := splitEscaped(tt.input, tt.sep)
-			if !reflect.DeepEqual(got, tt.want) {
+			got, err := splitEscaped(tt.input, tt.sep)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("splitEscaped() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("splitEscaped() = %v, want %v", got, tt.want)
 			}
 		})

@@ -109,14 +109,16 @@ func parseValue(value string, typeHint string) (any, error) {
 		if value == "" {
 			return []string{}, nil
 		}
-		parts := splitEscaped(value, ',')
-		return parts, nil
+		return splitEscaped(value, ',')
 
 	case "[]int":
 		if value == "" {
 			return []int{}, nil
 		}
-		parts := splitEscaped(value, ',')
+		parts, err := splitEscaped(value, ',')
+		if err != nil {
+			return nil, err
+		}
 		result := make([]int, len(parts))
 		for i, part := range parts {
 			val, err := strconv.Atoi(part)
@@ -131,7 +133,10 @@ func parseValue(value string, typeHint string) (any, error) {
 		if value == "" {
 			return []float64{}, nil
 		}
-		parts := splitEscaped(value, ',')
+		parts, err := splitEscaped(value, ',')
+		if err != nil {
+			return nil, err
+		}
 		result := make([]float64, len(parts))
 		for i, part := range parts {
 			val, err := strconv.ParseFloat(part, 64)
@@ -146,7 +151,10 @@ func parseValue(value string, typeHint string) (any, error) {
 		if value == "" {
 			return []float32{}, nil
 		}
-		parts := splitEscaped(value, ',')
+		parts, err := splitEscaped(value, ',')
+		if err != nil {
+			return nil, err
+		}
 		result := make([]float32, len(parts))
 		for i, part := range parts {
 			val, err := strconv.ParseFloat(part, 32)
@@ -161,7 +169,10 @@ func parseValue(value string, typeHint string) (any, error) {
 		if value == "" {
 			return []bool{}, nil
 		}
-		parts := splitEscaped(value, ',')
+		parts, err := splitEscaped(value, ',')
+		if err != nil {
+			return nil, err
+		}
 		result := make([]bool, len(parts))
 		for i, part := range parts {
 			val, err := strconv.ParseBool(part)
@@ -184,10 +195,11 @@ func parseValue(value string, typeHint string) (any, error) {
 	}
 }
 
-// splitEscaped splits a string by the given separator, respecting backslash escapes
-func splitEscaped(s string, sep rune) []string {
+// splitEscaped splits a string by the given separator, respecting backslash escapes.
+// Returns an error if the string ends with a dangling backslash.
+func splitEscaped(s string, sep rune) ([]string, error) {
 	if s == "" {
-		return []string{""}
+		return []string{""}, nil
 	}
 
 	var result []string
@@ -213,8 +225,12 @@ func splitEscaped(s string, sep rune) []string {
 		}
 	}
 
+	if escaped {
+		return nil, fmt.Errorf("trailing backslash in value")
+	}
+
 	// Don't forget the last segment
 	result = append(result, current.String())
 
-	return result
+	return result, nil
 }

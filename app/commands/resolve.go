@@ -59,7 +59,7 @@ func (ctrl *Controller) resolve(
 				return "", err
 			}
 
-			systemMatches, localMatches, err := ctrl.fuzzyFallBack(argPath, outputdir)
+			systemMatches, localMatches, err := ctrl.fuzzyFallBack(argPath)
 			if err != nil {
 				return "", err
 			}

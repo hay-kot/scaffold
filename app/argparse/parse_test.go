@@ -659,6 +659,16 @@ func Test_Parse_EdgeCases(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name:    "empty_type_hint",
+			args:    []string{"key:=value"},
+			wantErr: true,
+		},
+		{
+			name:    "empty_key_with_type",
+			args:    []string{":string=value"},
+			wantErr: true,
+		},
+		{
 			name: "multiple_equals_in_value",
 			args: []string{"equation=a=b=c=d"},
 			want: map[string]any{

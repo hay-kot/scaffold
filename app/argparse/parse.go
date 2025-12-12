@@ -15,6 +15,8 @@ import (
 //   - key:string=value             (explicit string)
 //   - key:str=value                (string shorthand)
 //   - key:int=value                (integer)
+//   - key:int32=value              (int32)
+//   - key:int64=value              (int64)
 //   - key:float=value              (float64)
 //   - key:float32=value            (float32)
 //   - key:float64=value            (float64)
@@ -22,6 +24,8 @@ import (
 //   - key:[]string=val1,val2       (string slice)
 //   - key:[]str=val1,val2          (string slice shorthand)
 //   - key:[]int=1,2,3              (int slice)
+//   - key:[]int32=1,2,3            (int32 slice)
+//   - key:[]int64=1,2,3            (int64 slice)
 //   - key:[]float=1.1,2.2          (float64 slice)
 //   - key:[]float32=1.1,2.2        (float32 slice)
 //   - key:[]float64=1.1,2.2        (float64 slice)
@@ -92,6 +96,16 @@ func parseValue(value string, typeHint string) (any, error) {
 	case "int":
 		return strconv.Atoi(value)
 
+	case "int32":
+		i, err := strconv.ParseInt(value, 10, 32)
+		if err != nil {
+			return nil, err
+		}
+		return int32(i), nil
+
+	case "int64":
+		return strconv.ParseInt(value, 10, 64)
+
 	case "float", "float64":
 		return strconv.ParseFloat(value, 64)
 
@@ -124,6 +138,42 @@ func parseValue(value string, typeHint string) (any, error) {
 			val, err := strconv.Atoi(part)
 			if err != nil {
 				return nil, fmt.Errorf("invalid int %q at position %d", part, i)
+			}
+			result[i] = val
+		}
+		return result, nil
+
+	case "[]int32":
+		if value == "" {
+			return []int32{}, nil
+		}
+		parts, err := splitEscaped(value, ',')
+		if err != nil {
+			return nil, err
+		}
+		result := make([]int32, len(parts))
+		for i, part := range parts {
+			val, err := strconv.ParseInt(part, 10, 32)
+			if err != nil {
+				return nil, fmt.Errorf("invalid int32 %q at position %d", part, i)
+			}
+			result[i] = int32(val)
+		}
+		return result, nil
+
+	case "[]int64":
+		if value == "" {
+			return []int64{}, nil
+		}
+		parts, err := splitEscaped(value, ',')
+		if err != nil {
+			return nil, err
+		}
+		result := make([]int64, len(parts))
+		for i, part := range parts {
+			val, err := strconv.ParseInt(part, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("invalid int64 %q at position %d", part, i)
 			}
 			result[i] = val
 		}

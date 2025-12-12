@@ -116,6 +116,25 @@ func Test_Parse_IntegerValues(t *testing.T) {
 			args:    []string{"count:int=3.14"},
 			wantErr: true,
 		},
+		{
+			name: "int32_value",
+			args: []string{"value:int32=12345"},
+			want: map[string]any{
+				"value": int32(12345),
+			},
+		},
+		{
+			name: "int64_value",
+			args: []string{"bignum:int64=9223372036854775807"},
+			want: map[string]any{
+				"bignum": int64(9223372036854775807),
+			},
+		},
+		{
+			name:    "int32_overflow",
+			args:    []string{"value:int32=9223372036854775807"},
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -374,6 +393,34 @@ func Test_Parse_IntSliceValues(t *testing.T) {
 			name:    "invalid_int_in_slice",
 			args:    []string{"ports:[]int=8080,not-a-number,8082"},
 			wantErr: true,
+		},
+		{
+			name: "int32_slice",
+			args: []string{"values:[]int32=1,2,3"},
+			want: map[string]any{
+				"values": []int32{1, 2, 3},
+			},
+		},
+		{
+			name: "int64_slice",
+			args: []string{"bigvals:[]int64=9223372036854775807,-9223372036854775808"},
+			want: map[string]any{
+				"bigvals": []int64{9223372036854775807, -9223372036854775808},
+			},
+		},
+		{
+			name: "empty_int32_slice",
+			args: []string{"vals:[]int32="},
+			want: map[string]any{
+				"vals": []int32{},
+			},
+		},
+		{
+			name: "empty_int64_slice",
+			args: []string{"vals:[]int64="},
+			want: map[string]any{
+				"vals": []int64{},
+			},
 		},
 	}
 

@@ -131,7 +131,7 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 				return err
 			}
 
-			_ = file.Close()
+			defer file.Close() //nolint:errcheck
 
 			_, err = file.WriteString(ast.String())
 			if err != nil {
@@ -143,7 +143,7 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 	return nil
 }
 
-func (ctrl *Controller) fuzzyFallBack(str, outputdir string) ([]string, []string, error) {
+func (ctrl *Controller) fuzzyFallBack(str string) ([]string, []string, error) {
 	systemScaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))
 	if err != nil {
 		return nil, nil, err

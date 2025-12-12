@@ -301,6 +301,11 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 					}
 				}
 
+				// For template scaffolds, strip the template directory prefix
+				if args.Project.NameTemplate == TemplateDirName {
+					outpath = strings.TrimPrefix(outpath, TemplateDirName+"/")
+				}
+
 				err = args.WriteFS.MkdirAll(filepath.Dir(outpath), os.ModePerm)
 				if err != nil {
 					return err
@@ -334,6 +339,13 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 			}
 
 			log.Debug().Str("outpath", outpath).Int("guard", i).Msg("guard")
+		}
+
+		// For template scaffolds, strip the template directory prefix if it still
+		// exists after guards (rewrites may have changed the path). This ensures
+		// files are output without the "templates/" prefix when no rewrite applies.
+		if args.Project.NameTemplate == TemplateDirName {
+			outpath = strings.TrimPrefix(outpath, TemplateDirName+"/")
 		}
 
 		f, err := args.ReadFS.Open(path)

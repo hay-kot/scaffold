@@ -53,6 +53,12 @@ var (
 	//  1. Skipped files still have their paths rewritten
 	//  2. Skipped files are copied without template rendering
 	skipWithRewriteFiles embed.FS
+
+	//go:embed testdata/projects/template_scaffold/*
+	// Validates That:
+	//  1. Template scaffolds (using "templates" dir) output files without the templates/ prefix
+	//  2. Nested directories within templates are preserved correctly
+	templateScaffold embed.FS
 )
 
 func FeatureFlagFiles() fs.FS {
@@ -194,8 +200,8 @@ func SkipWithRewriteFiles() fs.FS {
 
 func SkipWithRewriteProject() *Project {
 	return &Project{
-		NameTemplate: "templates",
-		Name:         "templates",
+		NameTemplate: TemplateDirName,
+		Name:         TemplateDirName,
 		Conf: &ProjectScaffoldFile{
 			Skip: []string{
 				"*.gotmpl",
@@ -211,6 +217,19 @@ func SkipWithRewriteProject() *Project {
 				},
 			},
 		},
+	}
+}
+
+func TemplateScaffoldFiles() fs.FS {
+	f, _ := fs.Sub(templateScaffold, "testdata/projects/template_scaffold")
+	return f
+}
+
+func TemplateScaffoldProject() *Project {
+	return &Project{
+		NameTemplate: TemplateDirName,
+		Name:         "",
+		Conf:         &ProjectScaffoldFile{},
 	}
 }
 

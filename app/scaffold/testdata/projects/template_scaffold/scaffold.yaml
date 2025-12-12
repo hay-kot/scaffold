@@ -1,0 +1,4 @@
+questions:
+  - name: name
+    prompt:
+      message: Component name

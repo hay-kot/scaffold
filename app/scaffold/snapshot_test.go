@@ -62,6 +62,14 @@ func Test_RenderRWFileSystem(t *testing.T) {
 			fs:   SkipWithRewriteFiles(),
 			p:    SkipWithRewriteProject(),
 		},
+		{
+			name: "template scaffold",
+			fs:   TemplateScaffoldFiles(),
+			p:    TemplateScaffoldProject(),
+			vars: engine.Vars{
+				"name": "MyComponent",
+			},
+		},
 	}
 
 	vars := engine.Vars{

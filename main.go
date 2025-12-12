@@ -233,7 +233,7 @@ Note: CLI variables override preset values.`,
 				Flags: []cli.Flag{
 					&cli.BoolFlag{
 						Name:  "no-prompt",
-						Usage: "disable interactive mode",
+						Usage: "disable interactive mode (use with --preset and/or CLI variables)",
 						Value: false,
 					},
 					&cli.StringFlag{

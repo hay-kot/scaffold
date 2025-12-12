@@ -228,13 +228,18 @@ func BuildVars(eng *engine.Engine, project *Project, vars engine.Vars) (engine.V
 func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 	const PartialsDir = "partials"
 
-	guards := []filepathGuard{
+	// Path guards apply to all files (skipped and rendered)
+	pathGuards := []filepathGuard{
 		guardRewrite(args),
 		guardRenderPath(eng, vars),
 		guardNoClobber(args),
+	}
+
+	// Full guard chain for rendered files only
+	guards := append(pathGuards,
 		guardDirectories(args),
 		guardFeatureFlag(eng, args, vars),
-	}
+	)
 
 	_, err := args.ReadFS.Open(PartialsDir)
 	if err == nil {
@@ -278,16 +283,15 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 					return err
 				}
 
-				// Apply path transformation guards (rewrite and render) to skipped files
-				// so that rewrites like "templates/..." -> "output/..." are respected.
 				outpath := path
-				outpath, err = guardRewrite(args)(outpath, d)
-				if err != nil {
-					return err
-				}
-				outpath, err = guardRenderPath(eng, vars)(outpath, d)
-				if err != nil {
-					return err
+				for _, guard := range pathGuards {
+					outpath, err = guard(outpath, d)
+					if err != nil {
+						if errors.Is(err, errFileExists) {
+							return nil
+						}
+						return err
+					}
 				}
 
 				err = args.WriteFS.MkdirAll(filepath.Dir(outpath), os.ModePerm)

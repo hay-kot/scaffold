@@ -1,0 +1,8 @@
+component.txt:  (type=file)
+	name: MyComponent
+	
+nested:  (type=dir)
+	deep.txt:  (type=file)
+		nested file for MyComponent
+		
+

@@ -17,6 +17,7 @@ import (
 const (
 	HooksDir            = "hooks"
 	PostScaffoldScripts = "post_scaffold"
+	TemplateDirName     = "templates"
 )
 
 var projectNames = [...]string{
@@ -29,7 +30,7 @@ var projectNames = [...]string{
 }
 
 var templateNames = [...]string{
-	"templates",
+	TemplateDirName,
 }
 
 // Project structure hold the project templates file system and configuration for
@@ -101,7 +102,7 @@ func (p *Project) validate() (str string, err error) {
 }
 
 func (p *Project) AskQuestions(def map[string]any, e *engine.Engine, theme *huh.Theme) (map[string]any, error) {
-	projectMode := p.NameTemplate != "templates"
+	projectMode := p.NameTemplate != TemplateDirName
 
 	if projectMode {
 		name, ok := def["Project"]
@@ -212,8 +213,8 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine, theme *huh.
 	if projectMode {
 		p.Name = vars["Project"].(string)
 	} else {
-		p.Name = "templates"
-		vars["Project"] = "templates"
+		p.Name = TemplateDirName
+		vars["Project"] = TemplateDirName
 	}
 
 	if log.Logger.GetLevel() == zerolog.DebugLevel {

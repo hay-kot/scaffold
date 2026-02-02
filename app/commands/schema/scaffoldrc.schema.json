@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/hay-kot/scaffold/schema/scaffoldrc.yaml",
+  "title": "Scaffold RC Configuration",
+  "description": "Configuration schema for scaffoldrc.yml files",
+  "type": "object",
+  "properties": {
+    "settings": {
+      "type": "object",
+      "description": "Global settings for the scaffold CLI",
+      "properties": {
+        "theme": {
+          "type": "string",
+          "enum": ["scaffold", "charm", "dracula", "base16", "catpuccino", "tokyo-night"],
+          "description": "Theme for the scaffold output. Default is 'scaffold'."
+        },
+        "run_hooks": {
+          "type": "string",
+          "enum": ["always", "never", "prompt"],
+          "description": "Behavior for running hooks. Default is 'prompt'."
+        },
+        "log_level": {
+          "type": "string",
+          "enum": ["debug", "info", "warn", "error"],
+          "description": "Log level for the scaffold. Default is 'warn'."
+        },
+        "log_file": {
+          "type": "string",
+          "description": "Log file path. Relative paths are relative to the scaffoldrc file."
+        }
+      }
+    },
+    "aliases": {
+      "type": "object",
+      "description": "Shortcuts for scaffold paths",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "description": "Default values for prompts",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "shorts": {
+      "type": "object",
+      "description": "Expandable text snippets, commonly used to prefix URLs or paths",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "auth": {
+      "type": "array",
+      "description": "Authentication configuration for private scaffolds",
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/authBasic"
+          },
+          {
+            "$ref": "#/$defs/authToken"
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "authBasic": {
+      "type": "object",
+      "required": ["match", "basic"],
+      "properties": {
+        "match": {
+          "type": "string",
+          "description": "Regular expression to match scaffold paths"
+        },
+        "basic": {
+          "type": "object",
+          "required": ["username", "password"],
+          "properties": {
+            "username": {
+              "type": "string",
+              "description": "Username for basic authentication"
+            },
+            "password": {
+              "type": "string",
+              "description": "Password for basic authentication"
+            }
+          }
+        }
+      }
+    },
+    "authToken": {
+      "type": "object",
+      "required": ["match", "token"],
+      "properties": {
+        "match": {
+          "type": "string",
+          "description": "Regular expression to match scaffold paths"
+        },
+        "token": {
+          "type": "string",
+          "description": "Personal access token for authentication"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/hay-kot/scaffold/schema/scaffold.yaml",
+  "title": "Scaffold Configuration",
+  "description": "Configuration schema for scaffold.yaml files",
+  "type": "object",
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Metadata about the scaffold",
+      "properties": {
+        "minimum_version": {
+          "type": "string",
+          "description": "Minimum scaffold CLI version required"
+        }
+      }
+    },
+    "questions": {
+      "type": "array",
+      "description": "Prompts that will be used to gather information from the user before generating the project",
+      "items": {
+        "$ref": "#/$defs/question"
+      }
+    },
+    "computed": {
+      "type": "object",
+      "description": "Map of values that will be computed based on the answers provided by the user",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "rewrites": {
+      "type": "array",
+      "description": "Rules for rewriting output file paths",
+      "items": {
+        "$ref": "#/$defs/rewrite"
+      }
+    },
+    "skip": {
+      "type": "array",
+      "description": "Globs that will be used to skip template rendering for files that match",
+      "items": {
+        "type": "string"
+      }
+    },
+    "inject": {
+      "type": "array",
+      "description": "Rules for injecting content into existing files",
+      "items": {
+        "$ref": "#/$defs/inject"
+      }
+    },
+    "messages": {
+      "type": "object",
+      "description": "Messages displayed before and after scaffolding",
+      "properties": {
+        "pre": {
+          "type": "string",
+          "description": "Message displayed before the questions are asked. Supports markdown."
+        },
+        "post": {
+          "type": "string",
+          "description": "Message displayed after the template has been generated. Supports markdown and template syntax."
+        }
+      }
+    },
+    "features": {
+      "type": "array",
+      "description": "Feature flags that conditionally include/exclude files",
+      "items": {
+        "$ref": "#/$defs/feature"
+      }
+    },
+    "presets": {
+      "type": "object",
+      "description": "Named presets that provide default values for questions",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "delimiters": {
+      "type": "array",
+      "description": "Custom template delimiters for specific file patterns",
+      "items": {
+        "$ref": "#/$defs/delimiters"
+      }
+    }
+  },
+  "$defs": {
+    "question": {
+      "type": "object",
+      "required": ["name", "prompt"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Key used to store the answer and reference it in templates"
+        },
+        "prompt": {
+          "$ref": "#/$defs/prompt"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether the question requires an answer (deprecated, use validate.required)"
+        },
+        "when": {
+          "type": "string",
+          "description": "Conditional template that determines if the question should be asked"
+        },
+        "group": {
+          "type": "string",
+          "description": "Optional key to group questions together in a shared view"
+        },
+        "validate": {
+          "$ref": "#/$defs/validator"
+        }
+      }
+    },
+    "prompt": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Primary message/label shown to the user"
+        },
+        "description": {
+          "type": "string",
+          "description": "Secondary message providing additional context"
+        },
+        "default": {
+          "description": "Default value if the user provides no input"
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Message for boolean confirmation prompts"
+        },
+        "options": {
+          "type": "array",
+          "description": "Options for select/multi-select prompts",
+          "items": {
+            "type": "string"
+          }
+        },
+        "loop": {
+          "type": "boolean",
+          "description": "When true, keeps asking for input until empty string is provided"
+        },
+        "multi": {
+          "type": "boolean",
+          "description": "When true, allows multiple selections or multiline text input"
+        }
+      }
+    },
+    "validator": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "description": "When true, ensures the user provides a value"
+        },
+        "match": {
+          "type": "object",
+          "properties": {
+            "regex": {
+              "type": "string",
+              "description": "Regular expression the input must match"
+            },
+            "message": {
+              "type": "string",
+              "description": "Error message shown if input doesn't match"
+            }
+          },
+          "required": ["regex"]
+        },
+        "min": {
+          "type": "integer",
+          "description": "Minimum value (string length, selection count, or loop items)"
+        },
+        "max": {
+          "type": "integer",
+          "description": "Maximum value (string length, selection count, or loop items)"
+        }
+      }
+    },
+    "rewrite": {
+      "type": "object",
+      "required": ["from", "to"],
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "Glob pattern to match source paths"
+        },
+        "to": {
+          "type": "string",
+          "description": "Destination path (supports template syntax)"
+        }
+      }
+    },
+    "inject": {
+      "type": "object",
+      "required": ["name", "path", "at", "template"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name identifier for the injection"
+        },
+        "path": {
+          "type": "string",
+          "description": "Relative path to the file to inject into (supports template syntax)"
+        },
+        "at": {
+          "type": "string",
+          "description": "Location marker where content will be injected"
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["before", "after"],
+          "description": "Whether to inject before or after the marker"
+        },
+        "template": {
+          "type": "string",
+          "description": "Content to inject (supports template syntax)"
+        }
+      }
+    },
+    "feature": {
+      "type": "object",
+      "required": ["value", "globs"],
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "Template expression that when true enables the feature"
+        },
+        "globs": {
+          "type": "array",
+          "description": "File patterns that are part of this feature",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "delimiters": {
+      "type": "object",
+      "required": ["glob", "left", "right"],
+      "properties": {
+        "glob": {
+          "type": "string",
+          "description": "File pattern to apply custom delimiters to"
+        },
+        "left": {
+          "type": "string",
+          "description": "Left delimiter (e.g., '{{', '[[')"
+        },
+        "right": {
+          "type": "string",
+          "description": "Right delimiter (e.g., '}}', ']]')"
+        }
+      }
+    }
+  }
+}

@@ -284,12 +284,18 @@ Note: CLI variables override preset values.`,
 						Usage: "current working directory to list scaffolds for",
 						Value: ".",
 					},
+					&cli.BoolFlag{
+						Name:  "json",
+						Usage: "output in JSON format for programmatic use",
+						Value: false,
+					},
 				},
 				Aliases: []string{"ls"},
 				Usage:   "list available scaffolds",
 				Action: func(ctx context.Context, c *cli.Command) error {
 					return ctrl.List(commands.FlagsList{
 						OutputDir: c.String("cwd"),
+						JSON:      c.Bool("json"),
 					})
 				},
 			},
@@ -297,6 +303,30 @@ Note: CLI variables override preset values.`,
 				Name:   "update",
 				Usage:  "update the local cache of scaffolds",
 				Action: ctrl.Update,
+			},
+			{
+				Name:      "inspect",
+				Usage:     "inspect a scaffold and output its structure as JSON",
+				UsageText: "scaffold inspect [scaffold (url | path)]",
+				Description: `Inspect a scaffold and output its structure as JSON.
+
+This command is useful for programmatic access to scaffold metadata,
+including questions, presets, computed values, and features.
+
+Examples:
+  scaffold inspect mytemplate
+  scaffold inspect github.com/hay-kot/scaffold-go-cli
+  scaffold inspect ./path/to/scaffold`,
+				Action: func(ctx context.Context, c *cli.Command) error {
+					path := c.Args().First()
+					if path == "" {
+						return errors.New("scaffold path is required")
+					}
+
+					return ctrl.Inspect(commands.FlagsInspect{
+						Path: path,
+					})
+				},
 			},
 			{
 				Name:      "lint",

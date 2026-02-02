@@ -1,8 +1,10 @@
 package commands
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"math/rand"
 	"os"
 
@@ -17,6 +19,19 @@ import (
 	"github.com/sahilm/fuzzy"
 )
 
+// DryRunOutput represents the JSON output for --dry-run
+type DryRunOutput struct {
+	Files    []DryRunFile `json:"files"`
+	Errors   []string     `json:"errors"`
+	Warnings []string     `json:"warnings"`
+}
+
+// DryRunFile represents a file that would be created
+type DryRunFile struct {
+	Path   string `json:"path"`
+	Action string `json:"action"`
+}
+
 type FlagsNew struct {
 	NoPrompt   bool
 	Preset     string
@@ -24,11 +39,13 @@ type FlagsNew struct {
 	NoClobber  bool
 	ForceApply bool
 	OutputDir  string
+	DryRun     bool
 }
 
-// OutputFS returns a WriteFS based on the OutputDir flag
+// OutputFS returns a WriteFS based on the OutputDir flag.
+// When DryRun is true, returns an in-memory filesystem.
 func (f FlagsNew) OutputFS() rwfs.WriteFS {
-	if f.OutputDir == ":memory:" {
+	if f.OutputDir == ":memory:" || f.DryRun {
 		return rwfs.NewMemoryWFS()
 	}
 
@@ -115,6 +132,35 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 	})
 	if err != nil {
 		return err
+	}
+
+	if flags.DryRun {
+		output := DryRunOutput{
+			Files:    []DryRunFile{},
+			Errors:   []string{},
+			Warnings: []string{},
+		}
+
+		err := fs.WalkDir(outfs, ".", func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				return nil
+			}
+			output.Files = append(output.Files, DryRunFile{
+				Path:   path,
+				Action: "create",
+			})
+			return nil
+		})
+		if err != nil {
+			output.Errors = append(output.Errors, err.Error())
+		}
+
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(output)
 	}
 
 	if flags.Snapshot != "" {

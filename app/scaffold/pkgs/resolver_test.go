@@ -78,6 +78,38 @@ func TestResolver_Resolve_Remote_Subdirectory(t *testing.T) {
 	assert.Equal(t, subdirpath, path)
 }
 
+// TestResolver_Resolve_Remote_VersionAndSubdirectory tests that the clone URL
+// is correctly stripped of both the @version and #subdir suffixes before cloning.
+// This covers SCP-like (SSH) URLs with both a branch and a subdirectory.
+func TestResolver_Resolve_Remote_VersionAndSubdirectory(t *testing.T) {
+	tempdir := t.TempDir()
+	tempcache := filepath.Join(tempdir, "cache")
+	repopath := filepath.Join(tempcache, "github.com", "org", "repo@mybranch")
+	subdirpath := filepath.Join(repopath, ".scaffold", "mytemplate")
+
+	clonefn := ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
+		t.Helper()
+
+		assert.Equal(t, "git@github.com:org/repo", cfg.URL, "clone URL should not contain @version or #subdir")
+		assert.Equal(t, "mybranch", version)
+
+		err := os.MkdirAll(subdirpath, 0o755)
+		require.NoError(t, err)
+
+		return repopath, nil
+	})
+
+	resolver := NewResolver(nil, tempcache, tempdir, WithCloner(clonefn))
+
+	path, err := resolver.Resolve(
+		"git@github.com:org/repo@mybranch#.scaffold/mytemplate",
+		nil,
+		noopAuthProvider,
+	)
+	require.NoError(t, err)
+	assert.Equal(t, subdirpath, path)
+}
+
 func TestResolver_Resolve_FilePaths(t *testing.T) {
 	tempdir := t.TempDir()
 	tempcwd := filepath.Join(tempdir, "cwd")

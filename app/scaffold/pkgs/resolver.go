@@ -75,13 +75,20 @@ func NewResolver(shorts map[string]string, cache, cwd string, opts ...ResolverOp
 						}
 					}
 
-					// try checkout branch
+					// try checkout branch (local ref)
 					err = wt.Checkout(&git.CheckoutOptions{
 						Branch: plumbing.NewBranchReferenceName(version),
 						Force:  true,
 					})
 					if err != nil {
-						return "", fmt.Errorf("failed to checkout branch/tag '%s': %w", version, err)
+						// try checkout as remote tracking branch
+						err = wt.Checkout(&git.CheckoutOptions{
+							Branch: plumbing.NewRemoteReferenceName("origin", version),
+							Force:  true,
+						})
+						if err != nil {
+							return "", fmt.Errorf("failed to checkout branch/tag '%s': %w", version, err)
+						}
 					}
 				}
 			}
@@ -141,6 +148,9 @@ func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (p
 
 	_, err = os.Stat(cloneDir)
 
+	if pkg.Subdir != "" {
+		remoteRef = strings.TrimSuffix(remoteRef, "#"+pkg.Subdir)
+	}
 	remoteRef = strings.TrimSuffix(remoteRef, pkg.Version)
 	remoteRef = strings.TrimSuffix(remoteRef, "@")
 

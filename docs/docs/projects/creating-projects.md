@@ -38,6 +38,24 @@ Project scaffolds require a `scaffold.yaml` or `scaffold.yml` config file placed
 See [Scaffold Config](../configuration/scaffold-file.md) for all available options.
 
 
+## Multi-File Output
+
+Scaffold supports generating multiple files or directories from a single template using the `[varname]` path convention. When a directory or filename contains `[varname]` and the variable is declared in the [`each`](../configuration/scaffold-file.md#each) config, the path is expanded once per item in the list.
+
+:::v-pre
+```
+scaffold-directory/
+├── scaffold.yaml
+└── {{ .Project }}/
+    ├── [services]/          # One directory per service
+    │   ├── handler.go
+    │   └── routes.go
+    └── main.go
+```
+:::
+
+See the [`each` configuration reference](../configuration/scaffold-file.md#each) for details on setup and the `as` transformation option.
+
 ## Template Files
 
 All files within the root directory will be processed by the template engine. You can use template syntax to customize content:

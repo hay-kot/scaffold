@@ -297,6 +297,105 @@ presets:
 Presets can be used in conjunction with the `new` command for testing purposes. See [Testing Scaffolds](../advanced/testing-scaffolds.md) for more information.
 :::
 
+## `each`
+
+`each` enables multi-file output by expanding path segments containing `[varname]` into one output per item in the named list variable. This is useful when you want a scaffold to generate a set of files for each item the user provides (e.g., one directory per service, one file per model).
+
+### How It Works
+
+1. Declare a looped question that produces a list of strings.
+2. Add the variable name to the `each` array.
+3. Use `[varname]` in your template directory or file names.
+
+During rendering, each `[varname]` path segment is replaced once per item in the list. Inside those templates, an `.Each` context is available:
+
+- <span v-pre>`{{ .Each.Item }}`</span> - The current item value (string)
+- <span v-pre>`{{ .Each.Index }}`</span> - The zero-based index of the current item
+
+### Directory Expansion
+
+When `[varname]` appears as a directory name, every file inside that directory is rendered once per item.
+
+:::v-pre
+```
+{{ .Project }}/
+├── [services]/          # Expanded for each service
+│   ├── handler.go
+│   └── routes.go
+└── main.go              # Rendered once (normal file)
+```
+:::
+
+```yaml
+questions:
+  - name: "services"
+    prompt:
+      message: "Service names"
+      loop: true
+
+each:
+  - services
+```
+
+### File Expansion
+
+When `[varname]` appears in a filename, that single file is rendered once per item.
+
+:::v-pre
+```
+{{ .Project }}/
+└── [items].txt          # Produces foo.txt, bar.txt, etc.
+```
+:::
+
+```yaml
+questions:
+  - name: "items"
+    prompt:
+      message: "Item names"
+      loop: true
+
+each:
+  - items
+```
+
+### Path Transformation with `as`
+
+By default the item value is used directly in the output path. Use the object form with `as` to apply a template transformation:
+
+```yaml
+each:
+  - var: models
+    as: "{{ .Each.Item | toPascalCase }}"
+```
+
+With this config and `models: ["user", "blog_post"]`, the `[models]` path segment becomes `User` and `BlogPost` respectively.
+
+### String Shorthand vs Object Form
+
+The `each` array supports two formats:
+
+```yaml
+# String shorthand — uses item value as-is
+each:
+  - services
+
+# Object form — allows path transformation via `as`
+each:
+  - var: models
+    as: "{{ .Each.Item | toPascalCase }}"
+
+# Both can be mixed
+each:
+  - services
+  - var: models
+    as: "{{ .Each.Item | toPascalCase }}"
+```
+
+::: tip
+Undeclared `[varname]` segments (where the variable name is not listed in `each`) are treated as literal path segments and are not expanded.
+:::
+
 ## `delimiters`
 
 delimiters is a list of delimiter overrides for files. Useful for when you have a go template within a file you want to template using scaffold.

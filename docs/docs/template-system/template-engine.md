@@ -12,6 +12,7 @@ Scaffold uses the Go template engine to generate files. The following variables 
 - `ProjectPascal` - The pascal case version of the project name
 - `Scaffold` - a map of the scaffold questions and answers
 - `Computed` - a map of computed values as defined in the scaffolds configuration
+- `Each` - available inside [`each`-expanded](../configuration/scaffold-file.md#each) templates, contains `.Each.Item` (the current item string) and `.Each.Index` (the zero-based iteration index)
 
 ### Template Function
 

@@ -1,0 +1,14 @@
+NewProject:  (type=dir)
+	bar.txt:  (type=file)
+		Item: bar
+		Index: 1
+		
+	baz.txt:  (type=file)
+		Item: baz
+		Index: 2
+		
+	foo.txt:  (type=file)
+		Item: foo
+		Index: 0
+		
+

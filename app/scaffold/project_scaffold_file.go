@@ -17,6 +17,32 @@ type ProjectScaffoldFile struct {
 	Features   []Feature                 `yaml:"features"`
 	Presets    map[string]map[string]any `yaml:"presets"`
 	Delimiters []Delimiters              `yaml:"delimiters"`
+	Each       []EachConfig              `yaml:"each"`
+}
+
+// EachConfig declares a variable for multi-file expansion. It supports both
+// a string shorthand ("services") and an object form ({var: "models", as: "..."}).
+type EachConfig struct {
+	Var string
+	As  string
+}
+
+func (e *EachConfig) UnmarshalYAML(value *yaml.Node) error {
+	if value.Kind == yaml.ScalarNode {
+		e.Var = value.Value
+		return nil
+	}
+
+	var obj struct {
+		Var string `yaml:"var"`
+		As  string `yaml:"as"`
+	}
+	if err := value.Decode(&obj); err != nil {
+		return err
+	}
+	e.Var = obj.Var
+	e.As = obj.As
+	return nil
 }
 
 type Delimiters struct {

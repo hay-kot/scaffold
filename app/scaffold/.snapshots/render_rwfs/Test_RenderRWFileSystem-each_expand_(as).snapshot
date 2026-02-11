@@ -1,0 +1,18 @@
+NewProject:  (type=dir)
+	BlogPost.go:  (type=file)
+		package models
+		
+		// blog_post model
+		type BlogPost struct {
+			ID int
+		}
+		
+	User.go:  (type=file)
+		package models
+		
+		// user model
+		type User struct {
+			ID int
+		}
+		
+

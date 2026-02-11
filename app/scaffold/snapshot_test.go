@@ -70,6 +70,35 @@ func Test_RenderRWFileSystem(t *testing.T) {
 				"name": "MyComponent",
 			},
 		},
+		{
+			name: "each expand (directory)",
+			fs:   EachExpandFiles(),
+			p:    EachExpandProject(),
+			vars: engine.Vars{
+				"services": []string{"auth", "users"},
+			},
+		},
+		{
+			name: "each expand (file)",
+			fs:   EachExpandFileFiles(),
+			p:    EachExpandFileProject(),
+			vars: engine.Vars{
+				"items": []string{"foo", "bar", "baz"},
+			},
+		},
+		{
+			name: "each expand (as)",
+			fs:   EachExpandAsFiles(),
+			p:    EachExpandAsProject(),
+			vars: engine.Vars{
+				"models": []string{"user", "blog_post"},
+			},
+		},
+		{
+			name: "each expand (literal)",
+			fs:   EachExpandLiteralFiles(),
+			p:    EachExpandLiteralProject(),
+		},
 	}
 
 	vars := engine.Vars{

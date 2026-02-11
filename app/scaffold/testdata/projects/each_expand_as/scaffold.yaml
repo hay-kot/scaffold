@@ -1,0 +1,8 @@
+questions:
+  - name: models
+    prompt:
+      message: Model names
+      loop: true
+each:
+  - var: models
+    as: "{{ .Each.Item | toPascalCase }}"

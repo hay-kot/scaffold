@@ -1,0 +1,41 @@
+NewProject:  (type=dir)
+	auth:  (type=dir)
+		handler.go:  (type=file)
+			package auth
+			
+			func Handler() {
+				// auth handler (index=0)
+			}
+			
+		model.go:  (type=file)
+			package auth
+			
+			type Model struct {
+				Name string
+			}
+			
+	shared.go:  (type=file)
+		package main
+		
+		import "fmt"
+		
+		func main() {
+			fmt.Println("NewProject")
+		}
+		
+	users:  (type=dir)
+		handler.go:  (type=file)
+			package users
+			
+			func Handler() {
+				// users handler (index=1)
+			}
+			
+		model.go:  (type=file)
+			package users
+			
+			type Model struct {
+				Name string
+			}
+			
+

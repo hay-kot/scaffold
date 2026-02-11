@@ -1,0 +1,22 @@
+messages:
+  pre: |
+    # Each Expansion Example
+
+    This example demonstrates multi-file output using the `each` config.
+    It generates a handler and routes file for each service you specify.
+
+questions:
+  - name: "services"
+    prompt:
+      message: "Service names"
+      loop: true
+
+computed:
+  service_count: "{{ len .Scaffold.services }}"
+
+each:
+  - services
+
+presets:
+  test:
+    services: ["auth", "users", "posts"]

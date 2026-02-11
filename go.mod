@@ -13,7 +13,7 @@ require (
 	github.com/charmbracelet/huh/spinner v0.0.0-20251124111010-6575a6e28cb3
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834
 	github.com/gertd/go-pluralize v0.2.1
-	github.com/go-git/go-git/v5 v5.16.4
+	github.com/go-git/go-git/v5 v5.16.5
 	github.com/go-sprout/sprout v1.0.3
 	github.com/hashicorp/go-version v1.8.0
 	github.com/huandu/xstrings v1.5.0

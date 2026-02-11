@@ -264,6 +264,11 @@ Note: CLI variables override preset values.`,
 						Value:   ".",
 						Sources: cli.EnvVars("SCAFFOLD_OUT"),
 					},
+					&cli.BoolFlag{
+						Name:  "dry-run",
+						Usage: "validate and show what files would be created without writing (outputs JSON)",
+						Value: false,
+					},
 				},
 				Action: func(ctx context.Context, c *cli.Command) error {
 					return ctrl.New(c.Args().Slice(), commands.FlagsNew{
@@ -273,6 +278,7 @@ Note: CLI variables override preset values.`,
 						NoClobber:  c.Bool("no-clobber"),
 						ForceApply: c.Bool("force"),
 						OutputDir:  c.String("output-dir"),
+						DryRun:     c.Bool("dry-run"),
 					})
 				},
 			},
@@ -359,9 +365,28 @@ Examples:
 				},
 			},
 			{
-				Name:   "init",
-				Usage:  "initialize a new scaffold in the current directory for template scaffolds",
+				Name:  "init",
+				Usage: "initialize a new scaffold in the current directory for template scaffolds",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:  "stealth",
+						Usage: "add .scaffold to .git/info/exclude (user-local, not committed)",
+						Value: false,
+					},
+				},
 				Action: ctrl.Init,
+			},
+			{
+				Name:  "schema",
+				Usage: "output JSON schema for scaffold configuration files",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "type",
+						Usage: "schema type: 'scaffold' for scaffold.yaml or 'scaffoldrc' for scaffoldrc.yml",
+						Value: "scaffold",
+					},
+				},
+				Action: ctrl.Schema,
 			},
 			{
 				Name:   "dev",

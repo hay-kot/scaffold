@@ -16,6 +16,7 @@ import (
 	"github.com/hay-kot/scaffold/app/scaffold"
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
 	"github.com/hay-kot/scaffold/internal/styles"
+	"github.com/rs/zerolog/log"
 	"github.com/sahilm/fuzzy"
 )
 
@@ -54,10 +55,30 @@ func (f FlagsNew) OutputFS() rwfs.WriteFS {
 
 func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 	if len(args) == 0 {
-		ctrl.printer.FatalError(errors.New("missing scaffold path"))
-		return ctrl.List(FlagsList{
-			OutputDir: flags.OutputDir,
-		})
+		if flags.NoPrompt {
+			ctrl.printer.FatalError(errors.New("missing scaffold path"))
+			return ctrl.List(FlagsList{
+				OutputDir: flags.OutputDir,
+			})
+		}
+
+		systemScaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))
+		if err != nil {
+			return fmt.Errorf("listing system scaffolds: %w", err)
+		}
+
+		localScaffolds, err := ctrl.loadLocalScaffolds()
+		if err != nil {
+			return fmt.Errorf("listing local scaffolds: %w", err)
+		}
+
+		selected, err := scaffoldPickerPrompt(localScaffolds, flattenSystemScaffolds(systemScaffolds), ctrl.rc.Settings.Theme)
+		if err != nil {
+			return err
+		}
+
+		log.Debug().Str("selected", selected).Msg("scaffold selected via picker")
+		args = []string{selected}
 	}
 
 	path, err := ctrl.resolve(args[0], flags.OutputDir, flags.NoPrompt, flags.ForceApply)
@@ -189,28 +210,32 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 	return nil
 }
 
+func flattenSystemScaffolds(scaffolds []pkgs.PackageList) []string {
+	out := make([]string, 0, len(scaffolds))
+	for _, s := range scaffolds {
+		if len(s.SubPackages) > 0 {
+			for _, sub := range s.SubPackages {
+				out = append(out, fmt.Sprintf("%s#%s", s.Root, sub))
+			}
+		} else {
+			out = append(out, s.Root)
+		}
+	}
+	return out
+}
+
 func (ctrl *Controller) fuzzyFallBack(str string) ([]string, []string, error) {
 	systemScaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))
 	if err != nil {
 		return nil, nil, err
 	}
 
-	// Collect scaffolds from all configured scaffold directories
 	localScaffolds, err := ctrl.loadLocalScaffolds()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	systemScaffoldsStrings := make([]string, 0, len(systemScaffolds))
-	for _, s := range systemScaffolds {
-		if len(s.SubPackages) > 0 {
-			for _, sub := range s.SubPackages {
-				systemScaffoldsStrings = append(systemScaffoldsStrings, fmt.Sprintf("%s#%s", s.Root, sub))
-			}
-		} else {
-			systemScaffoldsStrings = append(systemScaffoldsStrings, s.Root)
-		}
-	}
+	systemScaffoldsStrings := flattenSystemScaffolds(systemScaffolds)
 
 	systemMatches := fuzzy.Find(str, systemScaffoldsStrings)
 	systemMatchesOutput := make([]string, len(systemMatches))

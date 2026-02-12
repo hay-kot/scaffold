@@ -2,7 +2,9 @@ package commands
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"sort"
 
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
 	"github.com/hay-kot/scaffold/internal/printer"
@@ -15,8 +17,9 @@ type FlagsList struct {
 
 // ListOutput is the JSON output format for the list command.
 type ListOutput struct {
-	Local  []string           `json:"local"`
-	System []ListSystemOutput `json:"system"`
+	Aliases map[string]string  `json:"aliases,omitempty"`
+	Local   []string           `json:"local"`
+	System  []ListSystemOutput `json:"system"`
 }
 
 // ListSystemOutput represents a system scaffold with its subpackages.
@@ -42,6 +45,20 @@ func (ctrl *Controller) List(flags FlagsList) error {
 	}
 
 	ctrl.printer.LineBreak()
+
+	if len(ctrl.rc.Aliases) > 0 {
+		names := make([]string, 0, len(ctrl.rc.Aliases))
+		for name := range ctrl.rc.Aliases {
+			names = append(names, name)
+		}
+		sort.Strings(names)
+
+		items := make([]string, 0, len(names))
+		for _, name := range names {
+			items = append(items, fmt.Sprintf("%s → %s", name, ctrl.rc.Aliases[name]))
+		}
+		ctrl.printer.List("Aliases", items)
+	}
 
 	if len(localScaffolds) > 0 {
 		ctrl.printer.List("Local Scaffolds", localScaffolds)
@@ -73,8 +90,9 @@ func (ctrl *Controller) List(flags FlagsList) error {
 
 func (ctrl *Controller) listJSON(localScaffolds []string, systemScaffolds []pkgs.PackageList) error {
 	output := ListOutput{
-		Local:  localScaffolds,
-		System: make([]ListSystemOutput, len(systemScaffolds)),
+		Aliases: ctrl.rc.Aliases,
+		Local:   localScaffolds,
+		System:  make([]ListSystemOutput, len(systemScaffolds)),
 	}
 
 	if output.Local == nil {

@@ -111,13 +111,13 @@ func (rc *ScaffoldRC) Validate() error {
 	}
 
 	for k, v := range rc.Aliases {
-		// Shorts must be absolute path or relative to ~ or a URL
+		// Aliases must be absolute path or relative to ~ or a URL
 		_, err := url.ParseRequestURI(v)
 		if err != nil {
 			if !filepath.IsAbs(v) && !strings.HasPrefix(v, "~") {
 				errs = append(errs, RCValidationError{
 					Key:   k,
-					Cause: fmt.Errorf("invalid short path: %w", err),
+					Cause: fmt.Errorf("invalid alias path: %w", err),
 				})
 			}
 		}

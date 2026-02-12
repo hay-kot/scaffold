@@ -36,6 +36,9 @@ func (ctrl *Controller) Init(_ context.Context, c *cli.Command) error {
 
 	// Check if exists
 	if _, err := os.Stat(scaffoldDir); !os.IsNotExist(err) {
+		if err == nil {
+			return fmt.Errorf(".scaffold directory already exists")
+		}
 		return err
 	}
 
@@ -98,6 +101,7 @@ func (ctrl *Controller) Init(_ context.Context, c *cli.Command) error {
 		}
 	}
 
+	ctrl.printer.Title("Initialized .scaffold directory")
 	return nil
 }
 

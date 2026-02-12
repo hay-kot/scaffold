@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
-	"github.com/rs/zerolog/log"
 )
 
 func (ctrl *Controller) resolve(
@@ -24,8 +23,7 @@ func (ctrl *Controller) resolve(
 	if !force {
 		ok := checkWorkingTree(outputdir)
 		if !ok {
-			log.Warn().Msg("working tree is dirty, use --force to apply changes")
-			return "", nil
+			return "", fmt.Errorf("working tree is dirty, use --force to override")
 		}
 	}
 
@@ -45,7 +43,7 @@ func (ctrl *Controller) resolve(
 				return "", err
 			}
 
-			username, password, err := httpAuthPrompt(ctrl.rc.Settings.Theme)
+			username, password, err := httpAuthPrompt(argPath, ctrl.rc.Settings.Theme)
 			if err != nil {
 				return "", err
 			}
@@ -73,10 +71,11 @@ func (ctrl *Controller) resolve(
 
 			if len(localMatches) > 0 {
 				first = localMatches[0]
+				isSystemMatch = false
 			}
 
 			if first != "" {
-				useMatch := didYouMeanPrompt(argPath, first)
+				useMatch := didYouMeanPrompt(argPath, first, isSystemMatch)
 
 				if useMatch {
 					if isSystemMatch {

@@ -75,7 +75,7 @@ func (ctrl *Controller) Update(ctx context.Context, c *cli.Command) error {
 	}
 
 	if len(failed) > 0 {
-		items := make([]printer.StatusListItem, 0, len(updated))
+		items := make([]printer.StatusListItem, 0, len(failed))
 		for _, s := range failed {
 			items = append(items, printer.StatusListItem{
 				Ok:     false,

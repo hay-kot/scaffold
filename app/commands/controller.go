@@ -11,6 +11,7 @@ import (
 	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
 	"github.com/hay-kot/scaffold/internal/printer"
 	"github.com/hay-kot/scaffold/internal/styles"
+	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 )
 
@@ -60,31 +61,29 @@ func (ctrl *Controller) RuntimeConfigYAML() (string, error) {
 }
 
 // loadLocalScaffolds loads scaffolds from all configured scaffold directories.
-// It warns when a directory doesn't exist or contains no scaffolds, but continues processing.
+// Missing directories and empty directories are silently skipped (debug logged)
+// since the default .scaffold directory won't exist until `scaffold init` is run.
 func (ctrl *Controller) loadLocalScaffolds() ([]string, error) {
-	const Indent = " " // indent warnings to match list output
 	localScaffolds := []string{}
 
 	for _, dir := range ctrl.Flags.ScaffoldDirs {
-		// Check if directory exists
 		_, err := os.Stat(dir)
 		if os.IsNotExist(err) {
-			ctrl.printer.Warning(Indent + "Warning: scaffold directory not found: " + dir)
+			log.Debug().Str("dir", dir).Msg("scaffold directory not found, skipping")
 			continue
 		}
 		if err != nil {
 			return nil, fmt.Errorf("failed to check directory %s: %w", dir, err)
 		}
 
-		// List scaffolds in directory
 		scaffolds, err := pkgs.ListFromFS(os.DirFS(dir))
 		if err != nil {
 			return nil, fmt.Errorf("failed to list scaffolds from %s: %w", dir, err)
 		}
 
-		// Warn if directory exists but has no scaffolds
 		if len(scaffolds) == 0 {
-			ctrl.printer.Warning(Indent + "Warning: no scaffolds found in directory: " + dir)
+			log.Debug().Str("dir", dir).Msg("no scaffolds found in directory, skipping")
+			continue
 		}
 
 		localScaffolds = append(localScaffolds, scaffolds...)

@@ -114,7 +114,8 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine, theme *huh.
 
 			pre := []Question{
 				{
-					Name: "Project",
+					Name:  "Project",
+					Group: "default",
 					Prompt: AnyPrompt{
 						Message:     &msg,
 						Description: &decs,

@@ -391,7 +391,7 @@ func expandEachDir(eng *engine.Engine, args *RWFSArgs, guards []filepathGuard, s
 			return nil
 		}
 
-		outpath := strings.Replace(path, token, replacement, 1)
+		outpath := strings.ReplaceAll(path, token, replacement)
 
 		for i, guard := range guards {
 			outpath, err = guard(outpath, d)
@@ -557,7 +557,7 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 						}
 					}
 
-					outpath := strings.Replace(path, token, replacement, 1)
+					outpath := strings.ReplaceAll(path, token, replacement)
 
 					iterRenderPathGuard := guardRenderPath(eng, iterVars)
 					iterGuards := []filepathGuard{

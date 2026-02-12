@@ -2,7 +2,6 @@ package commands
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/fs"
 	"math/rand"
@@ -37,7 +36,7 @@ type FlagsNew struct {
 	NoPrompt   bool
 	Preset     string
 	Snapshot   string
-	NoClobber  bool
+	Overwrite  bool
 	ForceApply bool
 	OutputDir  string
 	DryRun     bool
@@ -56,10 +55,7 @@ func (f FlagsNew) OutputFS() rwfs.WriteFS {
 func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 	if len(args) == 0 {
 		if flags.NoPrompt {
-			ctrl.printer.FatalError(errors.New("missing scaffold path"))
-			return ctrl.List(FlagsList{
-				OutputDir: flags.OutputDir,
-			})
+			return fmt.Errorf("scaffold path is required, see 'scaffold list' for available scaffolds")
 		}
 
 		systemScaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))
@@ -72,7 +68,7 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 			return fmt.Errorf("listing local scaffolds: %w", err)
 		}
 
-		selected, err := scaffoldPickerPrompt(localScaffolds, flattenSystemScaffolds(systemScaffolds), ctrl.rc.Settings.Theme)
+		selected, err := scaffoldPickerPrompt(ctrl.rc.Aliases, localScaffolds, flattenSystemScaffolds(systemScaffolds), ctrl.rc.Settings.Theme)
 		if err != nil {
 			return err
 		}
@@ -148,7 +144,7 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 		varfunc:     varfunc,
 		outputfs:    outfs,
 		options: scaffold.Options{
-			NoClobber: flags.NoClobber,
+			NoClobber: !flags.Overwrite,
 		},
 	})
 	if err != nil {

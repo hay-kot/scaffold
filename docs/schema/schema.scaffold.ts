@@ -44,6 +44,14 @@ export interface Schema {
    * partials is a directory name in the project folder that contains partial templates that can be included in the main template.
    * */
   partials?: string;
+
+  /**
+   * each declares variables for multi-file output. Path segments or filenames
+   * containing [varname] will produce one output per item in the named list variable.
+   *
+   * Supports string shorthand ("services") or object form ({var: "models", as: "..."}).
+   * */
+  each?: EachConfig[];
 }
 
 type Delimiters = {
@@ -227,3 +235,21 @@ type Feature = {
    * */
   globs: string[];
 };
+
+/**
+ * EachConfig declares a variable for multi-file expansion.
+ * Supports string shorthand ("services") or object form.
+ */
+type EachConfig =
+  | string
+  | {
+      /**
+       * Variable name to expand over. Must reference a list variable in Scaffold vars.
+       * */
+      var: string;
+      /**
+       * Template expression to transform the item value for path substitution
+       * (e.g., '{{ .Each.Item | toPascalCase }}'). When omitted, the raw item value is used.
+       * */
+      as?: string;
+    };

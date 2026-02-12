@@ -1,0 +1,7 @@
+questions:
+  - name: services
+    prompt:
+      message: Service names
+      loop: true
+each:
+  - services

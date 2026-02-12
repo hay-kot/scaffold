@@ -1,0 +1,6 @@
+NewProject:  (type=dir)
+	[notdeclared]:  (type=dir)
+		file.txt:  (type=file)
+			This file should pass through with literal [notdeclared] in path.
+			
+

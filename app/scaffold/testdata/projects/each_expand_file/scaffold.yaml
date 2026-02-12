@@ -1,0 +1,7 @@
+questions:
+  - name: items
+    prompt:
+      message: Item names
+      loop: true
+each:
+  - items

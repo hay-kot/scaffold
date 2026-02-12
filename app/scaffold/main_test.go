@@ -59,6 +59,18 @@ var (
 	//  1. Template scaffolds (using "templates" dir) output files without the templates/ prefix
 	//  2. Nested directories within templates are preserved correctly
 	templateScaffold embed.FS
+
+	//go:embed testdata/projects/each_expand/*
+	eachExpandFiles embed.FS
+
+	//go:embed testdata/projects/each_expand_as/*
+	eachExpandAsFiles embed.FS
+
+	//go:embed testdata/projects/each_expand_literal/*
+	eachExpandLiteralFiles embed.FS
+
+	//go:embed testdata/projects/each_expand_file/*
+	eachExpandFileFiles embed.FS
 )
 
 func FeatureFlagFiles() fs.FS {
@@ -230,6 +242,70 @@ func TemplateScaffoldProject() *Project {
 		NameTemplate: TemplateDirName,
 		Name:         "",
 		Conf:         &ProjectScaffoldFile{},
+	}
+}
+
+func EachExpandFiles() fs.FS {
+	f, _ := fs.Sub(eachExpandFiles, "testdata/projects/each_expand")
+	return f
+}
+
+func EachExpandProject() *Project {
+	return &Project{
+		NameTemplate: "{{ .Project }}",
+		Name:         "NewProject",
+		Conf: &ProjectScaffoldFile{
+			Each: []EachConfig{
+				{Var: "services"},
+			},
+		},
+	}
+}
+
+func EachExpandAsFiles() fs.FS {
+	f, _ := fs.Sub(eachExpandAsFiles, "testdata/projects/each_expand_as")
+	return f
+}
+
+func EachExpandAsProject() *Project {
+	return &Project{
+		NameTemplate: "{{ .Project }}",
+		Name:         "NewProject",
+		Conf: &ProjectScaffoldFile{
+			Each: []EachConfig{
+				{Var: "models", As: "{{ .Each.Item | toPascalCase }}"},
+			},
+		},
+	}
+}
+
+func EachExpandLiteralFiles() fs.FS {
+	f, _ := fs.Sub(eachExpandLiteralFiles, "testdata/projects/each_expand_literal")
+	return f
+}
+
+func EachExpandLiteralProject() *Project {
+	return &Project{
+		NameTemplate: "{{ .Project }}",
+		Name:         "NewProject",
+		Conf:         &ProjectScaffoldFile{},
+	}
+}
+
+func EachExpandFileFiles() fs.FS {
+	f, _ := fs.Sub(eachExpandFileFiles, "testdata/projects/each_expand_file")
+	return f
+}
+
+func EachExpandFileProject() *Project {
+	return &Project{
+		NameTemplate: "{{ .Project }}",
+		Name:         "NewProject",
+		Conf: &ProjectScaffoldFile{
+			Each: []EachConfig{
+				{Var: "items"},
+			},
+		},
 	}
 }
 

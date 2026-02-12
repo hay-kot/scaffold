@@ -85,6 +85,32 @@
       "items": {
         "$ref": "#/$defs/delimiters"
       }
+    },
+    "each": {
+      "type": "array",
+      "description": "Variables to expand for multi-file output. Path segments containing [varname] will produce one output per list item.",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Variable name shorthand"
+          },
+          {
+            "type": "object",
+            "required": ["var"],
+            "properties": {
+              "var": {
+                "type": "string",
+                "description": "Variable name to expand over"
+              },
+              "as": {
+                "type": "string",
+                "description": "Template expression to transform the item value for path substitution (e.g., '{{ .Each.Item | toPascalCase }}')"
+              }
+            }
+          }
+        ]
+      }
     }
   },
   "$defs": {

@@ -1,0 +1,2 @@
+Item: {{ .Each.Item }}
+Index: {{ .Each.Index }}

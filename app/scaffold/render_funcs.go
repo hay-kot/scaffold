@@ -256,6 +256,8 @@ func BuildVars(eng *engine.Engine, project *Project, vars engine.Vars) (engine.V
 		"Project":       project.Name,
 		"ProjectSnake":  xstrings.ToSnakeCase(project.Name),
 		"ProjectKebab":  xstrings.ToKebabCase(project.Name),
+		// Keep ProjectSlug available for backwards compatibility with documented templates.
+		"ProjectSlug":   xstrings.ToKebabCase(project.Name),
 		"ProjectCamel":  xstrings.ToCamelCase(project.Name),
 		"ProjectPascal": xstrings.ToPascalCase(project.Name),
 		"Scaffold":      vars,

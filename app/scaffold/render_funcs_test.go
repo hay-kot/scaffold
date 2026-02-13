@@ -39,6 +39,7 @@ func Test_BuildVars(t *testing.T) {
 		"Project",
 		"ProjectSnake",
 		"ProjectKebab",
+		"ProjectSlug",
 		"ProjectCamel",
 		"ProjectPascal",
 	}
@@ -47,6 +48,7 @@ func Test_BuildVars(t *testing.T) {
 		assert.NotNil(t, got[key])
 		assert.IsType(t, "", got[key])
 	}
+	assert.Equal(t, got["ProjectKebab"], got["ProjectSlug"])
 
 	assert.NotNil(t, got["Scaffold"])
 	assert.IsType(t, engine.Vars{}, got["Scaffold"])

@@ -55,9 +55,9 @@ tasks:
       - golangci-lint run ./...
 
   format:
-    desc: Runs gofmt on the backend
+    desc: Runs golangci-lint format
     cmds:
-      - gofumpt -w ./
+      - golangci-lint fmt
 
   pr:
     desc: Runs all go test and lint related tasks for PRs

@@ -53,11 +53,11 @@ severity = 'warning'
 
 [linters.exclusions]
 generated = 'lax'
-paths = ['third_party$', 'builtin$', 'examples$']
+paths = ['third_party$', 'builtin$', 'examples$', 'testdata$']
 
 [formatters]
-enable = ['goimports']
+enable = ['gofumpt', 'goimports']
 
 [formatters.exclusions]
 generated = 'lax'
-paths = ['third_party$', 'builtin$', 'examples$']
+paths = ['third_party$', 'builtin$', 'examples$', 'testdata$']

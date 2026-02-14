@@ -7,7 +7,7 @@
     {
       "name": "scaffold",
       "description": "Skills and commands for the scaffold project generation tool",
-      "source": "."
+      "source": "./plugins/scaffold"
     }
   ]
 }

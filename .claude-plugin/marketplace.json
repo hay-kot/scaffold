@@ -1,8 +1,13 @@
 {
+  "name": "hay-kot-scaffold",
+  "owner": {
+    "name": "hay-kot"
+  },
   "plugins": [
     {
       "name": "scaffold",
-      "path": "."
+      "description": "Skills and commands for the scaffold project generation tool",
+      "source": "."
     }
   ]
 }

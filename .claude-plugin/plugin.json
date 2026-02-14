@@ -1,0 +1,11 @@
+{
+  "name": "scaffold",
+  "version": "0.1.0",
+  "description": "Skills and commands for the scaffold project generation tool",
+  "author": {
+    "name": "hay-kot"
+  },
+  "repository": "https://github.com/hay-kot/scaffold",
+  "license": "MIT",
+  "keywords": ["scaffold", "templates", "code-generation", "project-generation"]
+}

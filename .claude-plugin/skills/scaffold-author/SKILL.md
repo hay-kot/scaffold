@@ -50,6 +50,7 @@ Or create manually:
 ```
 
 **scaffold.yaml:**
+
 ```yaml
 questions:
   - name: description
@@ -71,6 +72,7 @@ presets:
 ```
 
 **`{{ .ProjectKebab }}/main.go`:**
+
 ```
 // {{ .Scaffold.description }}
 package main
@@ -88,6 +90,7 @@ func main() {}
 ```
 
 **scaffold.yaml:**
+
 ```yaml
 questions:
   - name: component_name
@@ -178,6 +181,7 @@ scaffold new \
 ```
 
 Renders in-memory and outputs a full AST with file contents. Ideal for:
+
 - Verifying exact output content
 - CI/CD diffing against expected output
 - Catching regressions
@@ -198,11 +202,13 @@ scaffold \
 ## Reading Template Errors
 
 Template errors show:
+
 - **File path** and **line:column** where the error occurred
 - **Context lines** (the error line plus surrounding lines)
 - **Delimiter info** if custom delimiters are in use
 
 Common causes:
+
 - Referencing undefined variables (e.g., `.Scaffold.typo`)
 - Missing closing delimiters
 - Calling undefined functions
@@ -226,6 +232,7 @@ presets:
 ```
 
 Test each preset:
+
 ```bash
 for preset in default minimal; do
   scaffold new --output-dir :memory: --no-prompt --preset "$preset" --snapshot stdout .scaffold/my-scaffold

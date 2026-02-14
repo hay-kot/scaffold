@@ -8,14 +8,14 @@ All variables are available in file contents and file/directory name templates.
 
 ### Top-Level Variables
 
-| Variable | Type | Description |
-|----------|------|-------------|
-| `.Project` | string | Project name as entered |
-| `.ProjectSnake` | string | `snake_case` |
-| `.ProjectKebab` | string | `kebab-case` |
-| `.ProjectCamel` | string | `camelCase` |
-| `.ProjectPascal` | string | `PascalCase` |
-| `.ProjectSlug` | string | URL-safe slug |
+| Variable         | Type   | Description             |
+| ---------------- | ------ | ----------------------- |
+| `.Project`       | string | Project name as entered |
+| `.ProjectSnake`  | string | `snake_case`            |
+| `.ProjectKebab`  | string | `kebab-case`            |
+| `.ProjectCamel`  | string | `camelCase`             |
+| `.ProjectPascal` | string | `PascalCase`            |
+| `.ProjectSlug`   | string | URL-safe slug           |
 
 ### `.Scaffold.*`
 
@@ -44,10 +44,10 @@ Computed values undergo type coercion: rendered string is parsed as int, then bo
 
 Available only inside `each`-expanded templates.
 
-| Variable | Type | Description |
-|----------|------|-------------|
-| `.Each.Item` | string | Current item value |
-| `.Each.Index` | int | Zero-based index |
+| Variable      | Type   | Description        |
+| ------------- | ------ | ------------------ |
+| `.Each.Item`  | string | Current item value |
+| `.Each.Index` | int    | Zero-based index   |
 
 ## Template Functions
 
@@ -75,14 +75,14 @@ All [sprout](https://docs.atom.codes/sprout) functions are available. Common one
 
 ### Custom Functions
 
-| Function | Signature | Description |
-|----------|-----------|-------------|
-| `wraptmpl` | `wraptmpl(s string) string` | Wraps string in `{{ }}`. Use when output should contain Go template syntax |
-| `toPlural` | `toPlural(s string) string` | Convert word to plural form |
-| `toSingular` | `toSingular(s string) string` | Convert word to singular form |
-| `isPlural` | `isPlural(s string) bool` | Check if word is plural |
-| `isSingular` | `isSingular(s string) bool` | Check if word is singular |
-| `partial` | `partial(name string, data any) string` | Render a named partial with given data context |
+| Function     | Signature                               | Description                                                                |
+| ------------ | --------------------------------------- | -------------------------------------------------------------------------- |
+| `wraptmpl`   | `wraptmpl(s string) string`             | Wraps string in `{{ }}`. Use when output should contain Go template syntax |
+| `toPlural`   | `toPlural(s string) string`             | Convert word to plural form                                                |
+| `toSingular` | `toSingular(s string) string`           | Convert word to singular form                                              |
+| `isPlural`   | `isPlural(s string) bool`               | Check if word is plural                                                    |
+| `isSingular` | `isSingular(s string) bool`             | Check if word is singular                                                  |
+| `partial`    | `partial(name string, data any) string` | Render a named partial with given data context                             |
 
 ### `wraptmpl` example
 
@@ -95,6 +95,7 @@ When your scaffold output should contain literal Go template syntax:
 Produces: `{{ .Values.image }}`
 
 Alternative approach using raw strings:
+
 ```
 {{ "{{ .Values.image }}" }}
 ```
@@ -184,6 +185,7 @@ Use `features` in scaffold.yaml instead of wrapping entire file contents in `{{ 
 ### Preserving Go template syntax in output
 
 Three approaches:
+
 1. `{{ wraptmpl ".Values.name" }}` — custom function
 2. `{{ "{{ .Values.name }}" }}` — raw string
 3. Add to `skip` list — bypasses template engine entirely

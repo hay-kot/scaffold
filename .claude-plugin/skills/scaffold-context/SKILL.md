@@ -39,29 +39,29 @@ See `scaffoldrc-reference.md` for the `auth` section schema.
 
 ## Environment Variables
 
-| Variable | Maps to | Description |
-|----------|---------|-------------|
-| `SCAFFOLDRC` | `--scaffoldrc` | ScaffoldRC file path |
-| `SCAFFOLD_DIR` | `--scaffold-dir` | Template search directories |
-| `SCAFFOLD_CACHE` | `--cache` | Cache directory for remote scaffolds |
-| `SCAFFOLD_LOG_LEVEL` | `--log-level` | Log level (debug, info, warn, error) |
-| `SCAFFOLD_SETTINGS_LOG_LEVEL` | `--log-level` | Log level (alt) |
-| `SCAFFOLD_SETTINGS_LOG_FILE` | `--log-file` | Log file path |
-| `SCAFFOLD_SETTINGS_THEME` | `--theme` | UI theme |
-| `SCAFFOLD_THEME` | `--theme` | UI theme (alt) |
-| `SCAFFOLD_SETTINGS_RUN_HOOKS` | `--run-hooks` | Hook execution policy |
-| `SCAFFOLD_OVERWRITE` | `--overwrite` | Overwrite existing files |
-| `SCAFFOLD_FORCE` | `--force` | Allow dirty git tree |
-| `SCAFFOLD_OUT` | `--output-dir` | Output directory |
+| Variable                      | Maps to          | Description                          |
+| ----------------------------- | ---------------- | ------------------------------------ |
+| `SCAFFOLDRC`                  | `--scaffoldrc`   | ScaffoldRC file path                 |
+| `SCAFFOLD_DIR`                | `--scaffold-dir` | Template search directories          |
+| `SCAFFOLD_CACHE`              | `--cache`        | Cache directory for remote scaffolds |
+| `SCAFFOLD_LOG_LEVEL`          | `--log-level`    | Log level (debug, info, warn, error) |
+| `SCAFFOLD_SETTINGS_LOG_LEVEL` | `--log-level`    | Log level (alt)                      |
+| `SCAFFOLD_SETTINGS_LOG_FILE`  | `--log-file`     | Log file path                        |
+| `SCAFFOLD_SETTINGS_THEME`     | `--theme`        | UI theme                             |
+| `SCAFFOLD_THEME`              | `--theme`        | UI theme (alt)                       |
+| `SCAFFOLD_SETTINGS_RUN_HOOKS` | `--run-hooks`    | Hook execution policy                |
+| `SCAFFOLD_OVERWRITE`          | `--overwrite`    | Overwrite existing files             |
+| `SCAFFOLD_FORCE`              | `--force`        | Allow dirty git tree                 |
+| `SCAFFOLD_OUT`                | `--output-dir`   | Output directory                     |
 
 CLI flags take precedence over environment variables, which take precedence over scaffoldrc settings.
 
 ## Default Paths
 
-| Purpose | XDG Path | Legacy Path |
-|---------|----------|-------------|
+| Purpose    | XDG Path                                   | Legacy Path                  |
+| ---------- | ------------------------------------------ | ---------------------------- |
 | ScaffoldRC | `$XDG_CONFIG_HOME/scaffold/scaffoldrc.yml` | `~/.scaffold/scaffoldrc.yml` |
-| Cache | `$XDG_DATA_HOME/scaffold/templates` | `~/.scaffold/cache` |
+| Cache      | `$XDG_DATA_HOME/scaffold/templates`        | `~/.scaffold/cache`          |
 
 Legacy paths are used if they exist. XDG defaults: `~/.config/` for config, `~/.local/share/` for data.
 

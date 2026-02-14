@@ -30,6 +30,7 @@ scaffold new <scaffold>
 ```
 
 Launches an interactive prompt for project name and all questions. The scaffold argument can be:
+
 - An alias name (defined in scaffoldrc)
 - A short reference (`gh:org/repo`)
 - A URL (`https://github.com/org/repo`)
@@ -43,6 +44,7 @@ scaffold new --no-prompt --preset <preset-name> <scaffold> [key=value ...]
 ```
 
 Use `--no-prompt` to skip all interactive prompts. Provide variables via:
+
 - `--preset <name>` — loads a named preset from the scaffold's config
 - Positional `key[:type]=value` arguments — override or supplement preset values
 
@@ -60,7 +62,7 @@ Renders the scaffold fully but writes nothing to disk. Outputs JSON:
 
 ```json
 {
-  "files": [{"path": "path/to/file", "action": "create"}],
+  "files": [{ "path": "path/to/file", "action": "create" }],
   "errors": [],
   "warnings": []
 }
@@ -79,6 +81,7 @@ Renders entirely in memory and outputs a full AST with file contents to stdout. 
 Variables use `key[:type]=value` syntax. See `variable-syntax.md` for the full type reference.
 
 Common examples:
+
 ```bash
 scaffold new --no-prompt my-scaffold \
   Project=MyApp \
@@ -90,15 +93,15 @@ scaffold new --no-prompt my-scaffold \
 
 ## Key flags for `scaffold new`
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--no-prompt` | `false` | Disable interactive prompts |
-| `--preset` | — | Preset name for variable values |
-| `--output-dir` | `.` | Output directory (`:memory:` for in-memory) |
-| `--dry-run` | `false` | Show what would be created (JSON) |
-| `--snapshot` | — | Output AST to path or `stdout` |
-| `--overwrite` | `false` | Overwrite existing files |
-| `--force` | `true` | Allow dirty git working tree |
+| Flag           | Default | Description                                 |
+| -------------- | ------- | ------------------------------------------- |
+| `--no-prompt`  | `false` | Disable interactive prompts                 |
+| `--preset`     | —       | Preset name for variable values             |
+| `--output-dir` | `.`     | Output directory (`:memory:` for in-memory) |
+| `--dry-run`    | `false` | Show what would be created (JSON)           |
+| `--snapshot`   | —       | Output AST to path or `stdout`              |
+| `--overwrite`  | `false` | Overwrite existing files                    |
+| `--force`      | `true`  | Allow dirty git working tree                |
 
 ## Tips
 

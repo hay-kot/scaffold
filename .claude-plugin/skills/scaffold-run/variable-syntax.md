@@ -15,15 +15,15 @@ The first `=` splits key from value. Additional `=` characters in the value are 
 
 ## Scalar Types
 
-| Type hint | Aliases | Go type | Example |
-|-----------|---------|---------|---------|
-| `string` | `str` | `string` | `name=hello` or `name:str=hello` |
-| `int` | — | `int` | `port:int=8080` |
-| `int32` | — | `int32` | `count:int32=42` |
-| `int64` | — | `int64` | `big:int64=999999` |
-| `float` | `float64` | `float64` | `rate:float=3.14` |
-| `float32` | — | `float32` | `small:float32=1.5` |
-| `bool` | — | `bool` | `debug:bool=true` |
+| Type hint | Aliases   | Go type   | Example                          |
+| --------- | --------- | --------- | -------------------------------- |
+| `string`  | `str`     | `string`  | `name=hello` or `name:str=hello` |
+| `int`     | —         | `int`     | `port:int=8080`                  |
+| `int32`   | —         | `int32`   | `count:int32=42`                 |
+| `int64`   | —         | `int64`   | `big:int64=999999`               |
+| `float`   | `float64` | `float64` | `rate:float=3.14`                |
+| `float32` | —         | `float32` | `small:float32=1.5`              |
+| `bool`    | —         | `bool`    | `debug:bool=true`                |
 
 When no type is specified, the value is treated as a `string`.
 
@@ -35,15 +35,15 @@ Accepts: `1`, `t`, `T`, `TRUE`, `true`, `True`, `0`, `f`, `F`, `FALSE`, `false`,
 
 Slice values are comma-separated. Use `\,` to include a literal comma.
 
-| Type hint | Aliases | Go type | Example |
-|-----------|---------|---------|---------|
-| `[]string` | `[]str` | `[]string` | `tags:[]string=web,api` |
-| `[]int` | — | `[]int` | `ports:[]int=80,443` |
-| `[]int32` | — | `[]int32` | — |
-| `[]int64` | — | `[]int64` | — |
-| `[]float` | `[]float64` | `[]float64` | `rates:[]float=1.1,2.2` |
-| `[]float32` | — | `[]float32` | — |
-| `[]bool` | — | `[]bool` | `flags:[]bool=true,false` |
+| Type hint   | Aliases     | Go type     | Example                   |
+| ----------- | ----------- | ----------- | ------------------------- |
+| `[]string`  | `[]str`     | `[]string`  | `tags:[]string=web,api`   |
+| `[]int`     | —           | `[]int`     | `ports:[]int=80,443`      |
+| `[]int32`   | —           | `[]int32`   | —                         |
+| `[]int64`   | —           | `[]int64`   | —                         |
+| `[]float`   | `[]float64` | `[]float64` | `rates:[]float=1.1,2.2`   |
+| `[]float32` | —           | `[]float32` | —                         |
+| `[]bool`    | —           | `[]bool`    | `flags:[]bool=true,false` |
 
 An empty value (e.g., `tags:[]string=`) produces an empty slice.
 

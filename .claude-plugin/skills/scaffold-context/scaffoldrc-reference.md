@@ -37,22 +37,22 @@ auth:
 
 ## `settings`
 
-| Setting | Type | Default | CLI Flag | Description |
-|---------|------|---------|----------|-------------|
-| `theme` | string | `scaffold` | `--theme` | UI theme for interactive prompts |
-| `run_hooks` | string | `prompt` | `--run-hooks` | Hook execution policy |
-| `log_level` | string | `warn` | `--log-level` | Log level |
-| `log_file` | string | `stdout` | `--log-file` | Log output destination |
+| Setting     | Type   | Default    | CLI Flag      | Description                      |
+| ----------- | ------ | ---------- | ------------- | -------------------------------- |
+| `theme`     | string | `scaffold` | `--theme`     | UI theme for interactive prompts |
+| `run_hooks` | string | `prompt`   | `--run-hooks` | Hook execution policy            |
+| `log_level` | string | `warn`     | `--log-level` | Log level                        |
+| `log_file`  | string | `stdout`   | `--log-file`  | Log output destination           |
 
 **Theme options:** `scaffold`, `charm`, `dracula`, `base16`, `catppuccino`, `tokyo-night`
 
 **Run hooks options:**
 
-| Value | Aliases | Behavior |
-|-------|---------|----------|
-| `prompt` | `""` | Ask before running (default) |
-| `always` | `yes`, `true` | Run without asking |
-| `never` | `no`, `false` | Never run |
+| Value    | Aliases       | Behavior                     |
+| -------- | ------------- | ---------------------------- |
+| `prompt` | `""`          | Ask before running (default) |
+| `always` | `yes`, `true` | Run without asking           |
+| `never`  | `no`, `false` | Never run                    |
 
 CLI flags override scaffoldrc settings when explicitly set.
 
@@ -82,6 +82,7 @@ aliases:
 Maps short names to full scaffold paths. Used as `scaffold new api` instead of the full path.
 
 **Rules:**
+
 - Values must be a valid URL, an absolute path, or start with `~`
 - Relative paths without `~` are rejected during validation
 - Aliases are shown in the interactive scaffold picker
@@ -101,6 +102,7 @@ shorts:
 URL prefix shortcuts. Used with colon syntax: `gh:org/repo` expands to `https://github.com/org/repo`.
 
 **Rules:**
+
 - Values must be valid URIs
 - The input is split on `:` — left side matches the short key, right side is appended via `url.JoinPath`
 - Only the first `:` is used for splitting
@@ -122,14 +124,15 @@ auth:
 
 Pattern-matched authentication for private git repositories.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `match` | regex | Regular expression matched against the scaffold URL |
-| `token` | string | Token authentication |
-| `basic.username` | string | HTTP basic auth username |
-| `basic.password` | string | HTTP basic auth password |
+| Field            | Type   | Description                                         |
+| ---------------- | ------ | --------------------------------------------------- |
+| `match`          | regex  | Regular expression matched against the scaffold URL |
+| `token`          | string | Token authentication                                |
+| `basic.username` | string | HTTP basic auth username                            |
+| `basic.password` | string | HTTP basic auth password                            |
 
 **Rules:**
+
 - Entries are checked in order; first match wins
 - Use `token` OR `basic`, not both
 - Environment variable expansion: `${VAR_NAME}` is replaced with the env var value

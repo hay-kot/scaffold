@@ -110,6 +110,38 @@ func TestResolver_Resolve_Remote_VersionAndSubdirectory(t *testing.T) {
 	assert.Equal(t, subdirpath, path)
 }
 
+// TestResolver_Resolve_Remote_ShortWithSubdirectory tests that short URLs
+// with a fragment (#subdir) correctly preserve the fragment through url.JoinPath
+// expansion rather than encoding it as %23.
+func TestResolver_Resolve_Remote_ShortWithSubdirectory(t *testing.T) {
+	tempdir := t.TempDir()
+	tempcache := filepath.Join(tempdir, "cache")
+	repopath := filepath.Join(tempcache, "github.com", "hay-kot", "scaffold")
+	subdirpath := filepath.Join(repopath, "example")
+
+	clonefn := ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
+		t.Helper()
+
+		assert.Equal(t, "https://github.com/hay-kot/scaffold", cfg.URL, "clone URL should not contain #subdir")
+
+		err := os.MkdirAll(subdirpath, 0o755)
+		require.NoError(t, err)
+
+		return repopath, nil
+	})
+
+	shorts := map[string]string{"gh": "https://github.com"}
+	resolver := NewResolver(shorts, tempcache, tempdir, WithCloner(clonefn))
+
+	path, err := resolver.Resolve(
+		"gh:hay-kot/scaffold#example",
+		nil,
+		noopAuthProvider,
+	)
+	require.NoError(t, err)
+	assert.Equal(t, subdirpath, path)
+}
+
 func TestResolver_Resolve_FilePaths(t *testing.T) {
 	tempdir := t.TempDir()
 	tempcwd := filepath.Join(tempdir, "cwd")

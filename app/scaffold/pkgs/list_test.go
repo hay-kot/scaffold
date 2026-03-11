@@ -93,10 +93,10 @@ func TestListSystem_SkipsTemplateDirs(t *testing.T) {
 		{
 			name: "scaffold.yaml inside template dir is not a sub-package",
 			fs: fstest.MapFS{
-				"github.com/user/repo/.git/HEAD":                                            &fstest.MapFile{Data: []byte("ref: refs/heads/main")},
-				"github.com/user/repo/scaffold.yaml":                                        &fstest.MapFile{Data: []byte("name: root")},
-				"github.com/user/repo/{{ .Project }}/.scaffold/command/scaffold.yaml":        &fstest.MapFile{Data: []byte("name: command")},
-				"github.com/user/repo/{{ .Project }}/.scaffold/command/templates/main.go":    &fstest.MapFile{Data: []byte("package main")},
+				"github.com/user/repo/.git/HEAD":                                          &fstest.MapFile{Data: []byte("ref: refs/heads/main")},
+				"github.com/user/repo/scaffold.yaml":                                      &fstest.MapFile{Data: []byte("name: root")},
+				"github.com/user/repo/{{ .Project }}/.scaffold/command/scaffold.yaml":     &fstest.MapFile{Data: []byte("name: command")},
+				"github.com/user/repo/{{ .Project }}/.scaffold/command/templates/main.go": &fstest.MapFile{Data: []byte("package main")},
 			},
 			wantRoot:        "github.com/user/repo",
 			wantSubPackages: nil,
@@ -104,9 +104,9 @@ func TestListSystem_SkipsTemplateDirs(t *testing.T) {
 		{
 			name: "scaffold.yaml inside templates dir is not a sub-package",
 			fs: fstest.MapFS{
-				"github.com/user/repo/.git/HEAD":                           &fstest.MapFile{Data: []byte("ref: refs/heads/main")},
-				"github.com/user/repo/scaffold.yaml":                       &fstest.MapFile{Data: []byte("name: root")},
-				"github.com/user/repo/templates/nested/scaffold.yaml":      &fstest.MapFile{Data: []byte("name: nested")},
+				"github.com/user/repo/.git/HEAD":                      &fstest.MapFile{Data: []byte("ref: refs/heads/main")},
+				"github.com/user/repo/scaffold.yaml":                  &fstest.MapFile{Data: []byte("name: root")},
+				"github.com/user/repo/templates/nested/scaffold.yaml": &fstest.MapFile{Data: []byte("name: nested")},
 			},
 			wantRoot:        "github.com/user/repo",
 			wantSubPackages: nil,
@@ -114,9 +114,9 @@ func TestListSystem_SkipsTemplateDirs(t *testing.T) {
 		{
 			name: "real sub-package is still detected",
 			fs: fstest.MapFS{
-				"github.com/user/repo/.git/HEAD":                    &fstest.MapFile{Data: []byte("ref: refs/heads/main")},
-				"github.com/user/repo/scaffold.yaml":                &fstest.MapFile{Data: []byte("name: root")},
-				"github.com/user/repo/component/scaffold.yaml":      &fstest.MapFile{Data: []byte("name: component")},
+				"github.com/user/repo/.git/HEAD":               &fstest.MapFile{Data: []byte("ref: refs/heads/main")},
+				"github.com/user/repo/scaffold.yaml":           &fstest.MapFile{Data: []byte("name: root")},
+				"github.com/user/repo/component/scaffold.yaml": &fstest.MapFile{Data: []byte("name: component")},
 			},
 			wantRoot:        "github.com/user/repo",
 			wantSubPackages: []string{"component"},
@@ -124,10 +124,10 @@ func TestListSystem_SkipsTemplateDirs(t *testing.T) {
 		{
 			name: "mix of real sub-packages and template dirs",
 			fs: fstest.MapFS{
-				"github.com/user/repo/.git/HEAD":                                         &fstest.MapFile{Data: []byte("ref: refs/heads/main")},
-				"github.com/user/repo/scaffold.yaml":                                     &fstest.MapFile{Data: []byte("name: root")},
-				"github.com/user/repo/component/scaffold.yaml":                           &fstest.MapFile{Data: []byte("name: component")},
-				"github.com/user/repo/{{ .Project }}/.scaffold/command/scaffold.yaml":    &fstest.MapFile{Data: []byte("name: command")},
+				"github.com/user/repo/.git/HEAD":                                      &fstest.MapFile{Data: []byte("ref: refs/heads/main")},
+				"github.com/user/repo/scaffold.yaml":                                  &fstest.MapFile{Data: []byte("name: root")},
+				"github.com/user/repo/component/scaffold.yaml":                        &fstest.MapFile{Data: []byte("name: component")},
+				"github.com/user/repo/{{ .Project }}/.scaffold/command/scaffold.yaml": &fstest.MapFile{Data: []byte("name: command")},
 			},
 			wantRoot:        "github.com/user/repo",
 			wantSubPackages: []string{"component"},

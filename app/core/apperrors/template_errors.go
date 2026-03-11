@@ -30,11 +30,11 @@ func (e *TemplateError) Error() string {
 	var b strings.Builder
 	b.WriteString(e.Original.Error())
 	if e.FilePath != "" {
-		b.WriteString(fmt.Sprintf(" in %s", e.FilePath))
+		fmt.Fprintf(&b, " in %s", e.FilePath)
 		if e.LineNumber > 0 {
-			b.WriteString(fmt.Sprintf(":%d", e.LineNumber))
+			fmt.Fprintf(&b, ":%d", e.LineNumber)
 			if e.ColumnNumber > 0 {
-				b.WriteString(fmt.Sprintf(":%d", e.ColumnNumber))
+				fmt.Fprintf(&b, ":%d", e.ColumnNumber)
 			}
 		}
 	}

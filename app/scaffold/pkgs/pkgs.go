@@ -90,11 +90,22 @@ func IsRemote(str string, shorts map[string]string) (expanded string, ok bool) {
 
 		for k, v := range shorts {
 			if k == short {
-				out, err := url.JoinPath(v, split[1])
+				// Split off the fragment (#subdir) before joining, because
+				// url.JoinPath encodes '#' as '%23' which breaks downstream
+				// parsing that expects a literal '#' as the fragment separator.
+				pathPart := split[1]
+				fragment := ""
+				if idx := strings.Index(pathPart, "#"); idx != -1 {
+					fragment = pathPart[idx:]
+					pathPart = pathPart[:idx]
+				}
+
+				out, err := url.JoinPath(v, pathPart)
 				if err != nil {
 					return "", false
 				}
 
+				out += fragment
 				return out, pkgurl.IsRemoteEndpoint(out)
 			}
 		}

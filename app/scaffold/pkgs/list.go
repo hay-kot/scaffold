@@ -3,7 +3,15 @@ package pkgs
 import (
 	"io/fs"
 	"path/filepath"
+	"strings"
 )
+
+// isTemplateDir returns true if the directory name is a scaffold template
+// content directory. These directories contain rendered output files and
+// should not be searched for sub-scaffolds.
+func isTemplateDir(name string) bool {
+	return name == "templates" || strings.HasPrefix(name, "{{")
+}
 
 // ListFromFS lists scaffolds from a filesystem.
 // This function lists all scaffolds directly within the root of the provided filesystem.
@@ -70,13 +78,15 @@ func ListSystem(f fs.FS) ([]PackageList, error) {
 					Root: filepath.Dir(path),
 				}
 			}
-		}
 
-		// check if maximum recursion depth is reached
-		if d.IsDir() && filepath.Clean(path) != "." {
-			depth := len(filepath.SplitList(path))
-			if depth > 4 {
-				return filepath.SkipDir
+			// Skip template content directories — these contain scaffold
+			// output files (which may include scaffold.yaml), not actual
+			// runnable sub-scaffolds.
+			if current.Root != "" && isTemplateDir(d.Name()) {
+				rel, relErr := filepath.Rel(current.Root, path)
+				if relErr == nil && !strings.Contains(rel, string(filepath.Separator)) {
+					return filepath.SkipDir
+				}
 			}
 		}
 

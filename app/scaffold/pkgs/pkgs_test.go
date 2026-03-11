@@ -120,6 +120,24 @@ func TestIsRemote(t *testing.T) {
 			wantExpanded: "https://github.com/hay-kot/scaffold.git",
 			wantOk:       true,
 		},
+		{
+			name: "short with fragment (subdir)",
+			args: args{
+				str:    "gh:hay-kot/scaffold#subdir",
+				shorts: map[string]string{"gh": "https://github.com"},
+			},
+			wantExpanded: "https://github.com/hay-kot/scaffold#subdir",
+			wantOk:       true,
+		},
+		{
+			name: "short with version and fragment",
+			args: args{
+				str:    "gh:hay-kot/scaffold@v1.0#subdir",
+				shorts: map[string]string{"gh": "https://github.com"},
+			},
+			wantExpanded: "https://github.com/hay-kot/scaffold@v1.0#subdir",
+			wantOk:       true,
+		},
 	}
 	for _, tt := range tests {
 		expanded, isRemote := IsRemote(tt.args.str, tt.args.shorts)

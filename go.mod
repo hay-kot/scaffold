@@ -6,7 +6,7 @@ require (
 	github.com/bmatcuk/doublestar/v4 v4.10.0
 	github.com/bradleyjkemp/cupaloy/v2 v2.8.0
 	github.com/catppuccin/go v0.3.0
-	github.com/charmbracelet/bubbles v1.0.0
+	github.com/charmbracelet/bubbles/v2 v2.0.0
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/glamour v0.10.0
 	github.com/charmbracelet/huh v0.8.0

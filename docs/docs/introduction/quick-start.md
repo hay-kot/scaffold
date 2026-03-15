@@ -49,6 +49,9 @@ scaffold new github.com/username/repo-name@v1.0.0
 
 # Create with a specific branch
 scaffold new github.com/username/repo-name@branch-name
+
+# Create with a specific directory
+scaffold new github.com/username/repo-name#sub-directory
 ```
 
 ### Listing Available Scaffolds

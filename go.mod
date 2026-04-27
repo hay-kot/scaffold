@@ -13,7 +13,7 @@ require (
 	github.com/charmbracelet/huh/spinner v0.0.0-20260209112015-5c5971ef3aeb
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834
 	github.com/gertd/go-pluralize v0.2.1
-	github.com/go-git/go-git/v5 v5.17.0
+	github.com/go-git/go-git/v5 v5.18.0
 	github.com/go-sprout/sprout v1.0.3
 	github.com/hashicorp/go-version v1.8.0
 	github.com/huandu/xstrings v1.5.0
@@ -43,7 +43,7 @@ require (
 	github.com/clipperhouse/displaywidth v0.9.0 // indirect
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.5.0 // indirect
-	github.com/cloudflare/circl v1.6.1 // indirect
+	github.com/cloudflare/circl v1.6.3 // indirect
 	github.com/cyphar/filepath-securejoin v0.5.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect

@@ -138,6 +138,33 @@ func TestIsRemote(t *testing.T) {
 			wantExpanded: "https://github.com/hay-kot/scaffold@v1.0#subdir",
 			wantOk:       true,
 		},
+		{
+			name: "http archive with go-getter subdirectory",
+			args: args{
+				str:    "https://example.com/template.zip//template",
+				shorts: map[string]string{},
+			},
+			wantExpanded: "https://example.com/template.zip//template",
+			wantOk:       true,
+		},
+		{
+			name: "forced http downloader",
+			args: args{
+				str:    "http::https://example.com/template",
+				shorts: map[string]string{},
+			},
+			wantExpanded: "http::https://example.com/template",
+			wantOk:       true,
+		},
+		{
+			name: "s3 downloader",
+			args: args{
+				str:    "s3::https://s3.amazonaws.com/bucket/template",
+				shorts: map[string]string{},
+			},
+			wantExpanded: "s3::https://s3.amazonaws.com/bucket/template",
+			wantOk:       true,
+		},
 	}
 	for _, tt := range tests {
 		expanded, isRemote := IsRemote(tt.args.str, tt.args.shorts)

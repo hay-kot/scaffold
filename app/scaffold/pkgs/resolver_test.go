@@ -142,6 +142,56 @@ func TestResolver_Resolve_Remote_ShortWithSubdirectory(t *testing.T) {
 	assert.Equal(t, subdirpath, path)
 }
 
+func TestResolver_Resolve_GetterSource(t *testing.T) {
+	tempdir := t.TempDir()
+	tempcache := filepath.Join(tempdir, "cache")
+	source := "https://example.com/scaffolds/template.zip//template"
+	expected := getterCacheDir(tempcache, source)
+
+	var downloads int
+	downloadfn := DownloaderFunc(func(destination, gotSource string) error {
+		t.Helper()
+		downloads++
+		assert.Equal(t, source, gotSource)
+		assert.Contains(t, destination, filepath.Join(tempcache, "_getter"))
+
+		return os.WriteFile(filepath.Join(destination, "scaffold.yaml"), []byte("---"), 0o644)
+	})
+
+	resolver := NewResolver(nil, tempcache, tempdir, WithDownloader(downloadfn))
+
+	path, err := resolver.Resolve(source, nil, noopAuthProvider)
+	require.NoError(t, err)
+	assert.Equal(t, expected, path)
+
+	path, err = resolver.Resolve(source, nil, noopAuthProvider)
+	require.NoError(t, err)
+	assert.Equal(t, expected, path)
+	assert.Equal(t, 1, downloads, "cached sources should not be downloaded again")
+}
+
+func TestResolver_Resolve_GetterFailureCleansStagingDirectory(t *testing.T) {
+	tempdir := t.TempDir()
+	tempcache := filepath.Join(tempdir, "cache")
+	source := "s3::https://s3.amazonaws.com/bucket/scaffolds/template"
+
+	downloadfn := DownloaderFunc(func(destination, gotSource string) error {
+		t.Helper()
+		require.NoError(t, os.WriteFile(filepath.Join(destination, "partial"), []byte("partial"), 0o644))
+		return assert.AnError
+	})
+
+	resolver := NewResolver(nil, tempcache, tempdir, WithDownloader(downloadfn))
+
+	_, err := resolver.Resolve(source, nil, noopAuthProvider)
+	require.ErrorContains(t, err, "failed to download source")
+	assert.NoDirExists(t, getterCacheDir(tempcache, source))
+
+	entries, readErr := os.ReadDir(filepath.Join(tempcache, "_getter"))
+	require.NoError(t, readErr)
+	assert.Empty(t, entries)
+}
+
 func TestResolver_Resolve_FilePaths(t *testing.T) {
 	tempdir := t.TempDir()
 	tempcwd := filepath.Join(tempdir, "cwd")
@@ -177,6 +227,11 @@ func TestResolver_Resolve_FilePaths(t *testing.T) {
 		{
 			name:     "relative path",
 			input:    "scaffold/test",
+			expected: packagepath,
+		},
+		{
+			name:     "relative path with double slash",
+			input:    "scaffold//test",
 			expected: packagepath,
 		},
 		{

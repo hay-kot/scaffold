@@ -83,6 +83,10 @@ func ParseRemote(urlStr string) (Package, error) {
 //
 //	IsRemote(gh:foo/bar) -> https://github.com/foo/bar, true
 func IsRemote(str string, shorts map[string]string) (expanded string, ok bool) {
+	if isGetterSource(str) {
+		return str, true
+	}
+
 	split := strings.Split(str, ":")
 
 	if len(split) == 2 {

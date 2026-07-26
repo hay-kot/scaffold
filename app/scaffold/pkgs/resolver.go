@@ -22,11 +22,18 @@ func WithCloner(cloner Cloner) ResolverOption {
 	}
 }
 
+func WithDownloader(downloader Downloader) ResolverOption {
+	return func(r *Resolver) {
+		r.downloader = downloader
+	}
+}
+
 type Resolver struct {
-	cloner Cloner
-	shorts map[string]string
-	cache  string
-	cwd    string
+	cloner     Cloner
+	downloader Downloader
+	shorts     map[string]string
+	cache      string
+	cwd        string
 }
 
 var commitHashRegex = regexp.MustCompile(`^[0-9a-f]{7,40}$`)
@@ -37,9 +44,10 @@ func isGitCommitHash(s string) bool {
 
 func NewResolver(shorts map[string]string, cache, cwd string, opts ...ResolverOption) *Resolver {
 	r := &Resolver{
-		shorts: shorts,
-		cache:  cache,
-		cwd:    cwd,
+		shorts:     shorts,
+		cache:      cache,
+		cwd:        cwd,
+		downloader: goGetterDownloader{},
 		cloner: ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
 			// Clone Repository to cache and set path to cache path
 			r, err := git.PlainClone(path, isBare, cfg)
@@ -139,6 +147,10 @@ func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProv
 }
 
 func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (path string, err error) {
+	if isGetterSource(remoteRef) {
+		return r.resolveGetter(remoteRef)
+	}
+
 	pkg, err := ParseRemote(remoteRef)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse path: %w", err)
@@ -189,6 +201,41 @@ func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (p
 	}
 
 	return path, nil
+}
+
+func (r *Resolver) resolveGetter(remoteRef string) (path string, err error) {
+	downloadDir := getterCacheDir(r.cache, remoteRef)
+
+	_, err = os.Stat(downloadDir)
+	switch {
+	case err == nil:
+		return downloadDir, nil
+	case !os.IsNotExist(err):
+		return "", fmt.Errorf("failed to check if source is cached: %w", err)
+	}
+
+	parentDir := filepath.Dir(downloadDir)
+	if err := os.MkdirAll(parentDir, 0o755); err != nil {
+		return "", fmt.Errorf("failed to create downloader cache: %w", err)
+	}
+
+	stagingDir, err := os.MkdirTemp(parentDir, ".download-*")
+	if err != nil {
+		return "", fmt.Errorf("failed to create downloader staging directory: %w", err)
+	}
+	defer func() {
+		_ = os.RemoveAll(stagingDir)
+	}()
+
+	if err := r.downloader.Download(stagingDir, remoteRef); err != nil {
+		return "", fmt.Errorf("failed to download source: %w", err)
+	}
+
+	if err := os.Rename(stagingDir, downloadDir); err != nil {
+		return "", fmt.Errorf("failed to cache downloaded source: %w", err)
+	}
+
+	return downloadDir, nil
 }
 
 func (r *Resolver) resolveAbsolute(arg string) (string, error) {

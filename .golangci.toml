@@ -43,6 +43,9 @@ default-signifies-exhaustive = true
 [linters.settings.goconst]
 min-len = 5
 min-occurrences = 5
+# Table-driven tests repeat the same fixture strings by design; extracting them
+# into constants makes the tables harder to read than the duplication does.
+ignore-tests = true
 
 [linters.settings.gocritic]
 enabled-checks = ['ruleguard']

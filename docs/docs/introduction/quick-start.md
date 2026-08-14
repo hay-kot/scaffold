@@ -100,13 +100,14 @@ Basic `scaffold.yml`:
 
 ```yaml
 questions:
-  - name: license
-    type: select
-    message: Select a license
-    options:
-      - MIT
-      - Apache 2.0
-      - GPL
+  - name: "license"
+    prompt:
+      message: "Select a license"
+      default: "MIT"
+      options:
+        - "MIT"
+        - "Apache-2.0"
+        - "GPL-3.0"
 ```
 
 For detailed information on creating scaffolds, see:

@@ -1,6 +1,6 @@
 module github.com/hay-kot/scaffold
 
-go 1.24.2
+go 1.24.5
 
 require (
 	github.com/bmatcuk/doublestar/v4 v4.10.0
@@ -19,7 +19,7 @@ require (
 	github.com/huandu/xstrings v1.5.0
 	github.com/psanford/memfs v0.0.0-20241019191636-4ef911798f9b
 	github.com/rs/zerolog v1.34.0
-	github.com/sahilm/fuzzy v0.1.1
+	github.com/sahilm/fuzzy v0.1.3
 	github.com/stretchr/testify v1.11.1
 	github.com/urfave/cli/v3 v3.7.0
 	gopkg.in/yaml.v3 v3.0.1

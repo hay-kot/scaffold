@@ -183,22 +183,19 @@ func (e *Engine) RegisterPartialsFS(rfs fs.FS, dirname string) error {
 			return fmt.Errorf("failed to read partial file %s: %w", path, err)
 		}
 
-		// Get the partial name by removing the file extension and prefix
-		name := path
+		name := strings.TrimPrefix(filepath.ToSlash(path), filepath.ToSlash(dirname)+"/")
 
-		// Remove file extension
-		if ext := filepath.Ext(name); ext != "" {
+		// Dotfiles like .gitkeep are all extension; trimming would leave an empty name.
+		if ext := filepath.Ext(name); ext != "" && ext != filepath.Base(name) {
 			name = strings.TrimSuffix(name, ext)
 		}
-
-		name = filepath.ToSlash(name)
 
 		return e.RegisterPartial(name, string(content))
 	})
 }
 
 func (e *Engine) RegisterPartial(name string, content string, opfns ...func(*opts)) error {
-	if !IsValidIdentifier(name) {
+	if !IsValidPartialName(name) {
 		return fmt.Errorf("invalid partial name: %s", name)
 	}
 
@@ -227,5 +224,22 @@ func IsValidIdentifier(s string) bool {
 			return false
 		}
 	}
+	return true
+}
+
+// IsValidPartialName reports whether name can be used as a partial key. Partials are
+// looked up by string, not parsed as identifiers, so any file name works and only
+// unusable path shapes are rejected.
+func IsValidPartialName(name string) bool {
+	if name == "" {
+		return false
+	}
+
+	for _, segment := range strings.Split(name, "/") {
+		if segment == "" || segment == "." || segment == ".." {
+			return false
+		}
+	}
+
 	return true
 }

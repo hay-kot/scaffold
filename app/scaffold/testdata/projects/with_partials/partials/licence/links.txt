@@ -1,0 +1,1 @@
+From My Nested Partial, {{ .Computed.Greeting }}

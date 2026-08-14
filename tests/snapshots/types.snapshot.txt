@@ -1,4 +1,12 @@
 scaffold-test-defaults:  (type=dir)
+	scaffold.txt:  (type=file)
+		root:  (type=engine.Vars)
+		        Project:  (type=string)
+		                value: scaffold-test-defaults
+		        langs:  (type=[]interface {})
+		                [0]:  (type=string)
+		                        value: Python
+		
 	types.txt:  (type=file)
 		Has Javascript
 		    false (type=bool)

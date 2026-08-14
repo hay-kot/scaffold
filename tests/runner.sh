@@ -10,6 +10,8 @@ crossmark="✗"
 # build main.go into temp path
 go build -o /tmp/scaffold-test ./main.go 
 
+failures=0
+
 echo "Running Script Tests"
 # run each test script in the tests directory
 for test_script in tests/*.test.sh; do
@@ -25,5 +27,11 @@ for test_script in tests/*.test.sh; do
         echo "  $crossmark $test_script"
         # Print each line of the output indented by 4 spaces
         echo "$output" | sed 's/^/      /'
+        failures=$((failures + 1))
     fi
 done
+
+if [ "$failures" -ne 0 ]; then
+    echo "$failures test(s) failed"
+    exit 1
+fi

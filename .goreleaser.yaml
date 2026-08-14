@@ -37,11 +37,36 @@ snapshot:
   version_template: "{{ incpatch .Version }}-next"
 
 changelog:
+  use: github
   sort: asc
   filters:
     exclude:
-      - "^docs:"
       - "^test:"
+      - "^Merge"
+  # Commits are assigned to the first group whose regexp matches, so the
+  # dependency and breaking-change groups have to come before the type groups
+  # that would otherwise swallow them (e.g. `fix(deps):` is not a bug fix).
+  groups:
+    - title: "🚨 Breaking changes"
+      regexp: '^.*?[[:word:]]+(\(.+\))?!:.+$'
+      order: 0
+    - title: "⬆️ Dependency updates"
+      regexp: '^.*?[[:word:]]+\(deps.*\)!?:.+$'
+      order: 5
+    - title: "✨ New features"
+      regexp: '^.*?feat(\(.+\))?!?:.+$'
+      order: 1
+    - title: "🐛 Bug fixes"
+      regexp: '^.*?fix(\(.+\))?!?:.+$'
+      order: 2
+    - title: "📚 Documentation"
+      regexp: '^.*?docs(\(.+\))?!?:.+$'
+      order: 3
+    - title: "🧰 Maintenance"
+      regexp: '^.*?(build|chore|ci|perf|refactor|style)(\(.+\))?!?:.+$'
+      order: 4
+    - title: "Other changes"
+      order: 999
 
 homebrew_casks:
   - name: scaffold

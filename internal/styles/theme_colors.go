@@ -1,9 +1,22 @@
 package styles
 
 import (
+	"os"
+	"sync"
+
+	"charm.land/lipgloss/v2"
 	catppuccingo "github.com/catppuccin/go"
-	"github.com/charmbracelet/lipgloss"
 )
+
+// hasDarkBackground reports whether the terminal has a dark background.
+//
+// Lip Gloss v2 removed AdaptiveColor, which picked its light or dark variant at
+// render time. A style must now be built with the answer already known. The
+// query puts the terminal in raw mode and waits for an OSC 11 answer, so ask at
+// most once, and only when a style is first built.
+var hasDarkBackground = sync.OnceValue(func() bool {
+	return lipgloss.HasDarkBackground(os.Stdin, os.Stdout)
+})
 
 var (
 	ThemeColorCharm = &ThemeColors{
@@ -52,47 +65,44 @@ type ThemeColors struct {
 	Warning     string
 	WarningDark string
 
-	compiled bool
-	base     lipgloss.Style
-	light    lipgloss.Style
-	warning  lipgloss.Style
+	once    sync.Once
+	base    lipgloss.Style
+	light   lipgloss.Style
+	warning lipgloss.Style
 }
 
 type RenderFunc func(string ...string) string
 
 func (t *ThemeColors) compile() {
-	if t.compiled {
-		return
-	}
+	t.once.Do(func() {
+		lightDark := lipgloss.LightDark(hasDarkBackground())
 
-	if t.BaseDark == "" {
-		t.BaseDark = t.Base
-	}
-	t.base = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{
-		Light: t.Base,
-		Dark:  t.BaseDark,
-	})
+		if t.BaseDark == "" {
+			t.BaseDark = t.Base
+		}
+		t.base = lipgloss.NewStyle().
+			Foreground(lightDark(lipgloss.Color(t.Base), lipgloss.Color(t.BaseDark)))
 
-	if t.LightDark == "" {
-		t.LightDark = t.Light
-	}
-	t.light = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{
-		Light: t.Light,
-		Dark:  t.LightDark,
-	})
+		if t.LightDark == "" {
+			t.LightDark = t.Light
+		}
+		t.light = lipgloss.NewStyle().
+			Foreground(lightDark(lipgloss.Color(t.Light), lipgloss.Color(t.LightDark)))
 
-	if t.WarningDark == "" {
-		t.WarningDark = t.Warning
-	}
-	t.warning = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{
-		Light: t.Warning,
-		Dark:  t.WarningDark,
+		if t.WarningDark == "" {
+			t.WarningDark = t.Warning
+		}
+		t.warning = lipgloss.NewStyle().
+			Foreground(lightDark(lipgloss.Color(t.Warning), lipgloss.Color(t.WarningDark)))
 	})
 }
 
+// Compile returns render functions for the theme colors. It hands back the
+// method values rather than the compiled styles so that the background query in
+// compile is deferred to the first render. Commands that print nothing styled,
+// such as --help, then never touch the terminal state.
 func (t *ThemeColors) Compile() (base RenderFunc, light RenderFunc, warning RenderFunc) {
-	t.compile()
-	return t.base.Render, t.light.Render, t.warning.Render
+	return t.BaseFn, t.LightFn, t.WarningFn
 }
 
 func (t *ThemeColors) Styles() (base lipgloss.Style, light lipgloss.Style, warning lipgloss.Style) {

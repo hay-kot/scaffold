@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/charmbracelet/huh"
+	"charm.land/huh/v2"
 	"github.com/hay-kot/scaffold/internal/styles"
 )
 

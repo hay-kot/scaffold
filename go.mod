@@ -1,6 +1,6 @@
 module github.com/hay-kot/scaffold
 
-go 1.25.0
+go 1.27.0
 
 require (
 	github.com/bmatcuk/doublestar/v4 v4.10.0
@@ -14,14 +14,14 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834
 	github.com/gertd/go-pluralize v0.2.1
 	github.com/go-git/go-git/v5 v5.19.2
-	github.com/go-sprout/sprout v1.0.3
+	github.com/go-sprout/sprout v1.1.1
 	github.com/hashicorp/go-version v1.9.0
 	github.com/huandu/xstrings v1.5.0
 	github.com/psanford/memfs v0.0.0-20241019191636-4ef911798f9b
 	github.com/rs/zerolog v1.35.1
 	github.com/sahilm/fuzzy v0.1.3
-	github.com/stretchr/testify v1.11.1
-	github.com/urfave/cli/v3 v3.10.1
+	github.com/stretchr/testify v1.12.1
+	github.com/urfave/cli/v3 v3.11.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

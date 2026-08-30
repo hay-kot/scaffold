@@ -21,7 +21,7 @@ require (
 	github.com/rs/zerolog v1.35.1
 	github.com/sahilm/fuzzy v0.1.3
 	github.com/stretchr/testify v1.11.1
-	github.com/urfave/cli/v3 v3.10.1
+	github.com/urfave/cli/v3 v3.11.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

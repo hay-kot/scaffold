@@ -172,24 +172,74 @@ func guardRenderPath(s *engine.Engine, vars any) filepathGuard {
 	}
 }
 
+// outputPath resolves the path a file is actually written to. Guards run against
+// the source path, which for a template scaffold still carries the "templates/"
+// prefix that RenderRWFS strips just before writing. Any guard that has to reason
+// about the destination rather than the source must go through this.
+func outputPath(args *RWFSArgs, path string) string {
+	if args.Project.NameTemplate == TemplateDirName {
+		return strings.TrimPrefix(path, TemplateDirName+"/")
+	}
+
+	return path
+}
+
 func guardNoClobber(args *RWFSArgs) filepathGuard {
 	if !args.Project.Options.NoClobber {
 		return guardNoOp
 	}
 
 	return func(outpath string, f fs.DirEntry) (string, error) {
-		wf, err := args.WriteFS.Open(outpath)
-
+		// Test the destination, not the source. Checking the untrimmed path made
+		// this guard a no-op for template scaffolds, which silently overwrote
+		// files the user had edited.
+		wf, err := args.WriteFS.Open(outputPath(args, outpath))
 		if err == nil {
 			_ = wf.Close()
-			if args.Project.Options.NoClobber {
-				log.Debug().Str("path", outpath).Msg("file exists and no-clobber is set to true")
-				return "", errFileExists
-			}
+			log.Debug().Str("path", outpath).Msg("file exists and no-clobber is set to true")
+			return "", errFileExists
 		}
 
 		return outpath, nil
 	}
+}
+
+// isSkip reports whether a guard error means "leave this file alone" rather than
+// "stop rendering". no-clobber is a per-file decision, so a collision must not
+// abandon the files that come after it.
+func isSkip(err error) bool {
+	return errors.Is(err, errSkipRender) ||
+		errors.Is(err, errSkipWrite) ||
+		errors.Is(err, errFileExists)
+}
+
+const (
+	dirPerm          fs.FileMode = 0o755
+	defaultFilePerm  fs.FileMode = 0o644
+	ownerWritePerm   fs.FileMode = 0o600
+	groupWorldWrites fs.FileMode = 0o022
+)
+
+// filePerm derives the mode for a generated file from its template. Scaffold used
+// to write everything as 0777, which made generated .env files executable and
+// world readable. Carrying the template's own bits keeps an executable
+// entrypoint.sh executable while a plain config file stays 0644.
+//
+// The source is normalized rather than copied: owner write is forced on because
+// an embedded FS reports 0444 and a read-only output file is useless, and group
+// and world write are cleared because no generated file needs them.
+func filePerm(d fs.DirEntry) fs.FileMode {
+	if d == nil {
+		return defaultFilePerm
+	}
+
+	info, err := d.Info()
+	if err != nil {
+		log.Debug().Err(err).Msg("failed to stat template file, using default permissions")
+		return defaultFilePerm
+	}
+
+	return (info.Mode().Perm() | ownerWritePerm) &^ groupWorldWrites
 }
 
 func guardDirectories(args *RWFSArgs) filepathGuard {
@@ -203,7 +253,7 @@ func guardDirectories(args *RWFSArgs) filepathGuard {
 		// because it is the "templates" directory
 		for _, s := range projectNames {
 			if outpath == s {
-				err := args.WriteFS.MkdirAll(outpath, os.ModePerm)
+				err := args.WriteFS.MkdirAll(outpath, dirPerm)
 				if err != nil {
 					if !os.IsExist(err) {
 						log.Debug().Err(err).Str("path", outpath).Msg("failed to create directory")
@@ -365,7 +415,7 @@ func processFile(eng *engine.Engine, args *RWFSArgs, pf processFileArgs) error {
 		return nil
 	}
 
-	err = args.WriteFS.MkdirAll(filepath.Dir(pf.outpath), os.ModePerm)
+	err = args.WriteFS.MkdirAll(filepath.Dir(pf.outpath), dirPerm)
 	if err != nil {
 		if !os.IsExist(err) {
 			_ = f.Close()
@@ -373,7 +423,7 @@ func processFile(eng *engine.Engine, args *RWFSArgs, pf processFileArgs) error {
 		}
 	}
 
-	err = args.WriteFS.WriteFile(pf.outpath, buff.Bytes(), os.ModePerm)
+	err = args.WriteFS.WriteFile(pf.outpath, buff.Bytes(), filePerm(pf.d))
 	if err != nil {
 		_ = f.Close()
 		return err
@@ -398,7 +448,7 @@ func expandEachDir(eng *engine.Engine, args *RWFSArgs, guards []filepathGuard, s
 		for i, guard := range guards {
 			outpath, err = guard(outpath, d)
 			if err != nil {
-				if errors.Is(err, errSkipRender) || errors.Is(err, errSkipWrite) {
+				if isSkip(err) {
 					return nil
 				}
 				log.Debug().Err(err).Str("outpath", outpath).Int("guard", i).Msg("guard failed")
@@ -406,9 +456,7 @@ func expandEachDir(eng *engine.Engine, args *RWFSArgs, guards []filepathGuard, s
 			}
 		}
 
-		if args.Project.NameTemplate == TemplateDirName {
-			outpath = strings.TrimPrefix(outpath, TemplateDirName+"/")
-		}
+		outpath = outputPath(args, outpath)
 
 		return processFile(eng, args, processFileArgs{
 			sourcePath: path,
@@ -573,7 +621,7 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 					for gi, guard := range iterGuards {
 						outpath, err = guard(outpath, d)
 						if err != nil {
-							if errors.Is(err, errSkipRender) || errors.Is(err, errSkipWrite) {
+							if isSkip(err) {
 								goto nextFileItem
 							}
 							log.Debug().Err(err).Str("outpath", outpath).Int("guard", gi).Msg("guard failed")
@@ -581,9 +629,7 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 						}
 					}
 
-					if args.Project.NameTemplate == TemplateDirName {
-						outpath = strings.TrimPrefix(outpath, TemplateDirName+"/")
-					}
+					outpath = outputPath(args, outpath)
 
 					if err := processFile(eng, args, processFileArgs{
 						sourcePath: path,
@@ -621,23 +667,22 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 				if err != nil {
 					return err
 				}
+				defer rf.Close() //nolint:errcheck
 
 				outpath := path
 				for _, guard := range pathGuards {
 					outpath, err = guard(outpath, d)
 					if err != nil {
-						if errors.Is(err, errFileExists) {
+						if isSkip(err) {
 							return nil
 						}
 						return err
 					}
 				}
 
-				if args.Project.NameTemplate == TemplateDirName {
-					outpath = strings.TrimPrefix(outpath, TemplateDirName+"/")
-				}
+				outpath = outputPath(args, outpath)
 
-				err = args.WriteFS.MkdirAll(filepath.Dir(outpath), os.ModePerm)
+				err = args.WriteFS.MkdirAll(filepath.Dir(outpath), dirPerm)
 				if err != nil {
 					return err
 				}
@@ -647,7 +692,7 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 					return err
 				}
 
-				err = args.WriteFS.WriteFile(outpath, bits, os.ModePerm)
+				err = args.WriteFS.WriteFile(outpath, bits, filePerm(d))
 				if err != nil {
 					return err
 				}
@@ -661,7 +706,7 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 		for i, guard := range guards {
 			outpath, err = guard(outpath, d)
 			if err != nil {
-				if errors.Is(err, errSkipRender) || errors.Is(err, errSkipWrite) {
+				if isSkip(err) {
 					return nil
 				}
 
@@ -672,9 +717,7 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 			log.Debug().Str("outpath", outpath).Int("guard", i).Msg("guard")
 		}
 
-		if args.Project.NameTemplate == TemplateDirName {
-			outpath = strings.TrimPrefix(outpath, TemplateDirName+"/")
-		}
+		outpath = outputPath(args, outpath)
 
 		return processFile(eng, args, processFileArgs{
 			sourcePath: path,
@@ -695,30 +738,46 @@ func RenderRWFS(eng *engine.Engine, args *RWFSArgs, vars engine.Vars) error {
 			return err
 		}
 
-		f, err := args.WriteFS.Open(path)
-		if err != nil {
-			return err
-		}
-
-		out, err := eng.TmplString(injection.Template, vars)
-		if err != nil {
-			return err
-		}
-
-		if out == "" || strings.TrimSpace(out) == "" {
-			continue
-		}
-
-		outbytes, err := Inject(f, out, injection.At, injection.Mode)
-		if err != nil {
-			return err
-		}
-
-		err = args.WriteFS.WriteFile(path, outbytes, os.ModePerm)
-		if err != nil {
+		if err := injectInto(eng, args, injection, path, vars); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+// injectInto applies a single injection to an existing file. It is split out of
+// RenderRWFS so the target file handle closes on every path, including the early
+// return for an empty template.
+func injectInto(eng *engine.Engine, args *RWFSArgs, injection Injectable, path string, vars engine.Vars) error {
+	f, err := args.WriteFS.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close() //nolint:errcheck
+
+	out, err := eng.TmplString(injection.Template, vars)
+	if err != nil {
+		return err
+	}
+
+	if strings.TrimSpace(out) == "" {
+		return nil
+	}
+
+	// The target already exists, so keep the mode it has. Injection edits a file
+	// in place and has no business changing who can read it.
+	perm := defaultFilePerm
+	if info, err := f.Stat(); err == nil {
+		perm = info.Mode().Perm()
+	} else {
+		log.Debug().Err(err).Str("path", path).Msg("failed to stat injection target, using default permissions")
+	}
+
+	outbytes, err := Inject(f, out, injection.At, injection.Mode)
+	if err != nil {
+		return err
+	}
+
+	return args.WriteFS.WriteFile(path, outbytes, perm)
 }

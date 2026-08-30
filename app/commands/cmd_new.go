@@ -145,6 +145,7 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 		outputfs:    outfs,
 		options: scaffold.Options{
 			NoClobber: !flags.Overwrite,
+			OutputDir: flags.OutputDir,
 		},
 	})
 	if err != nil {

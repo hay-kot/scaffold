@@ -47,6 +47,7 @@ func New() *Engine {
 
 	// Template Utilities
 	fm["wraptmpl"] = wraptmpl
+	fm["portBlock"] = portBlock
 
 	// Pluralize
 	client := pluralize.NewClient()

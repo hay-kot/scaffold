@@ -4,7 +4,10 @@ export interface Schema {
    * */
   questions: Question[];
   /**
-   * computed is a map of values that will be computed based on the answers provided by the user
+   * computed is a map of values that will be computed based on the answers provided by the user.
+   *
+   * Entries resolve in declaration order and each one can reference the entries
+   * above it through .Computed, so a scaffold can derive several values from one seed.
    * */
   computed?: {
     [key: string]: string;

@@ -171,6 +171,22 @@ You can reference computed variables like so
 Computed variables are generally of type string however, there are special cases for boolean and integer types. Scaffold will attempt to parse the computed string value into an integer, and then a boolean. If any are successful, that value will be used in-place of the string.
 :::
 
+### Order
+
+Computed variables resolve in the order they are declared. Each entry can
+reference the entries above it, which lets a scaffold derive a family of values
+from one seed instead of repeating the seed expression:
+
+```yaml
+computed:
+  base: "{{ portBlock .Ctx.OutputDirBase }}"
+  api: "{{ add .Computed.base 1 }}"
+  web: "{{ add .Computed.base 2 }}"
+```
+
+Referencing an entry declared later is not an error, it renders as `<no value>`.
+Order the declarations so each one comes after what it depends on.
+
 ## `rewrites`
 
 Rewrites working with the [template scaffolds](../introduction/terminology.md) to perform a path rewrite to another directory. The following example defines a rewrite that will render the `templates/defaults.yaml` file to the <span v-pre>`roles/{{ .ProjectKebab }}/defaults/main.yaml`</span> path.
@@ -196,6 +212,19 @@ skip:
   - "*.goreleaser.yaml"
   - "**/*.gotmpl"
 ```
+
+## Overwriting existing files
+
+By default `scaffold new` will not overwrite a file that already exists. A file
+that is present in the output is left alone and the rest of the scaffold still
+renders, so re-running a scaffold fills in what is missing without touching what
+you have edited.
+
+Pass `--overwrite` to replace existing files instead.
+
+This makes a scaffold safe to re-run in a project, which is what you want for
+generated configuration that a human may adjust afterwards. Generate a value such
+as a port block once, then edit it in place, and later runs keep the edit.
 
 ## `inject`
 

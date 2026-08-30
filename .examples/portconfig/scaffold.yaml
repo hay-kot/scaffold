@@ -1,0 +1,35 @@
+metadata:
+  minimum_version: "0.10.0"
+
+messages:
+  post: |
+    # Ports allocated
+
+    Stack `{{ .Scaffold.stack }}` uses block **{{ .Computed.base }}-{{ add .Computed.base 15 }}**.
+
+    Run `docker compose up` to start it. If the block clashes with another
+    checkout, edit `PORT_BASE` in `.env` and re-run. Scaffold will not overwrite
+    the file once it exists.
+
+questions:
+  - name: stack
+    prompt:
+      message: "Stack name"
+      description: "Seeds the port block and names the docker stack. Defaults to the output directory."
+      default: "{{ .Ctx.OutputDirBase }}"
+
+  - name: services
+    prompt:
+      message: "Services"
+      description: "One published port is allocated per service, in order"
+      loop: true
+
+each:
+  - services
+
+computed:
+  # portBlock maps the seed to a block-aligned base port below the ephemeral
+  # range. Same checkout, same ports, with no state to keep. Later entries can
+  # reference earlier ones, so the block is derived once.
+  base: '{{ portBlock .Scaffold.stack }}'
+  admin: '{{ add .Computed.base 15 }}'

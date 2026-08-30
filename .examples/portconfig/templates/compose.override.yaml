@@ -1,0 +1,7 @@
+# Published ports only. The base compose file owns everything else.
+services:
+{{- range $i, $s := .Scaffold.services }}
+  {{ $s }}:
+    ports:
+      - "{{ add $.Computed.base (add $i 1) }}:{{ add $.Computed.base (add $i 1) }}"
+{{- end }}

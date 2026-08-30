@@ -33,6 +33,8 @@ docs/docs/public/schema.scaffoldrc.json
 docs/docs/public/schema.json
 
 .env
+# .env templates in the examples are scaffold source, not local secrets
+!.examples/**/templates/.env
 .cache
 
 .DS_Store

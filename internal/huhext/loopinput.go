@@ -5,9 +5,9 @@ import (
 	"io"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh"
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/huh/v2"
 )
 
 var _ huh.Field = &LoopedInput{}
@@ -122,8 +122,8 @@ func (l *LoopedInput) description() string {
 }
 
 // Update implements huh.Field.
-func (l *LoopedInput) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if msg, ok := msg.(tea.KeyMsg); ok {
+func (l *LoopedInput) Update(msg tea.Msg) (huh.Model, tea.Cmd) {
+	if msg, ok := msg.(tea.KeyPressMsg); ok {
 		switch msg.String() {
 		case "up": // pop that last value from the slice and update the input
 			lastval := ""
@@ -165,12 +165,6 @@ func (l *LoopedInput) View() string {
 	return l.input.View()
 }
 
-// WithAccessible implements huh.Field.
-func (l *LoopedInput) WithAccessible(b bool) huh.Field {
-	l.input.WithAccessible(b) //nolint:staticcheck
-	return l
-}
-
 // WithHeight implements huh.Field.
 func (l *LoopedInput) WithHeight(h int) huh.Field {
 	l.input.WithHeight(h)
@@ -190,7 +184,7 @@ func (l *LoopedInput) WithPosition(v huh.FieldPosition) huh.Field {
 }
 
 // WithTheme implements huh.Field.
-func (l *LoopedInput) WithTheme(v *huh.Theme) huh.Field {
+func (l *LoopedInput) WithTheme(v huh.Theme) huh.Field {
 	l.input.WithTheme(v)
 	return l
 }

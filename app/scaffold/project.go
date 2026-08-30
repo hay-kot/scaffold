@@ -7,7 +7,7 @@ import (
 	"maps"
 	"strconv"
 
-	"github.com/charmbracelet/huh"
+	"charm.land/huh/v2"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/rs/zerolog"
@@ -101,7 +101,7 @@ func (p *Project) validate() (str string, err error) {
 	return "", fmt.Errorf("{{ .Project }} directory does not exist")
 }
 
-func (p *Project) AskQuestions(def map[string]any, e *engine.Engine, theme *huh.Theme) (map[string]any, error) {
+func (p *Project) AskQuestions(def map[string]any, e *engine.Engine, theme huh.Theme) (map[string]any, error) {
 	projectMode := p.NameTemplate != TemplateDirName
 
 	if projectMode {

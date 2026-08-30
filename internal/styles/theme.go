@@ -3,8 +3,8 @@ package styles
 import (
 	"slices"
 
-	"github.com/charmbracelet/huh"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/huh/v2"
+	"charm.land/lipgloss/v2"
 )
 
 type HuhTheme string
@@ -41,53 +41,55 @@ func SetGlobalStyles(theme HuhTheme) {
 }
 
 // Theme returns a new theme based on the given HuhTheme.
-func Theme(theme HuhTheme) *huh.Theme {
+func Theme(theme HuhTheme) huh.Theme {
 	switch theme {
 	case HuhThemeCharm:
 		Base, Light, Warning = ThemeColorCharm.Compile()
 
-		return huh.ThemeCharm()
+		return huh.ThemeFunc(huh.ThemeCharm)
 	case HuhThemeDracula:
 		Base, Light, Warning = ThemeColorDracula.Compile()
 
-		return huh.ThemeDracula()
+		return huh.ThemeFunc(huh.ThemeDracula)
 	case HuhThemeBase16:
 		Base, Light, Warning = ThemeColorsBase16.Compile()
 
-		return huh.ThemeBase16()
+		return huh.ThemeFunc(huh.ThemeBase16)
 	case HuhThemeCatppuccin:
 		Base, Light, Warning = ThemeColorsCatppuccin.Compile()
 
-		return huh.ThemeCatppuccin()
+		return huh.ThemeFunc(huh.ThemeCatppuccin)
 	case HuhThemeTokyoNight:
 		Base, Light, Warning = ThemeColorsTokyoNight.Compile()
 
-		return ThemeTokyoNight()
+		return huh.ThemeFunc(ThemeTokyoNight)
 	default:
 		Base, Light, Warning = ThemeColorsScaffold.Compile()
 
-		return ThemeScaffold()
+		return huh.ThemeFunc(ThemeScaffold)
 	}
 }
 
 // ThemeScaffold returns a new theme based on the Charm color scheme.
-func ThemeScaffold() *huh.Theme {
-	t := huh.ThemeBase()
+func ThemeScaffold(isDark bool) *huh.Styles {
+	t := huh.ThemeBase(isDark)
+	lightDark := lipgloss.LightDark(isDark)
 
 	var (
-		normalFg  = lipgloss.AdaptiveColor{Light: "235", Dark: "252"}
-		primary   = lipgloss.AdaptiveColor{Light: ThemeColorsScaffold.Base, Dark: ThemeColorsScaffold.BaseDark}
-		cream     = lipgloss.AdaptiveColor{Light: "#FFFDF5", Dark: "#FFFDF5"}
+		normalFg  = lightDark(lipgloss.Color("235"), lipgloss.Color("252"))
+		primary   = lightDark(lipgloss.Color(ThemeColorsScaffold.Base), lipgloss.Color(ThemeColorsScaffold.BaseDark))
+		cream     = lipgloss.Color("#FFFDF5")
 		secondary = lipgloss.Color(ThemeColorsScaffold.Light)
-		green     = lipgloss.AdaptiveColor{Light: "#02BA84", Dark: "#02BF87"}
-		red       = lipgloss.AdaptiveColor{Light: "#FF4672", Dark: "#ED567A"}
+		green     = lightDark(lipgloss.Color("#02BA84"), lipgloss.Color("#02BF87"))
+		red       = lightDark(lipgloss.Color("#FF4672"), lipgloss.Color("#ED567A"))
+		subtle    = lightDark(lipgloss.Color(""), lipgloss.Color("243"))
 	)
 
 	t.Focused.Base = t.Focused.Base.BorderForeground(lipgloss.Color("238"))
 	t.Focused.Title = t.Focused.Title.Foreground(primary).Bold(true)
 	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(primary).Bold(true).MarginBottom(1)
 	// t.Focused.Directory = t.Focused.Directory.Foreground(secondary)
-	t.Focused.Description = t.Focused.Description.Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"})
+	t.Focused.Description = t.Focused.Description.Foreground(subtle)
 	t.Focused.ErrorIndicator = t.Focused.ErrorIndicator.Foreground(red)
 	t.Focused.ErrorMessage = t.Focused.ErrorMessage.Foreground(red)
 	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(secondary)
@@ -96,15 +98,20 @@ func ThemeScaffold() *huh.Theme {
 	t.Focused.Option = t.Focused.Option.Foreground(normalFg)
 	t.Focused.MultiSelectSelector = t.Focused.MultiSelectSelector.Foreground(secondary)
 	t.Focused.SelectedOption = t.Focused.SelectedOption.Foreground(green)
-	t.Focused.SelectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "#02CF92", Dark: "#02A877"}).SetString("✓ ")
-	t.Focused.UnselectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "243"}).SetString("• ")
+	t.Focused.SelectedPrefix = lipgloss.NewStyle().
+		Foreground(lightDark(lipgloss.Color("#02CF92"), lipgloss.Color("#02A877"))).
+		SetString("✓ ")
+	t.Focused.UnselectedPrefix = lipgloss.NewStyle().Foreground(subtle).SetString("• ")
 	t.Focused.UnselectedOption = t.Focused.UnselectedOption.Foreground(normalFg)
 	t.Focused.FocusedButton = t.Focused.FocusedButton.Foreground(cream).Background(secondary)
 	t.Focused.Next = t.Focused.FocusedButton
-	t.Focused.BlurredButton = t.Focused.BlurredButton.Foreground(normalFg).Background(lipgloss.AdaptiveColor{Light: "252", Dark: "237"})
+	t.Focused.BlurredButton = t.Focused.BlurredButton.
+		Foreground(normalFg).
+		Background(lightDark(lipgloss.Color("252"), lipgloss.Color("237")))
 
 	t.Focused.TextInput.Cursor = t.Focused.TextInput.Cursor.Foreground(green)
-	t.Focused.TextInput.Placeholder = t.Focused.TextInput.Placeholder.Foreground(lipgloss.AdaptiveColor{Light: "248", Dark: "238"})
+	t.Focused.TextInput.Placeholder = t.Focused.TextInput.Placeholder.
+		Foreground(lightDark(lipgloss.Color("248"), lipgloss.Color("238")))
 	t.Focused.TextInput.Prompt = t.Focused.TextInput.Prompt.Foreground(secondary)
 
 	t.Blurred = t.Focused
@@ -116,24 +123,26 @@ func ThemeScaffold() *huh.Theme {
 }
 
 // ThemeTokyoNight returns a new theme based on the Tokyo Night color scheme.
-func ThemeTokyoNight() *huh.Theme {
-	t := huh.ThemeBase()
+func ThemeTokyoNight(isDark bool) *huh.Styles {
+	t := huh.ThemeBase(isDark)
+	lightDark := lipgloss.LightDark(isDark)
 
 	var (
-		normalFg   = lipgloss.AdaptiveColor{Light: "235", Dark: "#c0caf5"}
-		primary    = lipgloss.AdaptiveColor{Light: ThemeColorsTokyoNight.Base, Dark: ThemeColorsTokyoNight.BaseDark}
+		normalFg   = lightDark(lipgloss.Color("235"), lipgloss.Color("#c0caf5"))
+		primary    = lightDark(lipgloss.Color(ThemeColorsTokyoNight.Base), lipgloss.Color(ThemeColorsTokyoNight.BaseDark))
 		background = lipgloss.Color("#1a1b26")
 		secondary  = lipgloss.Color(ThemeColorsTokyoNight.Light)
-		blue       = lipgloss.AdaptiveColor{Light: "#7aa2f7", Dark: "#7aa2f7"}
-		green      = lipgloss.AdaptiveColor{Light: "#9ece6a", Dark: "#9ece6a"}
-		red        = lipgloss.AdaptiveColor{Light: "#f7768e", Dark: "#f7768e"}
-		cyan       = lipgloss.AdaptiveColor{Light: "#7dcfff", Dark: "#7dcfff"}
+		blue       = lipgloss.Color("#7aa2f7")
+		green      = lipgloss.Color("#9ece6a")
+		red        = lipgloss.Color("#f7768e")
+		cyan       = lipgloss.Color("#7dcfff")
+		subtle     = lightDark(lipgloss.Color(""), lipgloss.Color("#565f89"))
 	)
 
 	t.Focused.Base = t.Focused.Base.BorderForeground(lipgloss.Color("#414868"))
 	t.Focused.Title = t.Focused.Title.Foreground(primary).Bold(true)
 	t.Focused.NoteTitle = t.Focused.NoteTitle.Foreground(primary).Bold(true).MarginBottom(1)
-	t.Focused.Description = t.Focused.Description.Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "#565f89"})
+	t.Focused.Description = t.Focused.Description.Foreground(subtle)
 	t.Focused.ErrorIndicator = t.Focused.ErrorIndicator.Foreground(red)
 	t.Focused.ErrorMessage = t.Focused.ErrorMessage.Foreground(red)
 	t.Focused.SelectSelector = t.Focused.SelectSelector.Foreground(secondary)
@@ -141,14 +150,17 @@ func ThemeTokyoNight() *huh.Theme {
 	t.Focused.MultiSelectSelector = t.Focused.MultiSelectSelector.Foreground(secondary)
 	t.Focused.SelectedOption = t.Focused.SelectedOption.Foreground(cyan)
 	t.Focused.SelectedPrefix = lipgloss.NewStyle().Foreground(green).SetString("✓ ")
-	t.Focused.UnselectedPrefix = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{Light: "", Dark: "#565f89"}).SetString("• ")
+	t.Focused.UnselectedPrefix = lipgloss.NewStyle().Foreground(subtle).SetString("• ")
 	t.Focused.UnselectedOption = t.Focused.UnselectedOption.Foreground(normalFg)
 	t.Focused.FocusedButton = t.Focused.FocusedButton.Foreground(background).Background(blue)
 	t.Focused.Next = t.Focused.FocusedButton
-	t.Focused.BlurredButton = t.Focused.BlurredButton.Foreground(normalFg).Background(lipgloss.AdaptiveColor{Light: "252", Dark: "#292e42"})
+	t.Focused.BlurredButton = t.Focused.BlurredButton.
+		Foreground(normalFg).
+		Background(lightDark(lipgloss.Color("252"), lipgloss.Color("#292e42")))
 
 	t.Focused.TextInput.Cursor = t.Focused.TextInput.Cursor.Foreground(cyan)
-	t.Focused.TextInput.Placeholder = t.Focused.TextInput.Placeholder.Foreground(lipgloss.AdaptiveColor{Light: "248", Dark: "#414868"})
+	t.Focused.TextInput.Placeholder = t.Focused.TextInput.Placeholder.
+		Foreground(lightDark(lipgloss.Color("248"), lipgloss.Color("#414868")))
 	t.Focused.TextInput.Prompt = t.Focused.TextInput.Prompt.Foreground(secondary)
 
 	t.Blurred = t.Focused

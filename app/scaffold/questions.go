@@ -1,7 +1,7 @@
 package scaffold
 
 import (
-	"github.com/charmbracelet/huh"
+	"charm.land/huh/v2"
 	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/internal/huhext"
 	"github.com/hay-kot/scaffold/internal/validators"

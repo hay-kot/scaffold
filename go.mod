@@ -15,7 +15,7 @@ require (
 	github.com/go-git/go-git/v5 v5.19.2
 	github.com/go-sprout/sprout v1.1.1
 	github.com/hashicorp/go-version v1.9.0
-	github.com/huandu/xstrings v1.5.0
+	github.com/huandu/xstrings v1.6.1
 	github.com/psanford/memfs v0.0.0-20241019191636-4ef911798f9b
 	github.com/rs/zerolog v1.35.1
 	github.com/sahilm/fuzzy v0.1.3

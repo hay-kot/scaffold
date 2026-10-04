@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/hay-kot/scaffold/app/scaffold/pkgs/pkgurl"
 	"github.com/hay-kot/scaffold/internal/styles"
 	"github.com/rs/zerolog"
 	"gopkg.in/yaml.v3"
@@ -111,15 +112,11 @@ func (rc *ScaffoldRC) Validate() error {
 	}
 
 	for k, v := range rc.Aliases {
-		// Aliases must be absolute path or relative to ~ or a URL
-		_, err := url.ParseRequestURI(v)
-		if err != nil {
-			if !filepath.IsAbs(v) && !strings.HasPrefix(v, "~") {
-				errs = append(errs, RCValidationError{
-					Key:   k,
-					Cause: fmt.Errorf("invalid alias path: %w", err),
-				})
-			}
+		if !pkgurl.IsRemoteEndpoint(v) && !filepath.IsAbs(v) && !strings.HasPrefix(v, "~") {
+			errs = append(errs, RCValidationError{
+				Key:   k,
+				Cause: fmt.Errorf("invalid alias path %q: must be a URL, an SSH git URL, an absolute path, or start with ~", v),
+			})
 		}
 	}
 

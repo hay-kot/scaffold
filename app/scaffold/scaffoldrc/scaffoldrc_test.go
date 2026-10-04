@@ -26,6 +26,10 @@ shorts:
     gitea: https://gitea.com
 aliases:
     cli: ~/app/cli
+    abs: /app/cli
+    https: https://github.com/org/scaffold-template
+    ssh: git@github.com:org/scaffold-template
+    ssh-scheme: ssh://git@github.com/org/scaffold-template
 `)
 
 	tests := []struct {

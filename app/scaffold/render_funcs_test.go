@@ -1,9 +1,12 @@
 package scaffold
 
 import (
+	"io/fs"
 	"testing"
+	"testing/fstest"
 
 	"github.com/hay-kot/scaffold/app/core/engine"
+	"github.com/hay-kot/scaffold/app/core/rwfs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
@@ -241,3 +244,331 @@ func Test_isEachVar(t *testing.T) {
 	_, ok = isEachVar(configs, "notfound")
 	assert.False(t, ok)
 }
+
+func Test_ResolveFeatureVars(t *testing.T) {
+	t.Run("nil vars", func(t *testing.T) {
+		got := ResolveFeatureVars(nil)
+		require.NotNil(t, got)
+		require.NotNil(t, got["Scaffold"])
+	})
+
+	t.Run("unwraps Scaffold namespace into root scope", func(t *testing.T) {
+		vars := engine.Vars{
+			"Project": "test-project",
+			"Scaffold": engine.Vars{
+				"registry": "local",
+				"builder":  "buildkit",
+				"enabled":  true,
+				"count":    5,
+			},
+			"Computed": map[string]any{
+				"engine_type": "dockerd",
+			},
+		}
+
+		resolved := ResolveFeatureVars(vars)
+
+		// Bare variables available at root scope
+		assert.Equal(t, "local", resolved["registry"])
+		assert.Equal(t, "buildkit", resolved["builder"])
+		assert.Equal(t, true, resolved["enabled"])
+		assert.Equal(t, 5, resolved["count"])
+
+		// Namespaced variables available under .Scaffold
+		scaffoldMap, ok := resolved["Scaffold"].(engine.Vars)
+		require.True(t, ok)
+		assert.Equal(t, "local", scaffoldMap["registry"])
+		assert.Equal(t, "buildkit", scaffoldMap["builder"])
+		assert.Equal(t, true, scaffoldMap["enabled"])
+		assert.Equal(t, 5, scaffoldMap["count"])
+
+		// Root scope preserved
+		assert.Equal(t, "test-project", resolved["Project"])
+		assert.NotNil(t, resolved["Computed"])
+	})
+
+	t.Run("resolves bare root variables into Scaffold namespace", func(t *testing.T) {
+		vars := engine.Vars{
+			"registry": "local",
+			"builder":  "buildkit",
+			"enabled":  false,
+		}
+
+		resolved := ResolveFeatureVars(vars)
+
+		// Bare variables available at root scope
+		assert.Equal(t, "local", resolved["registry"])
+		assert.Equal(t, "buildkit", resolved["builder"])
+		assert.Equal(t, false, resolved["enabled"])
+
+		// Resolved into .Scaffold
+		scaffoldMap, ok := resolved["Scaffold"].(engine.Vars)
+		require.True(t, ok)
+		assert.Equal(t, "local", scaffoldMap["registry"])
+		assert.Equal(t, "buildkit", scaffoldMap["builder"])
+		assert.Equal(t, false, scaffoldMap["enabled"])
+	})
+
+	t.Run("resolves flat dotted Scaffold keys", func(t *testing.T) {
+		vars := engine.Vars{
+			"Scaffold.registry": "local",
+			"Scaffold.builder":  "buildkit",
+		}
+
+		resolved := ResolveFeatureVars(vars)
+
+		assert.Equal(t, "local", resolved["registry"])
+		assert.Equal(t, "buildkit", resolved["builder"])
+
+		scaffoldMap, ok := resolved["Scaffold"].(engine.Vars)
+		require.True(t, ok)
+		assert.Equal(t, "local", scaffoldMap["registry"])
+		assert.Equal(t, "buildkit", scaffoldMap["builder"])
+	})
+
+	t.Run("preserves reserved root variables from being overwritten", func(t *testing.T) {
+		computedMap := map[string]any{"type": "lima"}
+		eachMap := map[string]any{"Item": "svc", "Index": 0}
+
+		vars := engine.Vars{
+			"Project":  "custom-app",
+			"Computed": computedMap,
+			"Each":     eachMap,
+			"Scaffold": engine.Vars{
+				"feature": "active",
+			},
+		}
+
+		resolved := ResolveFeatureVars(vars)
+
+		assert.Equal(t, computedMap, resolved["Computed"])
+		assert.Equal(t, eachMap, resolved["Each"])
+		assert.Equal(t, "custom-app", resolved["Project"])
+		assert.Equal(t, "active", resolved["feature"])
+	})
+}
+
+func Test_guardFeatureFlag_ScaffoldPrefixAndBareIdentical(t *testing.T) {
+	eng := engine.New()
+
+	testCases := []struct {
+		name          string
+		vars          engine.Vars
+		prefixedValue string
+		bareValue     string
+		file          string
+		pattern       string
+		shouldInclude bool
+	}{
+		{
+			name: "equality string match true",
+			vars: engine.Vars{
+				"Scaffold": engine.Vars{"registry": "local"},
+			},
+			prefixedValue: `{{ eq .Scaffold.registry "local" }}`,
+			bareValue:     `{{ eq .registry "local" }}`,
+			file:          "nested/registry-setup.yaml",
+			pattern:       "**/registry*/**",
+			shouldInclude: true,
+		},
+		{
+			name: "equality string match false",
+			vars: engine.Vars{
+				"Scaffold": engine.Vars{"registry": "remote"},
+			},
+			prefixedValue: `{{ eq .Scaffold.registry "local" }}`,
+			bareValue:     `{{ eq .registry "local" }}`,
+			file:          "nested/registry-setup.yaml",
+			pattern:       "**/registry*/**",
+			shouldInclude: false,
+		},
+		{
+			name: "bare vars input equality string match true",
+			vars: engine.Vars{
+				"registry": "local",
+			},
+			prefixedValue: `{{ eq .Scaffold.registry "local" }}`,
+			bareValue:     `{{ eq .registry "local" }}`,
+			file:          "nested/registry-setup.yaml",
+			pattern:       "**/registry*/**",
+			shouldInclude: true,
+		},
+		{
+			name: "boolean flag true",
+			vars: engine.Vars{
+				"Scaffold": engine.Vars{"use_docker": true},
+			},
+			prefixedValue: `{{ .Scaffold.use_docker }}`,
+			bareValue:     `{{ .use_docker }}`,
+			file:          "docker/Dockerfile",
+			pattern:       "docker/**",
+			shouldInclude: true,
+		},
+		{
+			name: "boolean flag false",
+			vars: engine.Vars{
+				"Scaffold": engine.Vars{"use_docker": false},
+			},
+			prefixedValue: `{{ .Scaffold.use_docker }}`,
+			bareValue:     `{{ .use_docker }}`,
+			file:          "docker/Dockerfile",
+			pattern:       "docker/**",
+			shouldInclude: false,
+		},
+		{
+			name: "hasPrefix expression",
+			vars: engine.Vars{
+				"Scaffold": engine.Vars{"engine": "dockerd / compose"},
+			},
+			prefixedValue: `{{ hasPrefix "dockerd" .Scaffold.engine }}`,
+			bareValue:     `{{ hasPrefix "dockerd" .engine }}`,
+			file:          "compose/docker-compose.yaml",
+			pattern:       "compose/**",
+			shouldInclude: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Test with prefixed feature expression
+			prefixedProject := &Project{
+				Conf: &ProjectScaffoldFile{
+					Features: []Feature{
+						{
+							Value: tc.prefixedValue,
+							Globs: []string{tc.pattern},
+						},
+					},
+				},
+			}
+			prefixedArgs := &RWFSArgs{Project: prefixedProject}
+			prefixedGuard := guardFeatureFlag(eng, prefixedArgs, tc.vars)
+
+			prefixedPath, prefixedErr := prefixedGuard(tc.file, nil)
+
+			// Test with bare feature expression
+			bareProject := &Project{
+				Conf: &ProjectScaffoldFile{
+					Features: []Feature{
+						{
+							Value: tc.bareValue,
+							Globs: []string{tc.pattern},
+						},
+					},
+				},
+			}
+			bareArgs := &RWFSArgs{Project: bareProject}
+			bareGuard := guardFeatureFlag(eng, bareArgs, tc.vars)
+
+			barePath, bareErr := bareGuard(tc.file, nil)
+
+			// Both MUST evaluate identically
+			assert.Equal(t, prefixedPath, barePath, "path results must match")
+			assert.Equal(t, prefixedErr, bareErr, "error results must match")
+
+			if tc.shouldInclude {
+				assert.NoError(t, prefixedErr)
+				assert.Equal(t, tc.file, prefixedPath)
+			} else {
+				assert.ErrorIs(t, prefixedErr, errSkipRender)
+			}
+		})
+	}
+}
+
+func Test_RenderRWFS_FeatureFlagIdenticalEvaluation(t *testing.T) {
+	eng := engine.New()
+
+	scaffoldFiles := fstest.MapFS{
+		"templates/common.txt":             &fstest.MapFile{Data: []byte("common content")},
+		"templates/extra/registry-app.txt": &fstest.MapFile{Data: []byte("registry app content")},
+	}
+
+	tests := []struct {
+		name          string
+		vars          engine.Vars
+		shouldInclude bool
+	}{
+		{
+			name: "registry is local - feature enabled",
+			vars: engine.Vars{
+				"registry": "local",
+			},
+			shouldInclude: true,
+		},
+		{
+			name: "registry is remote - feature disabled",
+			vars: engine.Vars{
+				"registry": "remote",
+			},
+			shouldInclude: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Run with .Scaffold prefix
+			pPrefixed := &Project{
+				Name:         "test-app",
+				NameTemplate: "templates",
+				Conf: &ProjectScaffoldFile{
+					Features: []Feature{
+						{
+							Value: `{{ eq .Scaffold.registry "local" }}`,
+							Globs: []string{"**/extra/**"},
+						},
+					},
+				},
+			}
+			memFSPrefixed := rwfs.NewMemoryWFS()
+			builtVarsPrefixed, err := BuildVars(eng, pPrefixed, tt.vars)
+			require.NoError(t, err)
+
+			argsPrefixed := &RWFSArgs{
+				ReadFS:  scaffoldFiles,
+				WriteFS: memFSPrefixed,
+				Project: pPrefixed,
+			}
+			err = RenderRWFS(eng, argsPrefixed, builtVarsPrefixed)
+			require.NoError(t, err)
+
+			// Run with bare reference
+			pBare := &Project{
+				Name:         "test-app",
+				NameTemplate: "templates",
+				Conf: &ProjectScaffoldFile{
+					Features: []Feature{
+						{
+							Value: `{{ eq .registry "local" }}`,
+							Globs: []string{"**/extra/**"},
+						},
+					},
+				},
+			}
+			memFSBare := rwfs.NewMemoryWFS()
+			builtVarsBare, err := BuildVars(eng, pBare, tt.vars)
+			require.NoError(t, err)
+
+			argsBare := &RWFSArgs{
+				ReadFS:  scaffoldFiles,
+				WriteFS: memFSBare,
+				Project: pBare,
+			}
+			err = RenderRWFS(eng, argsBare, builtVarsBare)
+			require.NoError(t, err)
+
+			// Verify identical files in both filesystems
+			_, errPrefixed := memFSPrefixed.Open("extra/registry-app.txt")
+			_, errBare := memFSBare.Open("extra/registry-app.txt")
+
+			if tt.shouldInclude {
+				assert.NoError(t, errPrefixed, "prefixed feature should include file")
+				assert.NoError(t, errBare, "bare feature should include file")
+			} else {
+				assert.ErrorIs(t, errPrefixed, fs.ErrNotExist, "prefixed feature should exclude file")
+				assert.ErrorIs(t, errBare, fs.ErrNotExist, "bare feature should exclude file")
+			}
+		})
+	}
+}
+

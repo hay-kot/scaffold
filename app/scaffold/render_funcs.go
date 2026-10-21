@@ -9,6 +9,7 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -267,14 +268,121 @@ func guardDirectories(args *RWFSArgs) filepathGuard {
 	}
 }
 
+func extractMap(val any) map[string]any {
+	if val == nil {
+		return nil
+	}
+	switch m := val.(type) {
+	case engine.Vars:
+		res := make(map[string]any, len(m))
+		for k, v := range m {
+			res[k] = v
+		}
+		return res
+	case map[string]any:
+		res := make(map[string]any, len(m))
+		for k, v := range m {
+			res[k] = v
+		}
+		return res
+	case map[string]string:
+		res := make(map[string]any, len(m))
+		for k, v := range m {
+			res[k] = v
+		}
+		return res
+	}
+
+	rv := reflect.ValueOf(val)
+	if rv.Kind() == reflect.Map {
+		res := make(map[string]any, rv.Len())
+		iter := rv.MapRange()
+		for iter.Next() {
+			k := iter.Key()
+			if k.Kind() == reflect.String {
+				res[k.String()] = iter.Value().Interface()
+			}
+		}
+		return res
+	}
+
+	return nil
+}
+
+// ResolveFeatureVars prepares the template variable context for evaluating feature flag expressions.
+// It unwraps variables under the .Scaffold root scope to bare variables and resolves bare variables
+// into .Scaffold so both .Scaffold.<var> and bare .<var> references evaluate identically.
+func ResolveFeatureVars(vars engine.Vars) engine.Vars {
+	if vars == nil {
+		return engine.Vars{
+			"Scaffold": engine.Vars{},
+		}
+	}
+
+	featureVars := make(engine.Vars, len(vars))
+	scaffoldMap := make(engine.Vars)
+
+	// Copy all existing variables into featureVars
+	for k, v := range vars {
+		featureVars[k] = v
+	}
+
+	// Extract variables from any existing .Scaffold map
+	if scaffoldVal, ok := vars["Scaffold"]; ok && scaffoldVal != nil {
+		if m := extractMap(scaffoldVal); m != nil {
+			for k, v := range m {
+				scaffoldMap[k] = v
+			}
+		}
+	}
+
+	// Handle flat dotted keys like "Scaffold.key" if present
+	for k, v := range vars {
+		if strings.HasPrefix(k, "Scaffold.") {
+			subKey := strings.TrimPrefix(k, "Scaffold.")
+			if subKey != "" {
+				scaffoldMap[subKey] = v
+				if _, exists := featureVars[subKey]; !exists {
+					featureVars[subKey] = v
+				}
+			}
+		}
+	}
+
+	// Copy non-reserved root variables into scaffoldMap
+	for k, v := range vars {
+		if k == "Scaffold" || k == "Computed" || k == "Each" || strings.HasPrefix(k, "Scaffold.") {
+			continue
+		}
+		if _, exists := scaffoldMap[k]; !exists {
+			scaffoldMap[k] = v
+		}
+	}
+
+	// Unwrap all keys from scaffoldMap to root scope
+	for k, v := range scaffoldMap {
+		if k == "Computed" || k == "Scaffold" || k == "Each" {
+			continue
+		}
+		featureVars[k] = v
+	}
+
+	// Set resolved .Scaffold in featureVars
+	featureVars["Scaffold"] = scaffoldMap
+
+	return featureVars
+}
+
 func guardFeatureFlag(e *engine.Engine, args *RWFSArgs, vars engine.Vars) filepathGuard {
 	if len(args.Project.Conf.Features) == 0 {
 		return guardNoOp
 	}
 
+	featureVars := ResolveFeatureVars(vars)
+
 	return func(outpath string, f fs.DirEntry) (newOutpath string, err error) {
 		for _, feature := range args.Project.Conf.Features {
-			render, err := e.TmplString(feature.Value, vars)
+			render, err := e.TmplString(feature.Value, featureVars)
 			if err != nil {
 				return "", err
 			}

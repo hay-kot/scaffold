@@ -48,17 +48,21 @@ func IsGlob(root string) bool {
 }
 
 // Discover returns the snippets found in roots. A root is a directory, which
-// is searched recursively while skipping hidden files and directories, a
-// single file, or a doublestar glob pattern. Roots that do not exist are
-// skipped. When two roots provide the same name, the earlier root wins.
-func Discover(roots []string) ([]Snippet, error) {
+// is searched recursively while following symlinks and skipping hidden files
+// and directories, a single file, or a doublestar glob pattern. A path that
+// exists is never read as a glob. Roots that do not exist are skipped, and
+// roots that cannot be read are logged and skipped so one bad location does
+// not hide the others. When two roots provide the same name, the earlier root
+// wins.
+func Discover(roots []string) []Snippet {
 	seen := map[string]bool{}
 	out := []Snippet{}
 
 	for _, root := range roots {
 		found, err := discoverRoot(root)
 		if err != nil {
-			return nil, err
+			log.Warn().Err(err).Str("root", root).Msg("skipping snippet root")
+			continue
 		}
 
 		for _, s := range found {
@@ -72,16 +76,14 @@ func Discover(roots []string) ([]Snippet, error) {
 		}
 	}
 
-	return out, nil
+	return out
 }
 
 func discoverRoot(root string) ([]Snippet, error) {
-	if IsGlob(root) {
-		return discoverGlob(root)
-	}
-
 	info, err := os.Stat(root)
 	switch {
+	case errors.Is(err, fs.ErrNotExist) && IsGlob(root):
+		return discoverGlob(root)
 	case errors.Is(err, fs.ErrNotExist):
 		log.Debug().Str("root", root).Msg("snippet root not found, skipping")
 		return nil, nil
@@ -91,31 +93,60 @@ func discoverRoot(root string) ([]Snippet, error) {
 		return []Snippet{{Name: filepath.Base(root), Path: root}}, nil
 	}
 
+	return discoverDir(root)
+}
+
+// discoverDir walks root and follows symlinks, because dotfiles managers
+// often link snippet directories into place. Each real directory is read
+// once to stop symlink loops.
+func discoverDir(root string) ([]Snippet, error) {
 	out := []Snippet{}
-	err = fs.WalkDir(os.DirFS(root), ".", func(p string, d fs.DirEntry, err error) error {
+	visited := map[string]bool{}
+
+	var walk func(dir, prefix string) error
+	walk = func(dir, prefix string) error {
+		real, err := filepath.EvalSymlinks(dir)
 		if err != nil {
 			return err
 		}
+		if visited[real] {
+			return nil
+		}
+		visited[real] = true
 
-		if p != "." && strings.HasPrefix(d.Name(), ".") {
-			if d.IsDir() {
-				return fs.SkipDir
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			return fmt.Errorf("failed to list snippets in %s: %w", dir, err)
+		}
+
+		for _, entry := range entries {
+			if strings.HasPrefix(entry.Name(), ".") {
+				continue
 			}
-			return nil
+
+			p := filepath.Join(dir, entry.Name())
+			name := path.Join(prefix, entry.Name())
+
+			info, err := os.Stat(p)
+			if err != nil {
+				log.Warn().Err(err).Str("path", p).Msg("skipping unreadable snippet")
+				continue
+			}
+
+			switch {
+			case info.IsDir():
+				if err := walk(p, name); err != nil {
+					return err
+				}
+			case info.Mode().IsRegular():
+				out = append(out, Snippet{Name: name, Path: p})
+			}
 		}
 
-		if d.IsDir() {
-			return nil
-		}
-
-		out = append(out, Snippet{Name: p, Path: filepath.Join(root, filepath.FromSlash(p))})
 		return nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to list snippets in %s: %w", root, err)
 	}
 
-	return out, nil
+	return out, walk(root, "")
 }
 
 func discoverGlob(root string) ([]Snippet, error) {

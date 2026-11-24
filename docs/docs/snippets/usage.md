@@ -54,7 +54,7 @@ snippets:
   - ~/work/templates/**/*.snippet.md
 ```
 
-Each entry is a directory, a single file, or a glob pattern. Directories are searched recursively and hidden files and directories are skipped. Globs support `**` to match any number of directories.
+Each entry is a directory, a single file, or a glob pattern. Directories are searched recursively, symlinks are followed, and hidden files and directories are skipped. Globs support `**` to match any number of directories. A location that can't be read is skipped with a warning.
 
 You can add locations for a single run with the `--snippet-dir` flag or the `SCAFFOLD_SNIPPET_DIR` environment variable. These are searched after the scaffoldrc locations.
 
@@ -82,7 +82,7 @@ If the name doesn't match a snippet, scaffold suggests the closest match.
 
 The rendered snippet is written to the current directory with the snippet's file name. `scaffold snip go/main` writes `./main.go`.
 
-Scaffold never replaces an existing file unless you pass `--overwrite`.
+Scaffold never replaces an existing file unless you pass `--overwrite`. If the snippet file is executable, the output file is executable too.
 
 Use `--output` (`-o`) to pick another destination:
 

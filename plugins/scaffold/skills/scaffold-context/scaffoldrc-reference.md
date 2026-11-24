@@ -156,7 +156,8 @@ Locations searched by `scaffold snip` for single file snippets.
 
 **Rules:**
 
-- Each entry is a directory (searched recursively, hidden files and directories skipped), a single file, or a doublestar glob
+- Each entry is a directory (searched recursively, symlinks followed, hidden files and directories skipped), a single file, or a doublestar glob
+- A path that exists is never treated as a glob; unreadable locations are skipped with a warning
 - `~` and `$VAR` are expanded; relative entries resolve against the scaffoldrc directory
 - When unset, the `snippets` directory next to the scaffoldrc file is used
 - `--snippet-dir` / `SCAFFOLD_SNIPPET_DIR` entries are searched after these

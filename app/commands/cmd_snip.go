@@ -36,10 +36,7 @@ func (ctrl *Controller) Snip(args []string, flags FlagsSnip) error {
 	ctrl.ready()
 
 	roots := ctrl.snippetRoots()
-	found, err := snippets.Discover(roots)
-	if err != nil {
-		return err
-	}
+	found := snippets.Discover(roots)
 
 	if flags.List {
 		return ctrl.listSnippets(found, roots)
@@ -73,6 +70,11 @@ func (ctrl *Controller) Snip(args []string, flags FlagsSnip) error {
 	conf, body, err := snippets.Parse(f)
 	if err != nil {
 		return fmt.Errorf("snippet %s: %w", snip.Name, err)
+	}
+
+	info, err := f.Stat()
+	if err != nil {
+		return err
 	}
 
 	// When the snippet goes to stdout, everything else must stay off stdout so
@@ -124,7 +126,7 @@ func (ctrl *Controller) Snip(args []string, flags FlagsSnip) error {
 			return err
 		}
 	} else {
-		if _, err := writeSnippet(flags.Output, filepath.Base(snip.Path), []byte(rendered), flags.Overwrite); err != nil {
+		if _, err := writeSnippet(flags.Output, filepath.Base(snip.Path), []byte(rendered), snippetPerm(info.Mode()), flags.Overwrite); err != nil {
 			return err
 		}
 	}
@@ -148,7 +150,17 @@ func (ctrl *Controller) Snip(args []string, flags FlagsSnip) error {
 
 func (ctrl *Controller) snippetVars(p *scaffold.Project, argvars map[string]any, flags FlagsSnip, messages io.Writer) (map[string]any, error) {
 	if !flags.NoPrompt {
-		return p.AskQuestions(scaffold.MergeMaps(ctrl.rc.Defaults, argvars), ctrl.engine, styles.Theme(ctrl.rc.Settings.Theme), messages)
+		input := scaffold.MergeMaps(ctrl.rc.Defaults, argvars)
+		vars, err := p.AskQuestions(input, ctrl.engine, styles.Theme(ctrl.rc.Settings.Theme), messages)
+		if err != nil {
+			return nil, err
+		}
+
+		// AskQuestions names template scaffolds after their "templates"
+		// directory. A snippet has no such directory, so keep the Project
+		// value the user gave, the same as with --no-prompt.
+		setSnippetProject(p, vars, input)
+		return vars, nil
 	}
 
 	var preset map[string]any
@@ -161,11 +173,31 @@ func (ctrl *Controller) snippetVars(p *scaffold.Project, argvars map[string]any,
 	}
 
 	vars := scaffold.MergeMaps(ctrl.rc.Defaults, preset, argvars)
-	if name, ok := vars["Project"].(string); ok {
-		p.Name = name
-	}
+	setSnippetProject(p, vars, vars)
 
 	return vars, nil
+}
+
+func setSnippetProject(p *scaffold.Project, vars, input map[string]any) {
+	name, _ := input["Project"].(string)
+	p.Name = name
+
+	if name == "" {
+		delete(vars, "Project")
+		return
+	}
+
+	vars["Project"] = name
+}
+
+// snippetPerm keeps the executable bits of the snippet source so that script
+// snippets stay runnable, without passing through group or world write.
+func snippetPerm(src fs.FileMode) fs.FileMode {
+	if src.Perm()&0o111 != 0 {
+		return 0o755
+	}
+
+	return 0o644
 }
 
 // snippetRoots returns the configured snippet locations followed by the ones
@@ -256,14 +288,17 @@ func snippetPickerPrompt(names []string, theme styles.HuhTheme) (string, error) 
 }
 
 // writeSnippet writes content to dest and returns the path it wrote. An empty
-// dest or an existing directory receives a file called filename. An existing
-// file is only replaced when overwrite is set.
-func writeSnippet(dest, filename string, content []byte, overwrite bool) (string, error) {
+// dest, a dest that ends in a path separator, or an existing directory
+// receives a file called filename. An existing file is only replaced when
+// overwrite is set.
+func writeSnippet(dest, filename string, content []byte, perm fs.FileMode, overwrite bool) (string, error) {
 	if dest == "" {
 		dest = "."
 	}
 
-	if info, err := os.Stat(dest); err == nil && info.IsDir() {
+	if strings.HasSuffix(dest, "/") || strings.HasSuffix(dest, string(filepath.Separator)) {
+		dest = filepath.Join(dest, filename)
+	} else if info, err := os.Stat(dest); err == nil && info.IsDir() {
 		dest = filepath.Join(dest, filename)
 	}
 
@@ -276,7 +311,7 @@ func writeSnippet(dest, filename string, content []byte, overwrite bool) (string
 		flag = os.O_WRONLY | os.O_CREATE | os.O_EXCL
 	}
 
-	f, err := os.OpenFile(dest, flag, 0o644)
+	f, err := os.OpenFile(dest, flag, perm)
 	if err != nil {
 		if errors.Is(err, fs.ErrExist) {
 			return "", fmt.Errorf("%s already exists, use --overwrite to replace it", dest)

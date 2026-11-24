@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hay-kot/scaffold/app/core/engine"
+	"github.com/hay-kot/scaffold/app/scaffold"
 	"github.com/hay-kot/scaffold/app/scaffold/scaffoldrc"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -125,7 +126,7 @@ func TestWriteSnippet(t *testing.T) {
 	t.Run("directory destination uses the snippet file name", func(t *testing.T) {
 		dir := t.TempDir()
 
-		got, err := writeSnippet(dir, "a.txt", []byte("a"), false)
+		got, err := writeSnippet(dir, "a.txt", []byte("a"), 0o644, false)
 		require.NoError(t, err)
 		assert.Equal(t, filepath.Join(dir, "a.txt"), got)
 	})
@@ -133,7 +134,7 @@ func TestWriteSnippet(t *testing.T) {
 	t.Run("file destination creates parent directories", func(t *testing.T) {
 		dest := filepath.Join(t.TempDir(), "nested", "b.txt")
 
-		_, err := writeSnippet(dest, "a.txt", []byte("b"), false)
+		_, err := writeSnippet(dest, "a.txt", []byte("b"), 0o644, false)
 		require.NoError(t, err)
 
 		info, err := os.Stat(dest)
@@ -141,15 +142,54 @@ func TestWriteSnippet(t *testing.T) {
 		assert.Equal(t, os.FileMode(0o644), info.Mode().Perm())
 	})
 
+	t.Run("trailing separator creates the directory", func(t *testing.T) {
+		dir := filepath.Join(t.TempDir(), "new") + string(filepath.Separator)
+
+		got, err := writeSnippet(dir, "d.txt", []byte("d"), 0o644, false)
+		require.NoError(t, err)
+		assert.Equal(t, filepath.Join(dir, "d.txt"), got)
+	})
+
+	t.Run("perm is applied", func(t *testing.T) {
+		dest := filepath.Join(t.TempDir(), "run.sh")
+
+		_, err := writeSnippet(dest, "run.sh", []byte("#!/bin/sh"), 0o755, false)
+		require.NoError(t, err)
+
+		info, err := os.Stat(dest)
+		require.NoError(t, err)
+		assert.Equal(t, os.FileMode(0o755), info.Mode().Perm())
+	})
+
 	t.Run("overwrite replaces existing content", func(t *testing.T) {
 		dest := filepath.Join(t.TempDir(), "c.txt")
 		require.NoError(t, os.WriteFile(dest, []byte("old content"), 0o644))
 
-		_, err := writeSnippet(dest, "c.txt", []byte("new"), true)
+		_, err := writeSnippet(dest, "c.txt", []byte("new"), 0o644, true)
 		require.NoError(t, err)
 
 		got, err := os.ReadFile(dest)
 		require.NoError(t, err)
 		assert.Equal(t, "new", string(got))
 	})
+}
+
+func TestSnippetPerm(t *testing.T) {
+	assert.Equal(t, os.FileMode(0o644), snippetPerm(0o664))
+	assert.Equal(t, os.FileMode(0o755), snippetPerm(0o775))
+	assert.Equal(t, os.FileMode(0o755), snippetPerm(0o700))
+}
+
+func TestSetSnippetProject(t *testing.T) {
+	p := &scaffold.Project{Name: scaffold.TemplateDirName}
+	vars := map[string]any{"Project": scaffold.TemplateDirName}
+	setSnippetProject(p, vars, map[string]any{"Project": "myapp"})
+	assert.Equal(t, "myapp", p.Name)
+	assert.Equal(t, "myapp", vars["Project"])
+
+	p = &scaffold.Project{Name: scaffold.TemplateDirName}
+	vars = map[string]any{"Project": scaffold.TemplateDirName}
+	setSnippetProject(p, vars, map[string]any{})
+	assert.Empty(t, p.Name)
+	assert.NotContains(t, vars, "Project")
 }

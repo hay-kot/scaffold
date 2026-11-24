@@ -23,8 +23,7 @@ func TestDiscover_Directory(t *testing.T) {
 	root := t.TempDir()
 	writeFiles(t, root, "taskfile.yml", "go/main.go", ".hidden", ".git/config", "go/.DS_Store")
 
-	got, err := Discover([]string{root})
-	require.NoError(t, err)
+	got := Discover([]string{root})
 
 	assert.Equal(t, []string{"go/main.go", "taskfile.yml"}, Names(got))
 	assert.Equal(t, filepath.Join(root, "go", "main.go"), got[0].Path)
@@ -34,8 +33,7 @@ func TestDiscover_Glob(t *testing.T) {
 	root := t.TempDir()
 	writeFiles(t, root, "a.md", "nested/b.md", "nested/c.txt")
 
-	got, err := Discover([]string{filepath.Join(root, "**", "*.md")})
-	require.NoError(t, err)
+	got := Discover([]string{filepath.Join(root, "**", "*.md")})
 
 	assert.Equal(t, []string{"a.md", "nested/b.md"}, Names(got))
 	assert.Equal(t, filepath.Join(root, "nested", "b.md"), got[1].Path)
@@ -45,8 +43,7 @@ func TestDiscover_SingleFile(t *testing.T) {
 	root := t.TempDir()
 	writeFiles(t, root, "one.txt")
 
-	got, err := Discover([]string{filepath.Join(root, "one.txt")})
-	require.NoError(t, err)
+	got := Discover([]string{filepath.Join(root, "one.txt")})
 
 	assert.Equal(t, []string{"one.txt"}, Names(got))
 }
@@ -54,8 +51,7 @@ func TestDiscover_SingleFile(t *testing.T) {
 func TestDiscover_MissingRootsSkipped(t *testing.T) {
 	missing := filepath.Join(t.TempDir(), "nope")
 
-	got, err := Discover([]string{missing, filepath.Join(missing, "*.md")})
-	require.NoError(t, err)
+	got := Discover([]string{missing, filepath.Join(missing, "*.md")})
 	assert.Empty(t, got)
 }
 
@@ -64,11 +60,48 @@ func TestDiscover_FirstRootWins(t *testing.T) {
 	writeFiles(t, first, "dup.txt")
 	writeFiles(t, second, "dup.txt", "other.txt")
 
-	got, err := Discover([]string{first, second})
-	require.NoError(t, err)
+	got := Discover([]string{first, second})
 
 	assert.Equal(t, []string{"dup.txt", "other.txt"}, Names(got))
 	assert.Equal(t, filepath.Join(first, "dup.txt"), got[0].Path)
+}
+
+func TestDiscover_FollowsSymlinks(t *testing.T) {
+	root, target := t.TempDir(), t.TempDir()
+	writeFiles(t, target, "main.go")
+	writeFiles(t, root, "file-target.txt")
+	require.NoError(t, os.Symlink(target, filepath.Join(root, "go")))
+	require.NoError(t, os.Symlink(filepath.Join(root, "file-target.txt"), filepath.Join(root, "linked.txt")))
+	require.NoError(t, os.Symlink(root, filepath.Join(target, "loop")))
+	require.NoError(t, os.Symlink(filepath.Join(root, "missing"), filepath.Join(root, "broken")))
+
+	got := Discover([]string{root})
+
+	assert.Equal(t, []string{"file-target.txt", "go/main.go", "linked.txt"}, Names(got))
+}
+
+func TestDiscover_LiteralPathWithGlobCharacters(t *testing.T) {
+	root := filepath.Join(t.TempDir(), "[client] snippets")
+	writeFiles(t, root, "a.txt")
+
+	got := Discover([]string{root})
+
+	assert.Equal(t, []string{"a.txt"}, Names(got))
+}
+
+func TestDiscover_UnreadableRootSkipped(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root can read any directory")
+	}
+
+	bad, good := t.TempDir(), t.TempDir()
+	writeFiles(t, good, "ok.txt")
+	require.NoError(t, os.Chmod(bad, 0o000))
+	t.Cleanup(func() { _ = os.Chmod(bad, 0o755) })
+
+	got := Discover([]string{bad, good})
+
+	assert.Equal(t, []string{"ok.txt"}, Names(got))
 }
 
 func TestFind(t *testing.T) {

@@ -3,6 +3,7 @@ package scaffold
 
 import (
 	"fmt"
+	"io"
 	"io/fs"
 	"maps"
 	"strconv"
@@ -101,7 +102,9 @@ func (p *Project) validate() (str string, err error) {
 	return "", fmt.Errorf("{{ .Project }} directory does not exist")
 }
 
-func (p *Project) AskQuestions(def map[string]any, e *engine.Engine, theme huh.Theme) (map[string]any, error) {
+// AskQuestions prompts for the project's questions and writes a summary of the
+// answers to summary.
+func (p *Project) AskQuestions(def map[string]any, e *engine.Engine, theme huh.Theme, summary io.Writer) (map[string]any, error) {
 	projectMode := p.NameTemplate != TemplateDirName
 
 	if projectMode {
@@ -229,10 +232,10 @@ func (p *Project) AskQuestions(def map[string]any, e *engine.Engine, theme huh.T
 	}
 
 	for _, askable := range askables {
-		fmt.Print(askable.String())
+		_, _ = fmt.Fprint(summary, askable.String())
 	}
 
-	fmt.Print("\n")
+	_, _ = fmt.Fprint(summary, "\n")
 
 	return vars, nil
 }

@@ -78,13 +78,8 @@ func scaffoldPickerPrompt(aliases map[string]string, localScaffolds []string, sy
 	return selected, nil
 }
 
-func didYouMeanPrompt(given, suggestion string, isSystem bool) bool {
+func didYouMeanPrompt(given, suggestion, source string) bool {
 	ok := true
-
-	source := "local"
-	if isSystem {
-		source = "system"
-	}
 
 	err := huh.NewConfirm().
 		Title(fmt.Sprintf("Did You Mean %s (%s)?", suggestion, source)).

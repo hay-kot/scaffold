@@ -14,6 +14,7 @@ import (
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs/pkgurl"
 	"github.com/hay-kot/scaffold/internal/styles"
 	"github.com/rs/zerolog"
@@ -59,6 +60,14 @@ type ScaffoldRC struct {
 	//   - ~/dotfiles/snippets
 	//   - ~/work/**/*.snippet.md
 	Snippets []string `yaml:"snippets"`
+
+	// Scaffolds lists remote scaffolds that are always available. Each entry
+	// uses the same syntax as the 'scaffold new' argument, shorts included.
+	// Missing entries are cloned into the cache before scaffolds are listed.
+	//
+	//   - gh:hay-kot/scaffold-go-cli
+	//   - https://github.com/org/templates@v1.2.0#service
+	Scaffolds []string `yaml:"scaffolds"`
 }
 
 type Settings struct {
@@ -134,6 +143,20 @@ func (rc *ScaffoldRC) Validate() error {
 			errs = append(errs, RCValidationError{
 				Key:   fmt.Sprintf("snippets[%d]", i),
 				Cause: fmt.Errorf("invalid glob pattern %q", v),
+			})
+		}
+	}
+
+	for i, v := range rc.Scaffolds {
+		expanded, ok := pkgs.IsRemote(v, rc.Shorts)
+		if ok {
+			_, err := pkgs.ParseRemote(expanded)
+			ok = err == nil
+		}
+		if !ok {
+			errs = append(errs, RCValidationError{
+				Key:   fmt.Sprintf("scaffolds[%d]", i),
+				Cause: fmt.Errorf("invalid scaffold %q: must be a remote URL, an SSH git URL, or use a short", pkgurl.Redact(v)),
 			})
 		}
 	}

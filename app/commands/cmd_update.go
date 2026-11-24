@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"charm.land/huh/v2/spinner"
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
 	"github.com/hay-kot/scaffold/internal/printer"
 	"github.com/urfave/cli/v3"
@@ -19,6 +18,8 @@ type updateStatus struct {
 func (ctrl *Controller) Update(ctx context.Context, c *cli.Command) error {
 	ctrl.ready()
 
+	ctrl.syncRCScaffolds()
+
 	scaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))
 	if err != nil {
 		return err
@@ -27,10 +28,15 @@ func (ctrl *Controller) Update(ctx context.Context, c *cli.Command) error {
 	var failed []updateStatus
 	var updated []string
 	var uptodate []string
+	var pinned []string
 
-	workfn := func() {
+	workfn := func(ctx context.Context) {
 		for _, s := range scaffolds {
-			isUpdated, err := pkgs.Update(ctrl.Flags.Cache, s.Root)
+			if ctx.Err() != nil {
+				return
+			}
+
+			status, err := pkgs.Update(ctx, ctrl.Flags.Cache, s.Root, ctrl.rc)
 			if err != nil {
 				failed = append(failed, updateStatus{
 					repository: s.Root,
@@ -40,26 +46,27 @@ func (ctrl *Controller) Update(ctx context.Context, c *cli.Command) error {
 				continue
 			}
 
-			if !isUpdated {
+			switch status {
+			case pkgs.UpdateStatusPinned:
+				pinned = append(pinned, s.Root)
+			case pkgs.UpdateStatusUpdated:
+				updated = append(updated, s.Root)
+			default:
 				uptodate = append(uptodate, s.Root)
-
-				continue
 			}
-
-			updated = append(updated, s.Root)
 		}
 	}
 
-	err = spinner.New().
-		Title("Updating Scaffolds...").
-		Action(workfn).
-		Run()
-	if err != nil {
+	if err := runWithStderrSpinner("Updating Scaffolds...", workfn); err != nil {
 		return err
 	}
 
 	if len(uptodate) > 0 {
 		ctrl.printer.Title(fmt.Sprintf("%d scaffolds up to date", len(uptodate)))
+	}
+
+	if len(pinned) > 0 {
+		ctrl.printer.List("Pinned, not pulled", pinned)
 	}
 
 	if len(updated) > 0 {

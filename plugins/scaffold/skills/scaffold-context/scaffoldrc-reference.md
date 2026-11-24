@@ -1,6 +1,6 @@
 # ScaffoldRC Reference
 
-The scaffoldrc file (`scaffoldrc.yml`) configures global settings, defaults, aliases, shorts, authentication, and snippet locations.
+The scaffoldrc file (`scaffoldrc.yml`) configures global settings, defaults, aliases, shorts, always-available remote scaffolds, authentication, and snippet locations.
 
 ## Full Example
 
@@ -23,6 +23,9 @@ aliases:
 shorts:
   gh: https://github.com/
   gl: https://gitlab.com/
+
+scaffolds:
+  - gh:org/scaffold-go-cli
 
 auth:
   - match: "^https://github.com"
@@ -109,6 +112,28 @@ URL prefix shortcuts. Used with colon syntax: `gh:org/repo` expands to `https://
 - Values must be valid URIs
 - The input is split on `:` — left side matches the short key, right side is appended via `url.JoinPath`
 - Only the first `:` is used for splitting
+
+---
+
+## `scaffolds`
+
+```yaml
+scaffolds:
+  - gh:org/scaffold-go-cli
+  - https://github.com/org/templates@v1.2.0#service
+```
+
+Remote scaffolds that are always available. Each entry uses the `scaffold new` argument syntax (URL, SSH URL, or short, with optional `@ref` and `#subdir`).
+
+**Rules:**
+
+- Entries must be remote after short expansion and include an owner and repo; anything else fails validation
+- Before the `scaffold new` picker, `scaffold list`, and `scaffold update`, missing entries are cloned into the cache; they then appear as system scaffolds
+- The clone step never pulls; `scaffold update` pulls cached repositories
+- Clones use matching `auth` entries and never prompt; a failed clone warns on stderr and the command continues with the cache
+- Ctrl+C (or SIGINT without a terminal) during the clone step cancels the clone in progress, removes its partial directory, skips the remaining clones with a warning, and the command continues
+- Entries pinned with `@ref` are skipped by `scaffold update`
+- Spinner and warnings go to stderr, so `scaffold list --json` stdout stays valid JSON
 
 ---
 

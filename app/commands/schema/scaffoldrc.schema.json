@@ -58,6 +58,13 @@
         "type": "string"
       }
     },
+    "scaffolds": {
+      "type": "array",
+      "description": "Remote scaffolds that are always available. Each entry uses the same syntax as the 'scaffold new' argument (URL, SSH URL, or short, with optional @ref and #subdir). Missing entries are cloned into the cache before scaffolds are listed.",
+      "items": {
+        "type": "string"
+      }
+    },
     "auth": {
       "type": "array",
       "description": "Authentication configuration for private scaffolds",

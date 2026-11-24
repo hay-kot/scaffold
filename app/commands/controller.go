@@ -4,6 +4,7 @@ package commands
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/hay-kot/scaffold/app/core/engine"
@@ -32,6 +33,11 @@ type Controller struct {
 	engine   *engine.Engine
 	rc       *scaffoldrc.ScaffoldRC
 	printer  *printer.Printer
+	// errPrinter writes to stderr, for output that must stay out of
+	// machine-readable stdout.
+	errPrinter *printer.Printer
+
+	syncResolverOpts []pkgs.ResolverOption
 }
 
 // Prepare sets up the controller to be called by the CLI, if the controller is
@@ -40,7 +46,12 @@ func (ctrl *Controller) Prepare(e *engine.Engine, src *scaffoldrc.ScaffoldRC) {
 	ctrl.engine = e
 	ctrl.rc = src
 	ctrl.prepared = true
-	ctrl.printer = printer.New(os.Stdout).WithBase(styles.Base).WithLight(styles.Light).WithWarning(styles.Warning)
+	ctrl.printer = newPrinter(os.Stdout)
+	ctrl.errPrinter = newPrinter(os.Stderr)
+}
+
+func newPrinter(w io.Writer) *printer.Printer {
+	return printer.New(w).WithBase(styles.Base).WithLight(styles.Light).WithWarning(styles.Warning)
 }
 
 func (ctrl *Controller) ready() {

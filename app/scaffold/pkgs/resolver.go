@@ -1,7 +1,10 @@
 package pkgs
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -22,11 +25,19 @@ func WithCloner(cloner Cloner) ResolverOption {
 	}
 }
 
+// WithProgress sets where clone progress is written. The default is os.Stdout.
+func WithProgress(w io.Writer) ResolverOption {
+	return func(r *Resolver) {
+		r.progress = w
+	}
+}
+
 type Resolver struct {
-	cloner Cloner
-	shorts map[string]string
-	cache  string
-	cwd    string
+	cloner   Cloner
+	progress io.Writer
+	shorts   map[string]string
+	cache    string
+	cwd      string
 }
 
 var commitHashRegex = regexp.MustCompile(`^[0-9a-f]{7,40}$`)
@@ -37,12 +48,13 @@ func isGitCommitHash(s string) bool {
 
 func NewResolver(shorts map[string]string, cache, cwd string, opts ...ResolverOption) *Resolver {
 	r := &Resolver{
-		shorts: shorts,
-		cache:  cache,
-		cwd:    cwd,
-		cloner: ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
+		shorts:   shorts,
+		cache:    cache,
+		cwd:      cwd,
+		progress: os.Stdout,
+		cloner: ClonerFunc(func(ctx context.Context, path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
 			// Clone Repository to cache and set path to cache path
-			r, err := git.PlainClone(path, isBare, cfg)
+			r, err := git.PlainCloneContext(ctx, path, isBare, cfg)
 			if err != nil {
 				return "", fmt.Errorf("failed to clone repository: %w", err)
 			}
@@ -109,7 +121,7 @@ func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProv
 
 	switch {
 	case isRemote:
-		path, err = r.resolveRemote(remoteRef, authprovider)
+		path, err = r.resolveRemote(context.Background(), remoteRef, authprovider)
 		if err != nil {
 			return "", fmt.Errorf("failed to resolve remote path: %w", err)
 		}
@@ -138,7 +150,76 @@ func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProv
 	return path, nil
 }
 
-func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (path string, err error) {
+// EnsureCached clones the remote scaffold ref into the cache when it is not
+// there yet. It never pulls. ref uses the same syntax as Resolve, shorts
+// included, and must be remote. A clone directory left by an interrupted clone
+// is removed and cloned again. When ctx is cancelled, the clone stops and its
+// directory is removed, so the cache holds no partial clone.
+func (r *Resolver) EnsureCached(ctx context.Context, ref string, authprovider AuthProvider) error {
+	cached, err := r.Cached(ref)
+	if err != nil || cached {
+		return err
+	}
+
+	remoteRef, _ := IsRemote(ref, r.shorts)
+	pkg, err := ParseRemote(remoteRef)
+	if err != nil {
+		return fmt.Errorf("failed to parse path: %w", err)
+	}
+
+	// resolveRemote treats any existing clone directory as cached.
+	if err := os.RemoveAll(pkg.CloneDir(r.cache)); err != nil {
+		return fmt.Errorf("failed to remove incomplete clone: %w", err)
+	}
+
+	_, err = r.resolveRemote(ctx, remoteRef, authprovider)
+	return err
+}
+
+// Cached reports whether the remote scaffold ref is in the cache. A clone
+// directory that is empty, or holds a repository with no resolvable HEAD, is
+// what an interrupted clone leaves behind, so it does not count as cached.
+func (r *Resolver) Cached(ref string) (bool, error) {
+	remoteRef, ok := IsRemote(ref, r.shorts)
+	if !ok {
+		return false, fmt.Errorf("%q is not a remote scaffold", ref)
+	}
+
+	pkg, err := ParseRemote(remoteRef)
+	if err != nil {
+		return false, fmt.Errorf("failed to parse path: %w", err)
+	}
+
+	cloneDir := pkg.CloneDir(r.cache)
+
+	entries, err := os.ReadDir(cloneDir)
+	switch {
+	case os.IsNotExist(err):
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("failed to check if repository is cached: %w", err)
+	case len(entries) == 0:
+		return false, nil
+	}
+
+	repo, err := git.PlainOpen(cloneDir)
+	switch {
+	case errors.Is(err, git.ErrRepositoryNotExists):
+		// A clone always writes .git first, so a directory with files and no
+		// repository did not come from a clone. Leave it alone.
+		return true, nil
+	case err != nil:
+		return false, fmt.Errorf("failed to open cached repository: %w", err)
+	}
+
+	if _, err := repo.Head(); err != nil {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (r *Resolver) resolveRemote(ctx context.Context, remoteRef string, authprovider AuthProvider) (path string, err error) {
 	pkg, err := ParseRemote(remoteRef)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse path: %w", err)
@@ -160,7 +241,7 @@ func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (p
 	case os.IsNotExist(err):
 		cfg := &git.CloneOptions{
 			URL:      remoteRef,
-			Progress: os.Stdout,
+			Progress: r.progress,
 			Auth:     nil,
 			Tags:     git.AllTags,
 		}
@@ -175,10 +256,10 @@ func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (p
 		}
 
 		// Clone Repository to cache and set path to cache path
-		_, err := r.cloner.Clone(cloneDir, pkg.Version, false, cfg)
+		_, err := r.cloner.Clone(ctx, cloneDir, pkg.Version, false, cfg)
 		if err != nil {
-			// ensure directory is cleaned up
 			_ = os.RemoveAll(cloneDir)
+			removeEmptyParents(filepath.Dir(cloneDir), r.cache)
 
 			return "", fmt.Errorf("failed to clone repository: %w", err)
 		}
@@ -220,4 +301,16 @@ func (r *Resolver) resolveCwd(arg string, checkDirs []string) (path string, err 
 	}
 
 	return path, nil
+}
+
+// removeEmptyParents removes dir and each empty parent up to, but not
+// including, root. A failed clone leaves empty host and owner directories
+// otherwise.
+func removeEmptyParents(dir, root string) {
+	root = filepath.Clean(root)
+	for dir = filepath.Clean(dir); dir != root && strings.HasPrefix(dir, root+string(filepath.Separator)); dir = filepath.Dir(dir) {
+		if os.Remove(dir) != nil {
+			return
+		}
+	}
 }

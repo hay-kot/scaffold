@@ -210,3 +210,26 @@ snippets:
 	require.Len(t, errs, 1)
 	assert.Equal(t, "snippets[2]", errs[0].Key)
 }
+
+func TestScaffoldRC_ValidateScaffolds(t *testing.T) {
+	rc, err := New(bytes.NewReader([]byte(`---
+shorts:
+  gh: https://github.com
+scaffolds:
+  - gh:hay-kot/scaffold-go-cli
+  - https://github.com/org/templates@v1.2.0#service
+  - git@github.com:org/private-template
+  - ~/local/scaffold
+  - https://github.com
+`)))
+	require.NoError(t, err)
+	require.Len(t, rc.Scaffolds, 5)
+
+	err = rc.Validate()
+
+	var errs RcValidationErrors
+	require.ErrorAs(t, err, &errs)
+	require.Len(t, errs, 2)
+	assert.Equal(t, "scaffolds[3]", errs[0].Key)
+	assert.Equal(t, "scaffolds[4]", errs[1].Key)
+}

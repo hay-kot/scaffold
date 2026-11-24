@@ -30,7 +30,7 @@ Render a single file snippet: a template body with optional YAML front matter in
 
 ### `scaffold list` (alias: `ls`)
 
-List available scaffolds (aliases, local, system).
+List available scaffolds (aliases, local, system). Clones missing scaffoldrc `scaffolds` entries first; progress and warnings go to stderr.
 
 | Flag     | Type   | Default | Description                    |
 | -------- | ------ | ------- | ------------------------------ |
@@ -65,7 +65,7 @@ Create a `.scaffold/` directory with example template scaffold.
 
 ### `scaffold update`
 
-Pull latest versions of all cached system scaffolds.
+Clone missing scaffoldrc `scaffolds` entries, then pull latest versions of all cached system scaffolds. Repositories cached at an `@ref` are pinned and not pulled.
 
 ### `scaffold schema`
 

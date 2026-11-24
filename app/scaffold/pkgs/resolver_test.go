@@ -205,3 +205,43 @@ func TestResolver_Resolve_FilePaths(t *testing.T) {
 		})
 	}
 }
+
+func TestResolver_EnsureCached(t *testing.T) {
+	tempdir := t.TempDir()
+	tempcache := filepath.Join(tempdir, "cache")
+	repopath := filepath.Join(tempcache, "github.com", "hay-kot", "scaffold-go-cli")
+
+	var clones int
+	var authURL string
+	clonefn := ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
+		clones++
+		assert.Equal(t, "https://github.com/hay-kot/scaffold-go-cli", cfg.URL)
+		require.NoError(t, os.MkdirAll(repopath, 0o755))
+		return repopath, nil
+	})
+	recordAuth := AuthProviderFunc(func(pkgurl string) (transport.AuthMethod, bool) {
+		authURL = pkgurl
+		return nil, false
+	})
+
+	shorts := map[string]string{"gh": "https://github.com"}
+	resolver := NewResolver(shorts, tempcache, tempdir, WithCloner(clonefn))
+
+	cloned, err := resolver.EnsureCached("gh:hay-kot/scaffold-go-cli", recordAuth)
+	require.NoError(t, err)
+	assert.True(t, cloned)
+	assert.Equal(t, 1, clones)
+	assert.Equal(t, "https://github.com/hay-kot/scaffold-go-cli", authURL)
+
+	cloned, err = resolver.EnsureCached("gh:hay-kot/scaffold-go-cli", recordAuth)
+	require.NoError(t, err)
+	assert.False(t, cloned)
+	assert.Equal(t, 1, clones, "a cached repository must not clone again")
+}
+
+func TestResolver_EnsureCached_NotRemote(t *testing.T) {
+	resolver := NewResolver(nil, t.TempDir(), ".")
+
+	_, err := resolver.EnsureCached("~/local/scaffold", noopAuthProvider)
+	require.Error(t, err)
+}

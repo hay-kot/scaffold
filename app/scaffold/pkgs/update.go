@@ -10,46 +10,70 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
-// Update updates a git repository to the latest commit
-func Update(cacheRoot string, scaffoldPath string) (updated bool, err error) {
-	// The package may be in a nested directory of the repository, so we need to find the root
-	// of the repository
+type UpdateStatus int
 
-	scaffoldPathParts := strings.Split(filepath.ToSlash(scaffoldPath), "/")
+const (
+	UpdateStatusUpToDate UpdateStatus = iota
+	UpdateStatusUpdated
+	// UpdateStatusPinned means the repository was cloned at an @ref. A tag
+	// or commit checkout is a detached HEAD that cannot pull, so Update
+	// leaves pinned repositories as they are.
+	UpdateStatusPinned
+)
 
-	repoPath := ""
-	gitDirFound := false
-
-	// Assuming a minimum of 2 parts in the path i.e. git.host.com/repo
-	for i := len(scaffoldPathParts); i > 1; i-- {
-		repoPath = filepath.Join(cacheRoot, filepath.Join(scaffoldPathParts[:i]...))
-		if _, err := os.Stat(filepath.Join(repoPath, ".git")); err == nil {
-			gitDirFound = true
-			break
-		}
+// Update pulls the latest commit for the cached repository that holds
+// scaffoldPath. authprovider supplies credentials for the repository's origin
+// URL.
+func Update(cacheRoot string, scaffoldPath string, authprovider AuthProvider) (UpdateStatus, error) {
+	repoPath, err := findRepoRoot(cacheRoot, scaffoldPath)
+	if err != nil {
+		return UpdateStatusUpToDate, err
 	}
 
-	if !gitDirFound {
-		return false, fmt.Errorf("no git repository found for %s", scaffoldPath)
+	if strings.Contains(filepath.Base(repoPath), "@") {
+		return UpdateStatusPinned, nil
 	}
 
 	repo, err := git.PlainOpen(repoPath)
 	if err != nil {
-		return false, err
+		return UpdateStatusUpToDate, err
 	}
 
 	w, err := repo.Worktree()
 	if err != nil {
-		return false, err
+		return UpdateStatusUpToDate, err
 	}
 
-	err = w.Pull(&git.PullOptions{})
+	opts := &git.PullOptions{}
+	if remote, err := repo.Remote(git.DefaultRemoteName); err == nil && len(remote.Config().URLs) > 0 {
+		if auth, ok := authprovider.Authenticator(remote.Config().URLs[0]); ok {
+			opts.Auth = auth
+		}
+	}
+
+	err = w.Pull(opts)
 	if err != nil {
 		if errors.Is(err, git.NoErrAlreadyUpToDate) {
-			return false, nil
+			return UpdateStatusUpToDate, nil
 		}
-		return false, err
+		return UpdateStatusUpToDate, err
 	}
 
-	return true, nil
+	return UpdateStatusUpdated, nil
+}
+
+// findRepoRoot walks up from scaffoldPath, because the scaffold may live in a
+// nested directory of the repository.
+func findRepoRoot(cacheRoot string, scaffoldPath string) (string, error) {
+	parts := strings.Split(filepath.ToSlash(scaffoldPath), "/")
+
+	// A cached repository has at least two parts, i.e. git.host.com/repo.
+	for i := len(parts); i > 1; i-- {
+		repoPath := filepath.Join(cacheRoot, filepath.Join(parts[:i]...))
+		if _, err := os.Stat(filepath.Join(repoPath, ".git")); err == nil {
+			return repoPath, nil
+		}
+	}
+
+	return "", fmt.Errorf("no git repository found for %s", scaffoldPath)
 }

@@ -2,6 +2,7 @@ package pkgs
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -22,11 +23,19 @@ func WithCloner(cloner Cloner) ResolverOption {
 	}
 }
 
+// WithProgress sets where clone progress is written. The default is os.Stdout.
+func WithProgress(w io.Writer) ResolverOption {
+	return func(r *Resolver) {
+		r.progress = w
+	}
+}
+
 type Resolver struct {
-	cloner Cloner
-	shorts map[string]string
-	cache  string
-	cwd    string
+	cloner   Cloner
+	progress io.Writer
+	shorts   map[string]string
+	cache    string
+	cwd      string
 }
 
 var commitHashRegex = regexp.MustCompile(`^[0-9a-f]{7,40}$`)
@@ -37,9 +46,10 @@ func isGitCommitHash(s string) bool {
 
 func NewResolver(shorts map[string]string, cache, cwd string, opts ...ResolverOption) *Resolver {
 	r := &Resolver{
-		shorts: shorts,
-		cache:  cache,
-		cwd:    cwd,
+		shorts:   shorts,
+		cache:    cache,
+		cwd:      cwd,
+		progress: os.Stdout,
 		cloner: ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
 			// Clone Repository to cache and set path to cache path
 			r, err := git.PlainClone(path, isBare, cfg)
@@ -138,6 +148,35 @@ func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProv
 	return path, nil
 }
 
+// EnsureCached clones the remote scaffold ref into the cache when it is not
+// there yet. It never pulls. cloned reports whether a clone happened. ref uses
+// the same syntax as Resolve, shorts included, and must be remote.
+func (r *Resolver) EnsureCached(ref string, authprovider AuthProvider) (cloned bool, err error) {
+	remoteRef, ok := IsRemote(ref, r.shorts)
+	if !ok {
+		return false, fmt.Errorf("%q is not a remote scaffold", ref)
+	}
+
+	pkg, err := ParseRemote(remoteRef)
+	if err != nil {
+		return false, fmt.Errorf("failed to parse path: %w", err)
+	}
+
+	_, err = os.Stat(pkg.CloneDir(r.cache))
+	switch {
+	case err == nil:
+		return false, nil
+	case !os.IsNotExist(err):
+		return false, fmt.Errorf("failed to check if repository is cached: %w", err)
+	}
+
+	if _, err := r.resolveRemote(remoteRef, authprovider); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (path string, err error) {
 	pkg, err := ParseRemote(remoteRef)
 	if err != nil {
@@ -160,7 +199,7 @@ func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (p
 	case os.IsNotExist(err):
 		cfg := &git.CloneOptions{
 			URL:      remoteRef,
-			Progress: os.Stdout,
+			Progress: r.progress,
 			Auth:     nil,
 			Tags:     git.AllTags,
 		}

@@ -55,6 +55,13 @@ export interface Schema {
    * unset, the `snippets` directory next to the scaffoldrc file is used.
    * */
   snippets?: string[];
+  /**
+   * The scaffolds section lists remote scaffolds that are always available. Each entry uses the
+   * same syntax as the `scaffold new` argument: a URL, an SSH URL, or a short, with an optional
+   * `@ref` and `#subdir`. Missing entries are cloned into the cache before `scaffold new` shows
+   * its picker and before `scaffold list` runs, and `scaffold update` pulls them.
+   * */
+  scaffolds?: string[];
 }
 
 type AuthEntryBasic = {

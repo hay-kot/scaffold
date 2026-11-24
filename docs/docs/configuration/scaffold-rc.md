@@ -107,6 +107,25 @@ snippets:
 
 When `snippets` is not set, scaffold uses the `snippets` directory next to your scaffoldrc file. If two locations have a snippet with the same name, the one listed first wins.
 
+## `scaffolds`
+
+The `scaffolds` section lists remote scaffolds that are always available, so you don't have to type the remote each time. Each entry uses the same syntax as the `scaffold new` argument: a URL, an SSH URL, or a short, with an optional `@ref` and `#subdir`.
+
+```yaml
+shorts:
+  gh: https://github.com/
+
+scaffolds:
+  - gh:hay-kot/scaffold-go-cli
+  - https://github.com/org/templates@v1.2.0#service
+```
+
+Before `scaffold new` shows its picker, and when you run `scaffold list` or `scaffold update`, scaffold clones every entry that isn't in the cache yet. Cloned entries show up as system scaffolds. Nothing is pulled at that point -- `scaffold update` pulls the latest changes.
+
+- Clones use the matching [`auth`](#auth) entry. No interactive auth prompt is shown.
+- If a clone fails, for example when you are offline, scaffold prints a warning to stderr and carries on with the scaffolds already cached.
+- Entries pinned with `@ref` are cloned at that ref and `scaffold update` doesn't pull them.
+
 ## `auth`
 
 The `auth` sections lets you define authentication matchers for your scaffolds. This is useful for using scaffolds that are stored in a private repository.

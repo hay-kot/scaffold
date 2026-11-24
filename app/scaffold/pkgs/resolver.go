@@ -1,6 +1,7 @@
 package pkgs
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -51,9 +52,9 @@ func NewResolver(shorts map[string]string, cache, cwd string, opts ...ResolverOp
 		cache:    cache,
 		cwd:      cwd,
 		progress: os.Stdout,
-		cloner: ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
+		cloner: ClonerFunc(func(ctx context.Context, path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
 			// Clone Repository to cache and set path to cache path
-			r, err := git.PlainClone(path, isBare, cfg)
+			r, err := git.PlainCloneContext(ctx, path, isBare, cfg)
 			if err != nil {
 				return "", fmt.Errorf("failed to clone repository: %w", err)
 			}
@@ -120,7 +121,7 @@ func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProv
 
 	switch {
 	case isRemote:
-		path, err = r.resolveRemote(remoteRef, authprovider)
+		path, err = r.resolveRemote(context.Background(), remoteRef, authprovider)
 		if err != nil {
 			return "", fmt.Errorf("failed to resolve remote path: %w", err)
 		}
@@ -152,8 +153,9 @@ func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProv
 // EnsureCached clones the remote scaffold ref into the cache when it is not
 // there yet. It never pulls. ref uses the same syntax as Resolve, shorts
 // included, and must be remote. A clone directory left by an interrupted clone
-// is removed and cloned again.
-func (r *Resolver) EnsureCached(ref string, authprovider AuthProvider) error {
+// is removed and cloned again. When ctx is cancelled, the clone stops and its
+// directory is removed, so the cache holds no partial clone.
+func (r *Resolver) EnsureCached(ctx context.Context, ref string, authprovider AuthProvider) error {
 	cached, err := r.Cached(ref)
 	if err != nil || cached {
 		return err
@@ -170,7 +172,7 @@ func (r *Resolver) EnsureCached(ref string, authprovider AuthProvider) error {
 		return fmt.Errorf("failed to remove incomplete clone: %w", err)
 	}
 
-	_, err = r.resolveRemote(remoteRef, authprovider)
+	_, err = r.resolveRemote(ctx, remoteRef, authprovider)
 	return err
 }
 
@@ -217,7 +219,7 @@ func (r *Resolver) Cached(ref string) (bool, error) {
 	return true, nil
 }
 
-func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (path string, err error) {
+func (r *Resolver) resolveRemote(ctx context.Context, remoteRef string, authprovider AuthProvider) (path string, err error) {
 	pkg, err := ParseRemote(remoteRef)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse path: %w", err)
@@ -254,10 +256,10 @@ func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (p
 		}
 
 		// Clone Repository to cache and set path to cache path
-		_, err := r.cloner.Clone(cloneDir, pkg.Version, false, cfg)
+		_, err := r.cloner.Clone(ctx, cloneDir, pkg.Version, false, cfg)
 		if err != nil {
-			// ensure directory is cleaned up
 			_ = os.RemoveAll(cloneDir)
+			removeEmptyParents(filepath.Dir(cloneDir), r.cache)
 
 			return "", fmt.Errorf("failed to clone repository: %w", err)
 		}
@@ -299,4 +301,16 @@ func (r *Resolver) resolveCwd(arg string, checkDirs []string) (path string, err 
 	}
 
 	return path, nil
+}
+
+// removeEmptyParents removes dir and each empty parent up to, but not
+// including, root. A failed clone leaves empty host and owner directories
+// otherwise.
+func removeEmptyParents(dir, root string) {
+	root = filepath.Clean(root)
+	for dir = filepath.Clean(dir); dir != root && strings.HasPrefix(dir, root+string(filepath.Separator)); dir = filepath.Dir(dir) {
+		if os.Remove(dir) != nil {
+			return
+		}
+	}
 }

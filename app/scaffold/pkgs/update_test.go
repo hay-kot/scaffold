@@ -1,6 +1,7 @@
 package pkgs
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -51,14 +52,14 @@ func TestUpdate(t *testing.T) {
 		return nil, false
 	})
 
-	status, err := Update(cache, "example.com/org/repo", recordAuth)
+	status, err := Update(context.Background(), cache, "example.com/org/repo", recordAuth)
 	require.NoError(t, err)
 	assert.Equal(t, UpdateStatusUpToDate, status)
 	assert.Equal(t, upstreamDir, authURL, "auth lookup must use the origin URL")
 
 	commitFile(t, upstream, upstreamDir, "two.txt")
 
-	status, err = Update(cache, "example.com/org/repo", recordAuth)
+	status, err = Update(context.Background(), cache, "example.com/org/repo", recordAuth)
 	require.NoError(t, err)
 	assert.Equal(t, UpdateStatusUpdated, status)
 	assert.FileExists(t, filepath.Join(cloneDir, "two.txt"))
@@ -68,13 +69,13 @@ func TestUpdate_Pinned(t *testing.T) {
 	cache := t.TempDir()
 	require.NoError(t, os.MkdirAll(filepath.Join(cache, "example.com", "org", "repo@v1.0.0", ".git"), 0o755))
 
-	status, err := Update(cache, "example.com/org/repo@v1.0.0", noopAuthProvider)
+	status, err := Update(context.Background(), cache, "example.com/org/repo@v1.0.0", noopAuthProvider)
 	require.NoError(t, err)
 	assert.Equal(t, UpdateStatusPinned, status)
 }
 
 func TestUpdate_NoRepository(t *testing.T) {
-	_, err := Update(t.TempDir(), "example.com/org/repo", noopAuthProvider)
+	_, err := Update(context.Background(), t.TempDir(), "example.com/org/repo", noopAuthProvider)
 	require.Error(t, err)
 }
 

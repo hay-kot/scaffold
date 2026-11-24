@@ -1,6 +1,7 @@
 package pkgs
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -23,8 +24,8 @@ const (
 
 // Update pulls the latest commit for the cached repository that holds
 // scaffoldPath. authprovider supplies credentials for the repository's origin
-// URL.
-func Update(cacheRoot string, scaffoldPath string, authprovider AuthProvider) (UpdateStatus, error) {
+// URL. A cancelled ctx stops the pull.
+func Update(ctx context.Context, cacheRoot string, scaffoldPath string, authprovider AuthProvider) (UpdateStatus, error) {
 	repoPath, err := findRepoRoot(cacheRoot, scaffoldPath)
 	if err != nil {
 		return UpdateStatusUpToDate, err
@@ -44,7 +45,7 @@ func Update(cacheRoot string, scaffoldPath string, authprovider AuthProvider) (U
 		return UpdateStatusUpToDate, err
 	}
 
-	err = w.Pull(pullOptions(repo, authprovider))
+	err = w.PullContext(ctx, pullOptions(repo, authprovider))
 	if err != nil {
 		if errors.Is(err, git.NoErrAlreadyUpToDate) {
 			return UpdateStatusUpToDate, nil

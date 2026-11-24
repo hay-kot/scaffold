@@ -123,7 +123,7 @@ scaffolds:
 Before `scaffold new` shows its picker, and when you run `scaffold list` or `scaffold update`, scaffold clones every entry that isn't in the cache yet. Cloned entries show up as system scaffolds. Nothing is pulled at that point -- `scaffold update` pulls the latest changes.
 
 - Clones use the matching [`auth`](#auth) entry. No interactive auth prompt is shown.
-- If a clone fails, for example when you are offline, scaffold prints a warning to stderr and carries on with the scaffolds already cached. Press Ctrl+C during the clone spinner to skip a clone that hangs; the command continues and the entry is cloned on a later run.
+- If a clone fails, for example when you are offline, scaffold prints a warning to stderr and carries on with the scaffolds already cached. Press Ctrl+C during the clone spinner to skip a clone that hangs; scaffold stops the clone, removes what it had written, and continues. The entry is cloned on a later run.
 - Entries pinned with `@ref` are cloned at that ref and `scaffold update` doesn't pull them.
 
 ## `auth`

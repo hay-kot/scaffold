@@ -30,9 +30,13 @@ func (ctrl *Controller) Update(ctx context.Context, c *cli.Command) error {
 	var uptodate []string
 	var pinned []string
 
-	workfn := func() {
+	workfn := func(ctx context.Context) {
 		for _, s := range scaffolds {
-			status, err := pkgs.Update(ctrl.Flags.Cache, s.Root, ctrl.rc)
+			if ctx.Err() != nil {
+				return
+			}
+
+			status, err := pkgs.Update(ctx, ctrl.Flags.Cache, s.Root, ctrl.rc)
 			if err != nil {
 				failed = append(failed, updateStatus{
 					repository: s.Root,

@@ -1,6 +1,7 @@
 package pkgs
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -23,7 +24,7 @@ func TestResolver_Resolve_Remote(t *testing.T) {
 	tempcache := filepath.Join(tempdir, "cache")
 	packagepath := filepath.Join(tempcache, "github.com", "hay-kot", "scaffold-go-cli")
 
-	clonefn := ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
+	clonefn := ClonerFunc(func(ctx context.Context, path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
 		t.Helper()
 
 		err := os.MkdirAll(packagepath, 0o755)
@@ -57,7 +58,7 @@ func TestResolver_Resolve_Remote_Subdirectory(t *testing.T) {
 	repopath := filepath.Join(tempcache, "github.com", "hay-kot", "scaffold-go-cli")
 	subdirpath := filepath.Join(repopath, "subdir")
 
-	clonefn := ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
+	clonefn := ClonerFunc(func(ctx context.Context, path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
 		t.Helper()
 
 		err := os.MkdirAll(subdirpath, 0o755)
@@ -87,7 +88,7 @@ func TestResolver_Resolve_Remote_VersionAndSubdirectory(t *testing.T) {
 	repopath := filepath.Join(tempcache, "github.com", "org", "repo@mybranch")
 	subdirpath := filepath.Join(repopath, ".scaffold", "mytemplate")
 
-	clonefn := ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
+	clonefn := ClonerFunc(func(ctx context.Context, path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
 		t.Helper()
 
 		assert.Equal(t, "git@github.com:org/repo", cfg.URL, "clone URL should not contain @version or #subdir")
@@ -119,7 +120,7 @@ func TestResolver_Resolve_Remote_ShortWithSubdirectory(t *testing.T) {
 	repopath := filepath.Join(tempcache, "github.com", "hay-kot", "scaffold")
 	subdirpath := filepath.Join(repopath, "example")
 
-	clonefn := ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
+	clonefn := ClonerFunc(func(ctx context.Context, path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
 		t.Helper()
 
 		assert.Equal(t, "https://github.com/hay-kot/scaffold", cfg.URL, "clone URL should not contain #subdir")
@@ -213,7 +214,7 @@ func TestResolver_EnsureCached(t *testing.T) {
 
 	var clones int
 	var authURL string
-	clonefn := ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
+	clonefn := ClonerFunc(func(ctx context.Context, path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
 		clones++
 		assert.Equal(t, "https://github.com/hay-kot/scaffold-go-cli", cfg.URL)
 		require.NoError(t, os.MkdirAll(repopath, 0o755))
@@ -227,20 +228,20 @@ func TestResolver_EnsureCached(t *testing.T) {
 	shorts := map[string]string{"gh": "https://github.com"}
 	resolver := NewResolver(shorts, tempcache, tempdir, WithCloner(clonefn))
 
-	require.NoError(t, resolver.EnsureCached("gh:hay-kot/scaffold-go-cli", recordAuth))
+	require.NoError(t, resolver.EnsureCached(context.Background(), "gh:hay-kot/scaffold-go-cli", recordAuth))
 	assert.Equal(t, 1, clones)
 	assert.Equal(t, "https://github.com/hay-kot/scaffold-go-cli", authURL)
 
 	commitRepo(t, repopath)
 
-	require.NoError(t, resolver.EnsureCached("gh:hay-kot/scaffold-go-cli", recordAuth))
+	require.NoError(t, resolver.EnsureCached(context.Background(), "gh:hay-kot/scaffold-go-cli", recordAuth))
 	assert.Equal(t, 1, clones, "a cached repository must not clone again")
 }
 
 func TestResolver_EnsureCached_NotRemote(t *testing.T) {
 	resolver := NewResolver(nil, t.TempDir(), ".")
 
-	require.Error(t, resolver.EnsureCached("~/local/scaffold", noopAuthProvider))
+	require.Error(t, resolver.EnsureCached(context.Background(), "~/local/scaffold", noopAuthProvider))
 }
 
 func commitRepo(t *testing.T, dir string) {
@@ -262,7 +263,7 @@ func TestResolver_EnsureCached_RepairsIncompleteClone(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(repopath, "stale.txt"), nil, 0o644))
 
 	var clones int
-	clonefn := ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
+	clonefn := ClonerFunc(func(ctx context.Context, path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
 		clones++
 		assert.NoFileExists(t, filepath.Join(repopath, "stale.txt"), "the incomplete clone must be removed first")
 		commitRepo(t, path)
@@ -275,7 +276,7 @@ func TestResolver_EnsureCached_RepairsIncompleteClone(t *testing.T) {
 	require.NoError(t, err)
 	assert.False(t, cached)
 
-	require.NoError(t, resolver.EnsureCached("https://github.com/org/repo", noopAuthProvider))
+	require.NoError(t, resolver.EnsureCached(context.Background(), "https://github.com/org/repo", noopAuthProvider))
 	assert.Equal(t, 1, clones)
 
 	cached, err = resolver.Cached("https://github.com/org/repo")
@@ -310,4 +311,27 @@ func TestResolver_Cached(t *testing.T) {
 			assert.Equal(t, tt.want, got)
 		})
 	}
+}
+
+func TestResolver_EnsureCached_CancelRemovesPartialClone(t *testing.T) {
+	tempdir := t.TempDir()
+	cache := filepath.Join(tempdir, "cache")
+	repopath := filepath.Join(cache, "github.com", "org", "repo")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	clonefn := ClonerFunc(func(ctx context.Context, path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
+		_, err := git.PlainInit(path, false)
+		require.NoError(t, err)
+		cancel()
+		<-ctx.Done()
+		return "", ctx.Err()
+	})
+
+	resolver := NewResolver(nil, cache, tempdir, WithCloner(clonefn))
+
+	err := resolver.EnsureCached(ctx, "https://github.com/org/repo", noopAuthProvider)
+	require.ErrorIs(t, err, context.Canceled)
+	assert.NoDirExists(t, repopath)
+	assert.NoDirExists(t, filepath.Join(cache, "github.com"), "empty parent directories must be removed")
+	assert.DirExists(t, cache)
 }

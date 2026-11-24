@@ -2,6 +2,7 @@ package commands
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -65,7 +66,7 @@ func TestSyncRCScaffolds_KeepsCloneProgressOffStdout(t *testing.T) {
 	ctrl := &Controller{Flags: Flags{Cache: t.TempDir()}}
 	ctrl.Prepare(engine.New(), rc)
 	ctrl.syncResolverOpts = []pkgs.ResolverOption{pkgs.WithCloner(pkgs.ClonerFunc(
-		func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
+		func(ctx context.Context, path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
 			clones++
 			assert.NotEqual(t, os.Stdout, cfg.Progress, "clone progress must not reach stdout")
 			return path, nil

@@ -16,6 +16,18 @@ Generate a project or files from a scaffold template.
 | `--output-dir` | string | `.`     | `SCAFFOLD_OUT`       | Output directory (`:memory:` for in-memory FS) |
 | `--dry-run`    | bool   | `false` | —                    | Validate and show files as JSON                |
 
+### `scaffold snip [snippet] [variables...]`
+
+Render a single file snippet: a template body with optional YAML front matter in the scaffold.yaml format (`questions`, `computed`, `messages`, `presets`, `metadata`). Without a snippet name, shows a searchable picker. Writes `./<snippet file name>` and never replaces an existing file unless `--overwrite` is set.
+
+| Flag             | Type   | Default | Env Var              | Description                                                         |
+| ---------------- | ------ | ------- | -------------------- | ------------------------------------------------------------------- |
+| `--output`, `-o` | string | `.`     | —                    | File path, existing directory, or `-` for stdout (prompts go to stderr) |
+| `--overwrite`    | bool   | `false` | `SCAFFOLD_OVERWRITE` | Replace an existing file                                            |
+| `--no-prompt`    | bool   | `false` | —                    | Disable interactive mode                                            |
+| `--preset`       | string | —       | —                    | Preset name for variable values                                     |
+| `--list`, `-l`   | bool   | `false` | —                    | List available snippets                                             |
+
 ### `scaffold list` (alias: `ls`)
 
 List available scaffolds (aliases, local, system).
@@ -69,6 +81,7 @@ Output JSON schema to stdout.
 | ---------------- | -------- | ----------------- | --------------------------------------------------- | ---------------------------------------- |
 | `--scaffoldrc`   | string   | auto-detected     | `SCAFFOLDRC`                                        | Path to scaffoldrc file                  |
 | `--scaffold-dir` | []string | `["./.scaffold"]` | `SCAFFOLD_DIR`                                      | Template directories                     |
+| `--snippet-dir`  | []string | —                 | `SCAFFOLD_SNIPPET_DIR`                              | Extra snippet locations                  |
 | `--cache`        | string   | auto-detected     | `SCAFFOLD_CACHE`                                    | Cache directory                          |
 | `--log-level`    | string   | `warn`            | `SCAFFOLD_LOG_LEVEL`, `SCAFFOLD_SETTINGS_LOG_LEVEL` | Log level                                |
 | `--log-file`     | string   | —                 | `SCAFFOLD_SETTINGS_LOG_FILE`                        | Log file (`stdout` for stdout)           |
@@ -93,6 +106,7 @@ Output JSON schema to stdout.
 | ----------------------------- | ---------------- | ------------------------ |
 | `SCAFFOLDRC`                  | `--scaffoldrc`   | ScaffoldRC file path     |
 | `SCAFFOLD_DIR`                | `--scaffold-dir` | Template directories     |
+| `SCAFFOLD_SNIPPET_DIR`        | `--snippet-dir`  | Extra snippet locations  |
 | `SCAFFOLD_CACHE`              | `--cache`        | Cache directory          |
 | `SCAFFOLD_LOG_LEVEL`          | `--log-level`    | Log level                |
 | `SCAFFOLD_SETTINGS_LOG_LEVEL` | `--log-level`    | Log level (alt)          |

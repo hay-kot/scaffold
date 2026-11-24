@@ -33,7 +33,7 @@ func TestSyncRCScaffolds_WarnsAndContinues(t *testing.T) {
 	ctrl.printer = newPrinter(stdout)
 	ctrl.errPrinter = newPrinter(stderr)
 
-	require.NoError(t, ctrl.syncRCScaffolds())
+	ctrl.syncRCScaffolds()
 
 	assert.Empty(t, stdout.String(), "sync must not write to stdout")
 	assert.Contains(t, stderr.String(), "https://127.0.0.1:1/org/unreachable")
@@ -51,7 +51,7 @@ func TestSyncRCScaffolds_RedactsCredentials(t *testing.T) {
 	stderr := &bytes.Buffer{}
 	ctrl.errPrinter = newPrinter(stderr)
 
-	require.NoError(t, ctrl.syncRCScaffolds())
+	ctrl.syncRCScaffolds()
 
 	assert.Contains(t, stderr.String(), "https://redacted@127.0.0.1:1/org/private")
 	assert.NotContains(t, stderr.String(), "ghp_SECRET123")
@@ -72,6 +72,6 @@ func TestSyncRCScaffolds_KeepsCloneProgressOffStdout(t *testing.T) {
 		},
 	))}
 
-	require.NoError(t, ctrl.syncRCScaffolds())
+	ctrl.syncRCScaffolds()
 	assert.Equal(t, 1, clones)
 }

@@ -131,6 +131,7 @@ Remote scaffolds that are always available. Each entry uses the `scaffold new` a
 - Before the `scaffold new` picker, `scaffold list`, and `scaffold update`, missing entries are cloned into the cache; they then appear as system scaffolds
 - The clone step never pulls; `scaffold update` pulls cached repositories
 - Clones use matching `auth` entries and never prompt; a failed clone warns on stderr and the command continues with the cache
+- Ctrl+C during the clone spinner skips the remaining clones with a warning; the command continues, and an incomplete clone is cloned again on the next run
 - Entries pinned with `@ref` are skipped by `scaffold update`
 - Spinner and warnings go to stderr, so `scaffold list --json` stdout stays valid JSON
 

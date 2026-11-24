@@ -58,9 +58,7 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 			return fmt.Errorf("scaffold path is required, see 'scaffold list' for available scaffolds")
 		}
 
-		if err := ctrl.syncRCScaffolds(); err != nil {
-			return err
-		}
+		ctrl.syncRCScaffolds()
 
 		systemScaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))
 		if err != nil {

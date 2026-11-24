@@ -18,9 +18,7 @@ type updateStatus struct {
 func (ctrl *Controller) Update(ctx context.Context, c *cli.Command) error {
 	ctrl.ready()
 
-	if err := ctrl.syncRCScaffolds(); err != nil {
-		return err
-	}
+	ctrl.syncRCScaffolds()
 
 	scaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))
 	if err != nil {

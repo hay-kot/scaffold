@@ -16,11 +16,12 @@ import (
 // error, so offline use keeps working with the scaffolds already cached. All
 // output goes to stderr so stdout stays clean for 'scaffold list --json'.
 //
-// The only error it returns is from the spinner, such as a Ctrl+C. Callers
-// must stop on it, because the clone goroutine can still be running.
-func (ctrl *Controller) syncRCScaffolds() error {
+// A spinner error, such as a Ctrl+C to skip a clone that hangs while offline,
+// is also only a warning. The clone goroutine can still be running then, so
+// its failures are not read; an incomplete clone is repaired on the next sync.
+func (ctrl *Controller) syncRCScaffolds() {
 	if len(ctrl.rc.Scaffolds) == 0 {
-		return nil
+		return
 	}
 
 	opts := append([]pkgs.ResolverOption{pkgs.WithProgress(io.Discard)}, ctrl.syncResolverOpts...)
@@ -40,7 +41,7 @@ func (ctrl *Controller) syncRCScaffolds() error {
 	}
 
 	if len(missing) == 0 {
-		return nil
+		return
 	}
 
 	var failures []string
@@ -52,7 +53,8 @@ func (ctrl *Controller) syncRCScaffolds() error {
 		}
 	})
 	if err != nil {
-		return err
+		ctrl.errPrinter.Warning(fmt.Sprintf("skipped cloning scaffolds from scaffoldrc: %v", err))
+		return
 	}
 
 	for _, f := range failures {
@@ -62,8 +64,6 @@ func (ctrl *Controller) syncRCScaffolds() error {
 	if len(failures) > 0 {
 		ctrl.errPrinter.Warning("check the network connection and the auth entries in scaffoldrc")
 	}
-
-	return nil
 }
 
 // runWithStderrSpinner runs work behind a spinner on stderr, or directly when

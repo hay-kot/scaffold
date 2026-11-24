@@ -16,6 +16,8 @@ import (
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
+	"github.com/hay-kot/scaffold/app/core/apperrors"
+	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/hay-kot/scaffold/app/scaffold"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
@@ -42,8 +44,7 @@ func ExpandPath(p string) string {
 	return p
 }
 
-// IsGlob reports whether root is a glob pattern rather than a plain path.
-func IsGlob(root string) bool {
+func isGlob(root string) bool {
 	return strings.ContainsAny(root, "*?[{")
 }
 
@@ -82,7 +83,7 @@ func Discover(roots []string) []Snippet {
 func discoverRoot(root string) ([]Snippet, error) {
 	info, err := os.Stat(root)
 	switch {
-	case errors.Is(err, fs.ErrNotExist) && IsGlob(root):
+	case errors.Is(err, fs.ErrNotExist) && isGlob(root):
 		return discoverGlob(root)
 	case errors.Is(err, fs.ErrNotExist):
 		log.Debug().Str("root", root).Msg("snippet root not found, skipping")
@@ -202,48 +203,139 @@ func Names(snippets []Snippet) []string {
 
 const frontMatterDelim = "---"
 
+// File is a parsed snippet.
+type File struct {
+	Conf *scaffold.ProjectScaffoldFile
+	Body string
+	// BodyLine is the 1-based line of the snippet file where Body starts. It
+	// maps template error lines in Body back to lines in the file.
+	BodyLine int
+
+	raw string
+}
+
 // Parse splits a snippet into its scaffold configuration and template body.
 // The front matter is optional; it must start on the first line and end with
 // a line that holds only "---". One blank line directly after the closing
 // delimiter is dropped so authors can separate the two parts.
-func Parse(r io.Reader) (*scaffold.ProjectScaffoldFile, string, error) {
+func Parse(r io.Reader) (*File, error) {
 	data, err := io.ReadAll(r)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
-	conf := &scaffold.ProjectScaffoldFile{}
+	out := &File{Conf: &scaffold.ProjectScaffoldFile{}, BodyLine: 1, raw: string(data)}
 
 	first, rest, ok := cutLine(data)
 	if !ok || string(first) != frontMatterDelim {
-		return conf, string(data), nil
+		out.Body = string(data)
+		return out, nil
 	}
 
+	consumed := 1
 	var frontMatter []byte
 	for {
 		var line []byte
 		line, rest, ok = cutLine(rest)
+		consumed++
 		if string(line) == frontMatterDelim {
 			break
 		}
 
 		if !ok {
-			return nil, "", errors.New("snippet front matter has no closing ---")
+			return nil, errors.New("snippet front matter has no closing ---")
 		}
 
 		frontMatter = append(frontMatter, line...)
 		frontMatter = append(frontMatter, '\n')
 	}
 
-	if err := yaml.Unmarshal(frontMatter, conf); err != nil {
-		return nil, "", fmt.Errorf("failed to parse snippet front matter: %w", err)
+	if err := yaml.Unmarshal(frontMatter, out.Conf); err != nil {
+		return nil, fmt.Errorf("failed to parse snippet front matter: %w", err)
 	}
 
 	if blank, after, ok := cutLine(rest); ok && len(blank) == 0 {
 		rest = after
+		consumed++
 	}
 
-	return conf, string(rest), nil
+	out.Body = string(rest)
+	out.BodyLine = consumed + 1
+	return out, nil
+}
+
+// IgnoredKeys returns the front matter keys that are set but have no effect
+// on a snippet, because they only make sense for a directory of files.
+func (f *File) IgnoredKeys() []string {
+	c := f.Conf
+	keys := []string{}
+	for _, k := range []struct {
+		name string
+		set  bool
+	}{
+		{"skip", len(c.Skip) > 0},
+		{"rewrites", len(c.Rewrites) > 0},
+		{"inject", len(c.Inject) > 0},
+		{"features", len(c.Features) > 0},
+		{"each", len(c.Each) > 0},
+	} {
+		if k.set {
+			keys = append(keys, k.name)
+		}
+	}
+
+	return keys
+}
+
+// Render executes the body with vars. The delimiters come from the last
+// front matter delimiters entry whose glob matches name, the same rule a
+// full scaffold applies to each file. Template errors report the snippet path
+// and the line in the snippet file, with the lines around it.
+func (f *File) Render(eng *engine.Engine, name, path string, vars any) (string, error) {
+	left, right := "{{", "}}"
+	for _, d := range f.Conf.Delimiters {
+		match, err := doublestar.Match(d.Glob, name)
+		if err != nil {
+			return "", fmt.Errorf("invalid delimiters glob %q: %w", d.Glob, err)
+		}
+
+		if match {
+			left, right = d.Left, d.Right
+		}
+	}
+
+	tmpl, err := eng.Factory(strings.NewReader(f.Body), engine.WithDelims(left, right))
+	if err != nil {
+		if errors.Is(err, engine.ErrTemplateIsEmpty) {
+			return "", nil
+		}
+		return "", f.templateError(err, path, left, right)
+	}
+
+	var out strings.Builder
+	if err := tmpl.Execute(&out, vars); err != nil {
+		return "", f.templateError(err, path, left, right)
+	}
+
+	return out.String(), nil
+}
+
+func (f *File) templateError(err error, path, left, right string) error {
+	terr := apperrors.WrapTemplateError(err, path).WithDelimiters(left, right)
+	if terr.LineNumber <= 0 {
+		return terr
+	}
+
+	terr.LineNumber += f.BodyLine - 1
+
+	lines := strings.Split(f.raw, "\n")
+	if terr.LineNumber > len(lines) {
+		return terr
+	}
+
+	from := max(terr.LineNumber-2, 0)
+	to := min(terr.LineNumber+1, len(lines))
+	return terr.WithContext(lines[from:to])
 }
 
 // cutLine returns the first line of data without its line ending, the data

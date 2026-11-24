@@ -18,7 +18,7 @@ Generate a project or files from a scaffold template.
 
 ### `scaffold snip [snippet] [variables...]`
 
-Render a single file snippet: a template body with optional YAML front matter in the scaffold.yaml format (`questions`, `computed`, `messages`, `presets`, `metadata`). Without a snippet name, shows a searchable picker. Writes `./<snippet file name>` and never replaces an existing file unless `--overwrite` is set.
+Render a single file snippet: a template body with optional YAML front matter in the scaffold.yaml format (`questions`, `computed`, `messages`, `presets`, `metadata`, `delimiters` matched against the snippet name). Other keys log a warning and are ignored. Without a snippet name, shows a searchable picker. Writes `./<snippet file name>` and never replaces an existing file unless `--overwrite` is set.
 
 | Flag             | Type   | Default | Env Var              | Description                                                         |
 | ---------------- | ------ | ------- | -------------------- | ------------------------------------------------------------------- |

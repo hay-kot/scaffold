@@ -126,16 +126,14 @@ func TestWriteSnippet(t *testing.T) {
 	t.Run("directory destination uses the snippet file name", func(t *testing.T) {
 		dir := t.TempDir()
 
-		got, err := writeSnippet(dir, "a.txt", []byte("a"), 0o644, false)
-		require.NoError(t, err)
-		assert.Equal(t, filepath.Join(dir, "a.txt"), got)
+		require.NoError(t, writeSnippet(dir, "a.txt", []byte("a"), 0o644, false))
+		assert.FileExists(t, filepath.Join(dir, "a.txt"))
 	})
 
 	t.Run("file destination creates parent directories", func(t *testing.T) {
 		dest := filepath.Join(t.TempDir(), "nested", "b.txt")
 
-		_, err := writeSnippet(dest, "a.txt", []byte("b"), 0o644, false)
-		require.NoError(t, err)
+		require.NoError(t, writeSnippet(dest, "a.txt", []byte("b"), 0o644, false))
 
 		info, err := os.Stat(dest)
 		require.NoError(t, err)
@@ -145,16 +143,14 @@ func TestWriteSnippet(t *testing.T) {
 	t.Run("trailing separator creates the directory", func(t *testing.T) {
 		dir := filepath.Join(t.TempDir(), "new") + string(filepath.Separator)
 
-		got, err := writeSnippet(dir, "d.txt", []byte("d"), 0o644, false)
-		require.NoError(t, err)
-		assert.Equal(t, filepath.Join(dir, "d.txt"), got)
+		require.NoError(t, writeSnippet(dir, "d.txt", []byte("d"), 0o644, false))
+		assert.FileExists(t, filepath.Join(dir, "d.txt"))
 	})
 
 	t.Run("perm is applied", func(t *testing.T) {
 		dest := filepath.Join(t.TempDir(), "run.sh")
 
-		_, err := writeSnippet(dest, "run.sh", []byte("#!/bin/sh"), 0o755, false)
-		require.NoError(t, err)
+		require.NoError(t, writeSnippet(dest, "run.sh", []byte("#!/bin/sh"), 0o755, false))
 
 		info, err := os.Stat(dest)
 		require.NoError(t, err)
@@ -165,8 +161,7 @@ func TestWriteSnippet(t *testing.T) {
 		dest := filepath.Join(t.TempDir(), "c.txt")
 		require.NoError(t, os.WriteFile(dest, []byte("old content"), 0o644))
 
-		_, err := writeSnippet(dest, "c.txt", []byte("new"), 0o644, true)
-		require.NoError(t, err)
+		require.NoError(t, writeSnippet(dest, "c.txt", []byte("new"), 0o644, true))
 
 		got, err := os.ReadFile(dest)
 		require.NoError(t, err)

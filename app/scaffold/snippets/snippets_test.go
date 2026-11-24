@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hay-kot/scaffold/app/core/apperrors"
+	"github.com/hay-kot/scaffold/app/core/engine"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -149,6 +151,8 @@ func TestParse(t *testing.T) {
 		wantQuest int
 		wantPre   string
 		wantErr   bool
+		// BodyLine is 1 when the input has no front matter.
+		wantBodyLine int
 	}{
 		{
 			name: "front matter with blank separator",
@@ -163,30 +167,35 @@ questions:
 
 Description: {{ .Scaffold.description }}
 `,
-			wantBody:  "Description: {{ .Scaffold.description }}\n",
-			wantQuest: 1,
-			wantPre:   "hello",
+			wantBody:     "Description: {{ .Scaffold.description }}\n",
+			wantQuest:    1,
+			wantPre:      "hello",
+			wantBodyLine: 10,
 		},
 		{
-			name:     "crlf line endings",
-			input:    "---\r\nmessages:\r\n  pre: hi\r\n---\r\nbody\r\n",
-			wantBody: "body\r\n",
-			wantPre:  "hi",
+			name:         "crlf line endings",
+			input:        "---\r\nmessages:\r\n  pre: hi\r\n---\r\nbody\r\n",
+			wantBody:     "body\r\n",
+			wantPre:      "hi",
+			wantBodyLine: 5,
 		},
 		{
-			name:     "no front matter",
-			input:    "just a template {{ .Project }}\n",
-			wantBody: "just a template {{ .Project }}\n",
+			name:         "no front matter",
+			input:        "just a template {{ .Project }}\n",
+			wantBody:     "just a template {{ .Project }}\n",
+			wantBodyLine: 1,
 		},
 		{
-			name:     "empty front matter",
-			input:    "---\n---\nbody",
-			wantBody: "body",
+			name:         "empty front matter",
+			input:        "---\n---\nbody",
+			wantBody:     "body",
+			wantBodyLine: 3,
 		},
 		{
-			name:     "only one blank line dropped",
-			input:    "---\n---\n\n\nbody",
-			wantBody: "\nbody",
+			name:         "only one blank line dropped",
+			input:        "---\n---\n\n\nbody",
+			wantBody:     "\nbody",
+			wantBodyLine: 4,
 		},
 		{
 			name:    "unterminated front matter",
@@ -202,16 +211,91 @@ Description: {{ .Scaffold.description }}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			conf, body, err := Parse(strings.NewReader(tt.input))
+			got, err := Parse(strings.NewReader(tt.input))
 			if tt.wantErr {
 				require.Error(t, err)
 				return
 			}
 
 			require.NoError(t, err)
-			assert.Equal(t, tt.wantBody, body)
-			assert.Len(t, conf.Questions, tt.wantQuest)
-			assert.Equal(t, tt.wantPre, conf.Messages.Pre)
+			assert.Equal(t, tt.wantBody, got.Body)
+			assert.Equal(t, tt.wantBodyLine, got.BodyLine)
+			assert.Len(t, got.Conf.Questions, tt.wantQuest)
+			assert.Equal(t, tt.wantPre, got.Conf.Messages.Pre)
 		})
 	}
+}
+
+func mustParse(t *testing.T, input string) *File {
+	t.Helper()
+	f, err := Parse(strings.NewReader(input))
+	require.NoError(t, err)
+	return f
+}
+
+func TestRender_Delimiters(t *testing.T) {
+	const input = `---
+delimiters:
+  - glob: "workflows/*.yml"
+    left: "[["
+    right: "]]"
+---
+name: [[ .Scaffold.name ]]
+run: ${{ github.sha }}
+`
+
+	t.Run("matching glob uses the override", func(t *testing.T) {
+		got, err := mustParse(t, input).Render(engine.New(), "workflows/ci.yml", "ci.yml", engine.Vars{"Scaffold": map[string]any{"name": "ci"}})
+		require.NoError(t, err)
+		assert.Equal(t, "name: ci\nrun: ${{ github.sha }}\n", got)
+	})
+
+	t.Run("other names keep the default delimiters", func(t *testing.T) {
+		got, err := mustParse(t, "---\ndelimiters:\n  - glob: \"*.yml\"\n    left: \"[[\"\n    right: \"]]\"\n---\n{{ .Scaffold.name }}").
+			Render(engine.New(), "readme.md", "readme.md", engine.Vars{"Scaffold": map[string]any{"name": "x"}})
+		require.NoError(t, err)
+		assert.Equal(t, "x", got)
+	})
+}
+
+func TestRender_EmptyBody(t *testing.T) {
+	got, err := mustParse(t, "---\nmessages:\n  pre: hi\n---\n").Render(engine.New(), "empty", "empty", nil)
+	require.NoError(t, err)
+	assert.Empty(t, got)
+}
+
+func TestRender_ErrorReportsFileLine(t *testing.T) {
+	const input = "---\nmessages:\n  pre: hi\n---\n\nline one\n{{ .Missing | nosuchfunc }}\nline three\n"
+
+	_, err := mustParse(t, input).Render(engine.New(), "broken.txt", "/snips/broken.txt", nil)
+
+	var terr *apperrors.TemplateError
+	require.ErrorAs(t, err, &terr)
+	assert.Equal(t, "/snips/broken.txt", terr.FilePath)
+	assert.Equal(t, 7, terr.LineNumber)
+	assert.Equal(t, []string{"line one", "{{ .Missing | nosuchfunc }}", "line three"}, terr.Context)
+}
+
+func TestIgnoredKeys(t *testing.T) {
+	f := mustParse(t, `---
+skip: ["a"]
+rewrites:
+  - from: a
+    to: b
+inject:
+  - name: x
+    path: y
+    at: z
+    template: t
+features:
+  - value: "true"
+    globs: ["*"]
+each: [items]
+questions:
+  - name: q
+---
+body`)
+
+	assert.Equal(t, []string{"skip", "rewrites", "inject", "features", "each"}, f.IgnoredKeys())
+	assert.Empty(t, mustParse(t, "body").IgnoredKeys())
 }

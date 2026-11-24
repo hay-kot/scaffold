@@ -67,9 +67,14 @@ func (ctrl *Controller) Snip(args []string, flags FlagsSnip) error {
 	}
 	defer f.Close() //nolint:errcheck
 
-	conf, body, err := snippets.Parse(f)
+	parsed, err := snippets.Parse(f)
 	if err != nil {
 		return fmt.Errorf("snippet %s: %w", snip.Name, err)
+	}
+
+	conf := parsed.Conf
+	for _, key := range parsed.IgnoredKeys() {
+		log.Warn().Str("snippet", snip.Name).Str("key", key).Msg("front matter key does not apply to snippets, ignoring it")
 	}
 
 	info, err := f.Stat()
@@ -116,9 +121,9 @@ func (ctrl *Controller) Snip(args []string, flags FlagsSnip) error {
 		return err
 	}
 
-	rendered, err := ctrl.engine.TmplString(body, vars)
+	rendered, err := parsed.Render(ctrl.engine, snip.Name, snip.Path, vars)
 	if err != nil {
-		return fmt.Errorf("snippet %s: %w", snip.Name, err)
+		return err
 	}
 
 	if flags.Output == SnipStdout {
@@ -126,7 +131,7 @@ func (ctrl *Controller) Snip(args []string, flags FlagsSnip) error {
 			return err
 		}
 	} else {
-		if _, err := writeSnippet(flags.Output, filepath.Base(snip.Path), []byte(rendered), snippetPerm(info.Mode()), flags.Overwrite); err != nil {
+		if err := writeSnippet(flags.Output, filepath.Base(snip.Path), []byte(rendered), snippetPerm(info.Mode()), flags.Overwrite); err != nil {
 			return err
 		}
 	}
@@ -287,11 +292,11 @@ func snippetPickerPrompt(names []string, theme styles.HuhTheme) (string, error) 
 	return selected, err
 }
 
-// writeSnippet writes content to dest and returns the path it wrote. An empty
+// writeSnippet writes content to dest. An empty
 // dest, a dest that ends in a path separator, or an existing directory
 // receives a file called filename. An existing file is only replaced when
 // overwrite is set.
-func writeSnippet(dest, filename string, content []byte, perm fs.FileMode, overwrite bool) (string, error) {
+func writeSnippet(dest, filename string, content []byte, perm fs.FileMode, overwrite bool) error {
 	if dest == "" {
 		dest = "."
 	}
@@ -303,7 +308,7 @@ func writeSnippet(dest, filename string, content []byte, perm fs.FileMode, overw
 	}
 
 	if err := os.MkdirAll(filepath.Dir(dest), 0o755); err != nil {
-		return "", err
+		return err
 	}
 
 	flag := os.O_WRONLY | os.O_CREATE | os.O_TRUNC
@@ -314,15 +319,15 @@ func writeSnippet(dest, filename string, content []byte, perm fs.FileMode, overw
 	f, err := os.OpenFile(dest, flag, perm)
 	if err != nil {
 		if errors.Is(err, fs.ErrExist) {
-			return "", fmt.Errorf("%s already exists, use --overwrite to replace it", dest)
+			return fmt.Errorf("%s already exists, use --overwrite to replace it", dest)
 		}
-		return "", err
+		return err
 	}
 
 	if _, err := f.Write(content); err != nil {
 		_ = f.Close()
-		return "", err
+		return err
 	}
 
-	return dest, f.Close()
+	return f.Close()
 }

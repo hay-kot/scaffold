@@ -41,8 +41,11 @@ These front matter keys apply to snippets:
 - `messages`
 - `presets`
 - `metadata`
+- `delimiters`, matched against the snippet name (for example `workflows/*.yml`)
 
-Hooks, features, `inject`, `each`, `rewrites`, and partials apply only to full scaffolds.
+Hooks, partials, `skip`, `rewrites`, `inject`, `features`, and `each` apply only to full scaffolds. Scaffold prints a warning when a snippet sets one of these keys, and ignores it.
+
+Template errors show the line number in the snippet file, front matter included, with the lines around it.
 
 ## Snippet Locations
 

@@ -36,6 +36,8 @@ type Controller struct {
 	// errPrinter writes to stderr, for output that must stay out of
 	// machine-readable stdout.
 	errPrinter *printer.Printer
+
+	syncResolverOpts []pkgs.ResolverOption
 }
 
 // Prepare sets up the controller to be called by the CLI, if the controller is

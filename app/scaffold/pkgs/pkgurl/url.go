@@ -158,3 +158,12 @@ func FindScpLikeComponents(url string) (user, host, port, path, hash string) {
 func IsLocalEndpoint(url string) bool {
 	return !IsRemoteEndpoint(url)
 }
+
+// Redact replaces the userinfo of every http and https URL in s with
+// "redacted", so a token in a scaffold ref does not reach logs or terminal
+// output. SSH userinfo such as git@ is a user name, not a secret, so it stays.
+func Redact(s string) string {
+	return userinfoRe.ReplaceAllString(s, "${1}redacted@")
+}
+
+var userinfoRe = regexp.MustCompile(`(https?://)[^/@\s]+@`)

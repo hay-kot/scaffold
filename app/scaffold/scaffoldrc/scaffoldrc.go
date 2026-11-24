@@ -156,7 +156,7 @@ func (rc *ScaffoldRC) Validate() error {
 		if !ok {
 			errs = append(errs, RCValidationError{
 				Key:   fmt.Sprintf("scaffolds[%d]", i),
-				Cause: fmt.Errorf("invalid scaffold %q: must be a remote URL, an SSH git URL, or use a short", v),
+				Cause: fmt.Errorf("invalid scaffold %q: must be a remote URL, an SSH git URL, or use a short", pkgurl.Redact(v)),
 			})
 		}
 	}

@@ -44,14 +44,7 @@ func Update(cacheRoot string, scaffoldPath string, authprovider AuthProvider) (U
 		return UpdateStatusUpToDate, err
 	}
 
-	opts := &git.PullOptions{}
-	if remote, err := repo.Remote(git.DefaultRemoteName); err == nil && len(remote.Config().URLs) > 0 {
-		if auth, ok := authprovider.Authenticator(remote.Config().URLs[0]); ok {
-			opts.Auth = auth
-		}
-	}
-
-	err = w.Pull(opts)
+	err = w.Pull(pullOptions(repo, authprovider))
 	if err != nil {
 		if errors.Is(err, git.NoErrAlreadyUpToDate) {
 			return UpdateStatusUpToDate, nil
@@ -76,4 +69,19 @@ func findRepoRoot(cacheRoot string, scaffoldPath string) (string, error) {
 	}
 
 	return "", fmt.Errorf("no git repository found for %s", scaffoldPath)
+}
+
+func pullOptions(repo *git.Repository, authprovider AuthProvider) *git.PullOptions {
+	opts := &git.PullOptions{}
+
+	remote, err := repo.Remote(git.DefaultRemoteName)
+	if err != nil || len(remote.Config().URLs) == 0 {
+		return opts
+	}
+
+	if auth, ok := authprovider.Authenticator(remote.Config().URLs[0]); ok {
+		opts.Auth = auth
+	}
+
+	return opts
 }

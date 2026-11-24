@@ -8,25 +8,29 @@ import (
 	"charm.land/huh/v2/spinner"
 	"github.com/charmbracelet/x/term"
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
-	"github.com/rs/zerolog/log"
+	"github.com/hay-kot/scaffold/app/scaffold/pkgs/pkgurl"
 )
 
 // syncRCScaffolds clones the scaffoldrc scaffolds that are not cached yet. It
 // never pulls; 'scaffold update' does that. A failed clone is a warning, not an
 // error, so offline use keeps working with the scaffolds already cached. All
 // output goes to stderr so stdout stays clean for 'scaffold list --json'.
-func (ctrl *Controller) syncRCScaffolds() {
+//
+// The only error it returns is from the spinner, such as a Ctrl+C. Callers
+// must stop on it, because the clone goroutine can still be running.
+func (ctrl *Controller) syncRCScaffolds() error {
 	if len(ctrl.rc.Scaffolds) == 0 {
-		return
+		return nil
 	}
 
-	resolver := pkgs.NewResolver(ctrl.rc.Shorts, ctrl.Flags.Cache, ".", pkgs.WithProgress(io.Discard))
+	opts := append([]pkgs.ResolverOption{pkgs.WithProgress(io.Discard)}, ctrl.syncResolverOpts...)
+	resolver := pkgs.NewResolver(ctrl.rc.Shorts, ctrl.Flags.Cache, ".", opts...)
 
 	var missing []string
 	for _, ref := range ctrl.rc.Scaffolds {
 		cached, err := resolver.Cached(ref)
 		if err != nil {
-			ctrl.errPrinter.Warning(fmt.Sprintf("skipping scaffold %s: %v", ref, err))
+			ctrl.errPrinter.Warning(fmt.Sprintf("skipping scaffold %s: %s", pkgurl.Redact(ref), pkgurl.Redact(err.Error())))
 			continue
 		}
 
@@ -36,17 +40,20 @@ func (ctrl *Controller) syncRCScaffolds() {
 	}
 
 	if len(missing) == 0 {
-		return
+		return nil
 	}
 
 	var failures []string
-	runWithStderrSpinner("Cloning scaffolds from scaffoldrc...", func() {
+	err := runWithStderrSpinner("Cloning scaffolds from scaffoldrc...", func() {
 		for _, ref := range missing {
-			if _, err := resolver.EnsureCached(ref, ctrl.rc); err != nil {
-				failures = append(failures, fmt.Sprintf("could not clone scaffold %s: %v", ref, err))
+			if err := resolver.EnsureCached(ref, ctrl.rc); err != nil {
+				failures = append(failures, fmt.Sprintf("could not clone scaffold %s: %v", pkgurl.Redact(ref), err))
 			}
 		}
 	})
+	if err != nil {
+		return err
+	}
 
 	for _, f := range failures {
 		ctrl.errPrinter.Warning(f)
@@ -55,20 +62,22 @@ func (ctrl *Controller) syncRCScaffolds() {
 	if len(failures) > 0 {
 		ctrl.errPrinter.Warning("check the network connection and the auth entries in scaffoldrc")
 	}
+
+	return nil
 }
 
-func runWithStderrSpinner(title string, work func()) {
+// runWithStderrSpinner runs work behind a spinner on stderr, or directly when
+// stderr is not a terminal. On a spinner error such as a Ctrl+C, work may still
+// be running, so the caller must not read state that work writes.
+func runWithStderrSpinner(title string, work func()) error {
 	if !term.IsTerminal(os.Stderr.Fd()) {
 		work()
-		return
+		return nil
 	}
 
-	err := spinner.New().
+	return spinner.New().
 		Title(title).
 		WithOutput(os.Stderr).
 		Action(work).
 		Run()
-	if err != nil {
-		log.Debug().Err(err).Msg("spinner failed")
-	}
 }

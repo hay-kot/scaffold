@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport"
+	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -74,4 +76,23 @@ func TestUpdate_Pinned(t *testing.T) {
 func TestUpdate_NoRepository(t *testing.T) {
 	_, err := Update(t.TempDir(), "example.com/org/repo", noopAuthProvider)
 	require.Error(t, err)
+}
+
+func TestPullOptions_UsesOriginAuth(t *testing.T) {
+	repo, err := git.PlainInit(t.TempDir(), false)
+	require.NoError(t, err)
+
+	_, err = repo.CreateRemote(&config.RemoteConfig{Name: git.DefaultRemoteName, URLs: []string{"https://example.com/org/repo"}})
+	require.NoError(t, err)
+
+	want := &githttp.TokenAuth{Token: "sentinel"}
+	provider := AuthProviderFunc(func(pkgurl string) (transport.AuthMethod, bool) {
+		if pkgurl == "https://example.com/org/repo" {
+			return want, true
+		}
+		return nil, false
+	})
+
+	assert.Same(t, want, pullOptions(repo, provider).Auth)
+	assert.Nil(t, pullOptions(repo, noopAuthProvider).Auth)
 }

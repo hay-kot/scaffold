@@ -227,21 +227,87 @@ func TestResolver_EnsureCached(t *testing.T) {
 	shorts := map[string]string{"gh": "https://github.com"}
 	resolver := NewResolver(shorts, tempcache, tempdir, WithCloner(clonefn))
 
-	cloned, err := resolver.EnsureCached("gh:hay-kot/scaffold-go-cli", recordAuth)
-	require.NoError(t, err)
-	assert.True(t, cloned)
+	require.NoError(t, resolver.EnsureCached("gh:hay-kot/scaffold-go-cli", recordAuth))
 	assert.Equal(t, 1, clones)
 	assert.Equal(t, "https://github.com/hay-kot/scaffold-go-cli", authURL)
 
-	cloned, err = resolver.EnsureCached("gh:hay-kot/scaffold-go-cli", recordAuth)
-	require.NoError(t, err)
-	assert.False(t, cloned)
+	commitRepo(t, repopath)
+
+	require.NoError(t, resolver.EnsureCached("gh:hay-kot/scaffold-go-cli", recordAuth))
 	assert.Equal(t, 1, clones, "a cached repository must not clone again")
 }
 
 func TestResolver_EnsureCached_NotRemote(t *testing.T) {
 	resolver := NewResolver(nil, t.TempDir(), ".")
 
-	_, err := resolver.EnsureCached("~/local/scaffold", noopAuthProvider)
-	require.Error(t, err)
+	require.Error(t, resolver.EnsureCached("~/local/scaffold", noopAuthProvider))
+}
+
+func commitRepo(t *testing.T, dir string) {
+	t.Helper()
+
+	repo, err := git.PlainInit(dir, false)
+	require.NoError(t, err)
+	commitFile(t, repo, dir, "scaffold.yaml")
+}
+
+func TestResolver_EnsureCached_RepairsIncompleteClone(t *testing.T) {
+	tempdir := t.TempDir()
+	cache := filepath.Join(tempdir, "cache")
+	repopath := filepath.Join(cache, "github.com", "org", "repo")
+
+	// An interrupted clone leaves a repository with no commits.
+	_, err := git.PlainInit(repopath, false)
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(filepath.Join(repopath, "stale.txt"), nil, 0o644))
+
+	var clones int
+	clonefn := ClonerFunc(func(path string, version string, isBare bool, cfg *git.CloneOptions) (string, error) {
+		clones++
+		assert.NoFileExists(t, filepath.Join(repopath, "stale.txt"), "the incomplete clone must be removed first")
+		commitRepo(t, path)
+		return path, nil
+	})
+
+	resolver := NewResolver(nil, cache, tempdir, WithCloner(clonefn))
+
+	cached, err := resolver.Cached("https://github.com/org/repo")
+	require.NoError(t, err)
+	assert.False(t, cached)
+
+	require.NoError(t, resolver.EnsureCached("https://github.com/org/repo", noopAuthProvider))
+	assert.Equal(t, 1, clones)
+
+	cached, err = resolver.Cached("https://github.com/org/repo")
+	require.NoError(t, err)
+	assert.True(t, cached)
+}
+
+func TestResolver_Cached(t *testing.T) {
+	cache := t.TempDir()
+	resolver := NewResolver(nil, cache, ".")
+	dir := func(repo string) string { return filepath.Join(cache, "example.com", "org", repo) }
+
+	require.NoError(t, os.MkdirAll(dir("empty"), 0o755))
+	require.NoError(t, os.MkdirAll(dir("plain"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(dir("plain"), "scaffold.yaml"), nil, 0o644))
+	commitRepo(t, dir("cloned"))
+
+	tests := []struct {
+		repo string
+		want bool
+	}{
+		{repo: "missing", want: false},
+		{repo: "empty", want: false},
+		{repo: "plain", want: true},
+		{repo: "cloned", want: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.repo, func(t *testing.T) {
+			got, err := resolver.Cached("https://example.com/org/" + tt.repo)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }

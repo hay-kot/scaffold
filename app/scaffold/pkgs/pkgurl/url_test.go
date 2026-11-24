@@ -102,3 +102,19 @@ func TestFindScpLikeComponents(t *testing.T) {
 		assert.Equal(t, tc.subdir, subdir)
 	}
 }
+
+func TestRedact(t *testing.T) {
+	tests := map[string]string{
+		"https://bot:token@github.com/org/repo": "https://redacted@github.com/org/repo",
+		"https://ghp_token@github.com/org/repo": "https://redacted@github.com/org/repo",
+		"http://u:p@host/a/b@v1.0.0#sub":        "http://redacted@host/a/b@v1.0.0#sub",
+		"https://github.com/org/repo@v1.0.0":    "https://github.com/org/repo@v1.0.0",
+		"git@github.com:org/repo":               "git@github.com:org/repo",
+		"ssh://git@github.com/org/repo":         "ssh://git@github.com/org/repo",
+		`Get "https://u:p@host/x": refused`:     `Get "https://redacted@host/x": refused`,
+	}
+
+	for in, want := range tests {
+		assert.Equal(t, want, Redact(in), in)
+	}
+}

@@ -1,6 +1,7 @@
 package pkgs
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -149,23 +150,33 @@ func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProv
 }
 
 // EnsureCached clones the remote scaffold ref into the cache when it is not
-// there yet. It never pulls. cloned reports whether a clone happened. ref uses
-// the same syntax as Resolve, shorts included, and must be remote.
-func (r *Resolver) EnsureCached(ref string, authprovider AuthProvider) (cloned bool, err error) {
+// there yet. It never pulls. ref uses the same syntax as Resolve, shorts
+// included, and must be remote. A clone directory left by an interrupted clone
+// is removed and cloned again.
+func (r *Resolver) EnsureCached(ref string, authprovider AuthProvider) error {
 	cached, err := r.Cached(ref)
 	if err != nil || cached {
-		return false, err
+		return err
 	}
 
 	remoteRef, _ := IsRemote(ref, r.shorts)
-	if _, err := r.resolveRemote(remoteRef, authprovider); err != nil {
-		return false, err
+	pkg, err := ParseRemote(remoteRef)
+	if err != nil {
+		return fmt.Errorf("failed to parse path: %w", err)
 	}
 
-	return true, nil
+	// resolveRemote treats any existing clone directory as cached.
+	if err := os.RemoveAll(pkg.CloneDir(r.cache)); err != nil {
+		return fmt.Errorf("failed to remove incomplete clone: %w", err)
+	}
+
+	_, err = r.resolveRemote(remoteRef, authprovider)
+	return err
 }
 
-// Cached reports whether the remote scaffold ref is in the cache.
+// Cached reports whether the remote scaffold ref is in the cache. A clone
+// directory that is empty, or holds a repository with no resolvable HEAD, is
+// what an interrupted clone leaves behind, so it does not count as cached.
 func (r *Resolver) Cached(ref string) (bool, error) {
 	remoteRef, ok := IsRemote(ref, r.shorts)
 	if !ok {
@@ -177,15 +188,33 @@ func (r *Resolver) Cached(ref string) (bool, error) {
 		return false, fmt.Errorf("failed to parse path: %w", err)
 	}
 
-	_, err = os.Stat(pkg.CloneDir(r.cache))
+	cloneDir := pkg.CloneDir(r.cache)
+
+	entries, err := os.ReadDir(cloneDir)
 	switch {
-	case err == nil:
-		return true, nil
 	case os.IsNotExist(err):
 		return false, nil
-	default:
+	case err != nil:
 		return false, fmt.Errorf("failed to check if repository is cached: %w", err)
+	case len(entries) == 0:
+		return false, nil
 	}
+
+	repo, err := git.PlainOpen(cloneDir)
+	switch {
+	case errors.Is(err, git.ErrRepositoryNotExists):
+		// A clone always writes .git first, so a directory with files and no
+		// repository did not come from a clone. Leave it alone.
+		return true, nil
+	case err != nil:
+		return false, fmt.Errorf("failed to open cached repository: %w", err)
+	}
+
+	if _, err := repo.Head(); err != nil {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (path string, err error) {

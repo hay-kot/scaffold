@@ -29,7 +29,9 @@ type ListSystemOutput struct {
 }
 
 func (ctrl *Controller) List(flags FlagsList) error {
-	ctrl.syncRCScaffolds()
+	if err := ctrl.syncRCScaffolds(); err != nil {
+		return err
+	}
 
 	systemScaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))
 	if err != nil {

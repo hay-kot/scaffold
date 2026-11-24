@@ -17,7 +17,10 @@ type updateStatus struct {
 
 func (ctrl *Controller) Update(ctx context.Context, c *cli.Command) error {
 	ctrl.ready()
-	ctrl.syncRCScaffolds()
+
+	if err := ctrl.syncRCScaffolds(); err != nil {
+		return err
+	}
 
 	scaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))
 	if err != nil {
@@ -52,7 +55,9 @@ func (ctrl *Controller) Update(ctx context.Context, c *cli.Command) error {
 		}
 	}
 
-	runWithStderrSpinner("Updating Scaffolds...", workfn)
+	if err := runWithStderrSpinner("Updating Scaffolds...", workfn); err != nil {
+		return err
+	}
 
 	if len(uptodate) > 0 {
 		ctrl.printer.Title(fmt.Sprintf("%d scaffolds up to date", len(uptodate)))

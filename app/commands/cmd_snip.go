@@ -257,15 +257,19 @@ func (ctrl *Controller) pickSnippet(found []snippets.Snippet, name string, noPro
 		}
 	}
 
-	if snip, ok := snippets.Find(found, name); ok {
+	snip, ok, err := snippets.Find(found, name)
+	if err != nil {
+		return snippets.Snippet{}, err
+	}
+	if ok {
 		return snip, nil
 	}
 
 	if !noPrompt {
 		matches := fuzzy.Find(name, snippets.Names(found))
 		if len(matches) > 0 && didYouMeanPrompt(name, matches[0].Str, "snippet") {
-			snip, _ := snippets.Find(found, matches[0].Str)
-			return snip, nil
+			snip, _, err := snippets.Find(found, matches[0].Str)
+			return snip, err
 		}
 	}
 
@@ -322,6 +326,15 @@ func writeSnippet(dest, filename string, content []byte, perm fs.FileMode, overw
 			return fmt.Errorf("%s already exists, use --overwrite to replace it", dest)
 		}
 		return err
+	}
+
+	// OpenFile applies perm only to a new file, and an overwritten file must
+	// still end up with the snippet's mode.
+	if overwrite {
+		if err := f.Chmod(perm); err != nil {
+			_ = f.Close()
+			return err
+		}
 	}
 
 	if _, err := f.Write(content); err != nil {

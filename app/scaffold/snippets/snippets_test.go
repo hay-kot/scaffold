@@ -126,11 +126,42 @@ func TestFind(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, ok := Find(list, tt.name)
+			got, ok, err := Find(list, tt.name)
+			require.NoError(t, err)
 			assert.Equal(t, tt.ok, ok)
 			assert.Equal(t, tt.want, got.Name)
 		})
 	}
+}
+
+func TestFind_AmbiguousStem(t *testing.T) {
+	list := []Snippet{{Name: "readme.md"}, {Name: "readme.txt"}}
+
+	_, ok, err := Find(list, "readme")
+	require.ErrorIs(t, err, ErrAmbiguous)
+	assert.False(t, ok)
+	assert.ErrorContains(t, err, "readme.md, readme.txt")
+
+	got, ok, err := Find(list, "readme.txt")
+	require.NoError(t, err)
+	assert.True(t, ok)
+	assert.Equal(t, "readme.txt", got.Name)
+}
+
+func TestDiscover_UnreadableSubdirSkipped(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root can read any directory")
+	}
+
+	root := t.TempDir()
+	writeFiles(t, root, "readme.md", "private/secret.txt")
+	locked := filepath.Join(root, "private")
+	require.NoError(t, os.Chmod(locked, 0o000))
+	t.Cleanup(func() { _ = os.Chmod(locked, 0o755) })
+
+	got := Discover([]string{root})
+
+	assert.Equal(t, []string{"readme.md"}, Names(got))
 }
 
 func TestExpandPath(t *testing.T) {
@@ -150,7 +181,6 @@ func TestParse(t *testing.T) {
 		wantBody  string
 		wantQuest int
 		wantPre   string
-		wantErr   bool
 		// BodyLine is 1 when the input has no front matter.
 		wantBodyLine int
 	}{
@@ -198,25 +228,34 @@ Description: {{ .Scaffold.description }}
 			wantBodyLine: 4,
 		},
 		{
-			name:    "unterminated front matter",
-			input:   "---\nmessages:\n  pre: hi\n",
-			wantErr: true,
+			name:         "unterminated block is body",
+			input:        "---\napiVersion: v1\nkind: Service\n",
+			wantBody:     "---\napiVersion: v1\nkind: Service\n",
+			wantBodyLine: 1,
 		},
 		{
-			name:    "invalid yaml",
-			input:   "---\nquestions: [\n---\nbody",
-			wantErr: true,
+			name:         "yaml document with unknown keys is body",
+			input:        "---\napiVersion: v1\nkind: Service\n---\napiVersion: apps/v1\n",
+			wantBody:     "---\napiVersion: v1\nkind: Service\n---\napiVersion: apps/v1\n",
+			wantBodyLine: 1,
+		},
+		{
+			name:         "markdown horizontal rules are body",
+			input:        "---\nSome text\n---\nmore",
+			wantBody:     "---\nSome text\n---\nmore",
+			wantBodyLine: 1,
+		},
+		{
+			name:         "invalid yaml is body",
+			input:        "---\nquestions: [\n---\nbody",
+			wantBody:     "---\nquestions: [\n---\nbody",
+			wantBodyLine: 1,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := Parse(strings.NewReader(tt.input))
-			if tt.wantErr {
-				require.Error(t, err)
-				return
-			}
-
 			require.NoError(t, err)
 			assert.Equal(t, tt.wantBody, got.Body)
 			assert.Equal(t, tt.wantBodyLine, got.BodyLine)

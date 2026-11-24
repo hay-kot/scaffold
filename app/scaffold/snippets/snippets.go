@@ -137,7 +137,7 @@ func discoverDir(root string) ([]Snippet, error) {
 			switch {
 			case info.IsDir():
 				if err := walk(p, name); err != nil {
-					return err
+					log.Warn().Err(err).Str("path", p).Msg("skipping unreadable snippet directory")
 				}
 			case info.Mode().IsRegular():
 				out = append(out, Snippet{Name: name, Path: p})
@@ -173,22 +173,34 @@ func discoverGlob(root string) ([]Snippet, error) {
 	return out, nil
 }
 
-// Find returns the snippet called name. An exact match wins over a match that
-// leaves out the file extension.
-func Find(snippets []Snippet, name string) (Snippet, bool) {
+// ErrAmbiguous is returned by Find when name leaves out the extension and
+// more than one snippet matches it.
+var ErrAmbiguous = errors.New("snippet name is ambiguous")
+
+// Find returns the snippet called name, and false when none matches. An exact
+// match wins over a match that leaves out the file extension.
+func Find(snippets []Snippet, name string) (Snippet, bool, error) {
 	for _, s := range snippets {
 		if s.Name == name {
-			return s, true
+			return s, true, nil
 		}
 	}
 
+	var matches []Snippet
 	for _, s := range snippets {
 		if strings.TrimSuffix(s.Name, path.Ext(s.Name)) == name {
-			return s, true
+			matches = append(matches, s)
 		}
 	}
 
-	return Snippet{}, false
+	switch len(matches) {
+	case 0:
+		return Snippet{}, false, nil
+	case 1:
+		return matches[0], true, nil
+	default:
+		return Snippet{}, false, fmt.Errorf("%w: %q matches %s", ErrAmbiguous, name, strings.Join(Names(matches), ", "))
+	}
 }
 
 // Names returns the name of each snippet.
@@ -218,6 +230,11 @@ type File struct {
 // The front matter is optional; it must start on the first line and end with
 // a line that holds only "---". One blank line directly after the closing
 // delimiter is dropped so authors can separate the two parts.
+//
+// Many templates start with "---" on their own, such as YAML documents and
+// Markdown with a horizontal rule. So the block counts as front matter only
+// when it is closed and decodes strictly into the scaffold config. Otherwise
+// the whole file is the body.
 func Parse(r io.Reader) (*File, error) {
 	data, err := io.ReadAll(r)
 	if err != nil {
@@ -243,15 +260,20 @@ func Parse(r io.Reader) (*File, error) {
 		}
 
 		if !ok {
-			return nil, errors.New("snippet front matter has no closing ---")
+			log.Debug().Msg("snippet starts with --- but has no closing ---, using the whole file as the body")
+			out.Body = string(data)
+			return out, nil
 		}
 
 		frontMatter = append(frontMatter, line...)
 		frontMatter = append(frontMatter, '\n')
 	}
 
-	if err := yaml.Unmarshal(frontMatter, out.Conf); err != nil {
-		return nil, fmt.Errorf("failed to parse snippet front matter: %w", err)
+	if err := decodeStrict(frontMatter, out.Conf); err != nil {
+		log.Debug().Err(err).Msg("snippet --- block is not scaffold front matter, using the whole file as the body")
+		out.Conf = &scaffold.ProjectScaffoldFile{}
+		out.Body = string(data)
+		return out, nil
 	}
 
 	if blank, after, ok := cutLine(rest); ok && len(blank) == 0 {
@@ -262,6 +284,18 @@ func Parse(r io.Reader) (*File, error) {
 	out.Body = string(rest)
 	out.BodyLine = consumed + 1
 	return out, nil
+}
+
+func decodeStrict(data []byte, conf *scaffold.ProjectScaffoldFile) error {
+	dec := yaml.NewDecoder(bytes.NewReader(data))
+	dec.KnownFields(true)
+
+	err := dec.Decode(conf)
+	if errors.Is(err, io.EOF) {
+		return nil
+	}
+
+	return err
 }
 
 // IgnoredKeys returns the front matter keys that are set but have no effect

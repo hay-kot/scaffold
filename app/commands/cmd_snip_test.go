@@ -157,6 +157,17 @@ func TestWriteSnippet(t *testing.T) {
 		assert.Equal(t, os.FileMode(0o755), info.Mode().Perm())
 	})
 
+	t.Run("overwrite applies perm to an existing file", func(t *testing.T) {
+		dest := filepath.Join(t.TempDir(), "run.sh")
+		require.NoError(t, os.WriteFile(dest, []byte("old"), 0o644))
+
+		require.NoError(t, writeSnippet(dest, "run.sh", []byte("#!/bin/sh"), 0o755, true))
+
+		info, err := os.Stat(dest)
+		require.NoError(t, err)
+		assert.Equal(t, os.FileMode(0o755), info.Mode().Perm())
+	})
+
 	t.Run("overwrite replaces existing content", func(t *testing.T) {
 		dest := filepath.Join(t.TempDir(), "c.txt")
 		require.NoError(t, os.WriteFile(dest, []byte("old content"), 0o644))

@@ -32,7 +32,7 @@ questions:
 {{ .Scaffold.description }}
 ```
 
-One blank line directly after the closing `---` is dropped, so you can separate the front matter from the body. A file without front matter is rendered as is.
+One blank line directly after the closing `---` is dropped, so you can separate the front matter from the body. A file without front matter is rendered as is. A leading `---` block counts as front matter only when it is closed and holds only scaffold keys, so YAML documents and Markdown files that start with `---` render as plain templates.
 
 These front matter keys apply to snippets:
 
@@ -61,7 +61,7 @@ Each entry is a directory, a single file, or a glob pattern. Directories are sea
 
 You can add locations for a single run with the `--snippet-dir` flag or the `SCAFFOLD_SNIPPET_DIR` environment variable. These are searched after the scaffoldrc locations.
 
-A snippet's name is its path relative to the location it was found in, such as `readme.md` or `go/main.go`. You can leave out the file extension when you refer to it. If two locations have a snippet with the same name, the one listed first wins.
+A snippet's name is its path relative to the location it was found in, such as `readme.md` or `go/main.go`. You can leave out the file extension when you refer to it. If that matches more than one snippet, such as `readme.md` and `readme.txt`, scaffold asks you to include the extension. If two locations have a snippet with the same name, the one listed first wins.
 
 ## Usage
 

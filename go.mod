@@ -8,7 +8,7 @@ require (
 	charm.land/glamour/v2 v2.0.1
 	charm.land/huh/v2 v2.0.3
 	charm.land/lipgloss/v2 v2.1.1
-	github.com/bmatcuk/doublestar/v4 v4.10.2
+	github.com/bmatcuk/doublestar/v4 v4.10.7
 	github.com/bradleyjkemp/cupaloy/v2 v2.8.0
 	github.com/catppuccin/go v0.3.0
 	github.com/charmbracelet/x/term v0.2.2

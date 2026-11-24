@@ -48,6 +48,13 @@ export interface Schema {
    * even us you're using a personal access token.
    * */
   auth?: (AuthEntryBasic | AuthEntryToken)[];
+  /**
+   * The snippets section lists where to find single file snippets. Each entry is a directory, a
+   * single file, or a glob pattern (`**` is supported). Entries support `~` and environment
+   * variables, and relative entries resolve against the directory of the scaffoldrc file. When
+   * unset, the `snippets` directory next to the scaffoldrc file is used.
+   * */
+  snippets?: string[];
 }
 
 type AuthEntryBasic = {

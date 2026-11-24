@@ -63,6 +63,11 @@ func main() {
 				Value:   []string{"./.scaffold"},
 				Sources: cli.EnvVars("SCAFFOLD_DIR"),
 			},
+			&cli.StringSliceFlag{
+				Name:    "snippet-dir",
+				Usage:   "extra snippet locations (directory, file, or glob), searched after the scaffoldrc snippets",
+				Sources: cli.EnvVars("SCAFFOLD_SNIPPET_DIR"),
+			},
 			&cli.StringFlag{
 				Name:    "cache",
 				Usage:   "path to the local scaffold directory default",
@@ -97,6 +102,7 @@ func main() {
 				Cache:          c.String("cache"),
 				ScaffoldRCPath: c.String("scaffoldrc"),
 				ScaffoldDirs:   c.StringSlice("scaffold-dir"),
+				SnippetDirs:    c.StringSlice("snippet-dir"),
 			}
 
 			dir := filepath.Dir(ctrl.Flags.ScaffoldRCPath)
@@ -386,6 +392,61 @@ Examples:
 					},
 				},
 				Action: ctrl.Schema,
+			},
+			{
+				Name:      "snip",
+				Usage:     "render a single file snippet",
+				UsageText: "scaffold snip [flags] [snippet] [variables...]",
+				Description: `Render a single file snippet into the current directory.
+
+A snippet is a template file with optional YAML front matter that uses the
+scaffold.yaml schema (questions, computed, messages, presets). Snippets are
+found in the scaffoldrc 'snippets' locations, or in a 'snippets' directory
+next to the scaffoldrc file when none are configured.
+
+The snippet is written to ./<snippet file name> and never replaces an
+existing file unless --overwrite is set. Use --output to choose another path
+or directory, and '--output -' to write to stdout.
+
+Examples:
+  scaffold snip
+  scaffold snip taskfile
+  scaffold snip readme.md description="My project"
+  scaffold snip --output - gitignore > .gitignore`,
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:    "output",
+						Aliases: []string{"o"},
+						Usage:   "file or directory to write to, or '-' for stdout (default: current directory)",
+					},
+					&cli.BoolFlag{
+						Name:    "overwrite",
+						Usage:   "overwrite an existing file",
+						Sources: cli.EnvVars("SCAFFOLD_OVERWRITE"),
+					},
+					&cli.BoolFlag{
+						Name:  "no-prompt",
+						Usage: "disable interactive mode (use with --preset and/or CLI variables)",
+					},
+					&cli.StringFlag{
+						Name:  "preset",
+						Usage: "preset to use with --no-prompt",
+					},
+					&cli.BoolFlag{
+						Name:    "list",
+						Aliases: []string{"l"},
+						Usage:   "list available snippets",
+					},
+				},
+				Action: func(ctx context.Context, c *cli.Command) error {
+					return ctrl.Snip(c.Args().Slice(), commands.FlagsSnip{
+						Output:    c.String("output"),
+						Overwrite: c.Bool("overwrite"),
+						NoPrompt:  c.Bool("no-prompt"),
+						Preset:    c.String("preset"),
+						List:      c.Bool("list"),
+					})
+				},
 			},
 			{
 				Name:   "dev",

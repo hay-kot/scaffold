@@ -127,7 +127,7 @@ func (ctrl *Controller) New(args []string, flags FlagsNew) error {
 	default:
 		varfunc = func(p *scaffold.Project) (map[string]any, error) {
 			vars := scaffold.MergeMaps(argvars, ctrl.rc.Defaults)
-			vars, err = p.AskQuestions(vars, ctrl.engine, styles.Theme(ctrl.rc.Settings.Theme))
+			vars, err = p.AskQuestions(vars, ctrl.engine, styles.Theme(ctrl.rc.Settings.Theme), os.Stdout)
 			if err != nil {
 				return nil, err
 			}

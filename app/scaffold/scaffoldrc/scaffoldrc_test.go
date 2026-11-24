@@ -192,3 +192,21 @@ func Test_expandEnvVars(t *testing.T) {
 		})
 	}
 }
+
+func TestScaffoldRC_ValidateSnippets(t *testing.T) {
+	rc, err := New(bytes.NewReader([]byte(`---
+snippets:
+  - ~/dotfiles/snippets
+  - /work/**/*.md
+  - "[unclosed"
+`)))
+	require.NoError(t, err)
+	assert.Equal(t, []string{"~/dotfiles/snippets", "/work/**/*.md", "[unclosed"}, rc.Snippets)
+
+	err = rc.Validate()
+
+	var errs RcValidationErrors
+	require.ErrorAs(t, err, &errs)
+	require.Len(t, errs, 1)
+	assert.Equal(t, "snippets[2]", errs[0].Key)
+}

@@ -95,6 +95,18 @@ Which will expand to
 scaffold new https://github.com/joebagadonuts/my-project
 ```
 
+## `snippets`
+
+The `snippets` section lists where scaffold looks for [snippets](/snippets/usage). Each entry is a directory, a single file, or a glob pattern. Entries support `~` and environment variables, and relative entries are resolved against the directory that holds your scaffoldrc file.
+
+```yaml
+snippets:
+  - ~/dotfiles/snippets
+  - ~/work/templates/**/*.snippet.md
+```
+
+When `snippets` is not set, scaffold uses the `snippets` directory next to your scaffoldrc file. If two locations have a snippet with the same name, the one listed first wins.
+
 ## `auth`
 
 The `auth` sections lets you define authentication matchers for your scaffolds. This is useful for using scaffolds that are stored in a private repository.

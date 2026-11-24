@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs/pkgurl"
@@ -50,6 +51,14 @@ type ScaffoldRC struct {
 	// Auth defines a list of auth entries that can be used to
 	// authenticate with a remote SCM.
 	Auth []AuthEntry `yaml:"auth"`
+
+	// Snippets lists where to find single file snippets. Each entry is a
+	// directory, a file, or a doublestar glob. Relative entries resolve
+	// against the directory that holds the scaffoldrc file.
+	//
+	//   - ~/dotfiles/snippets
+	//   - ~/work/**/*.snippet.md
+	Snippets []string `yaml:"snippets"`
 }
 
 type Settings struct {
@@ -116,6 +125,15 @@ func (rc *ScaffoldRC) Validate() error {
 			errs = append(errs, RCValidationError{
 				Key:   k,
 				Cause: fmt.Errorf("invalid alias path %q: must be a URL, an SSH git URL, an absolute path, or start with ~", v),
+			})
+		}
+	}
+
+	for i, v := range rc.Snippets {
+		if !doublestar.ValidatePattern(filepath.ToSlash(v)) {
+			errs = append(errs, RCValidationError{
+				Key:   fmt.Sprintf("snippets[%d]", i),
+				Cause: fmt.Errorf("invalid glob pattern %q", v),
 			})
 		}
 	}

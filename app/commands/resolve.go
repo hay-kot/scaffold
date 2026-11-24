@@ -75,7 +75,12 @@ func (ctrl *Controller) resolve(
 			}
 
 			if first != "" {
-				useMatch := didYouMeanPrompt(argPath, first, isSystemMatch)
+				source := "local"
+				if isSystemMatch {
+					source = "system"
+				}
+
+				useMatch := didYouMeanPrompt(argPath, first, source)
 
 				if useMatch {
 					if isSystemMatch {

@@ -1,6 +1,6 @@
 # ScaffoldRC Reference
 
-The scaffoldrc file (`scaffoldrc.yml`) configures global settings, defaults, aliases, shorts, and authentication.
+The scaffoldrc file (`scaffoldrc.yml`) configures global settings, defaults, aliases, shorts, authentication, and snippet locations.
 
 ## Full Example
 
@@ -31,6 +31,9 @@ auth:
     basic:
       username: deploy
       password: ${GITEA_PASSWORD}
+
+snippets:
+  - ~/dotfiles/snippets
 ```
 
 ---
@@ -138,6 +141,29 @@ Pattern-matched authentication for private git repositories.
 - Environment variable expansion: `${VAR_NAME}` is replaced with the env var value
 - Only whole-value references are supported (e.g., `${TOKEN}`), not partial interpolation (e.g., `prefix-${TOKEN}` won't work)
 - If no auth entry matches and the remote requires authentication, the CLI prompts interactively (unless `--no-prompt`)
+
+---
+
+## `snippets`
+
+```yaml
+snippets:
+  - ~/dotfiles/snippets
+  - ~/work/templates/**/*.snippet.md
+```
+
+Locations searched by `scaffold snip` for single file snippets.
+
+**Rules:**
+
+- Each entry is a directory (searched recursively, symlinks followed, hidden files and directories skipped), a single file, or a doublestar glob
+- A path that exists is never treated as a glob; unreadable locations are skipped with a warning
+- `~` and `$VAR` are expanded; relative entries resolve against the scaffoldrc directory
+- When unset, the `snippets` directory next to the scaffoldrc file is used
+- `--snippet-dir` / `SCAFFOLD_SNIPPET_DIR` entries are searched after these
+- A snippet's name is its path relative to its location; the extension is optional when referring to it
+- First location wins when two locations provide the same name
+- Invalid glob patterns fail validation
 
 ---
 

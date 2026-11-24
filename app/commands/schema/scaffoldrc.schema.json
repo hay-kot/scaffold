@@ -51,6 +51,13 @@
         "type": "string"
       }
     },
+    "snippets": {
+      "type": "array",
+      "description": "Locations of single file snippets: directories, files, or glob patterns. Relative entries resolve against the scaffoldrc directory. Defaults to the snippets directory next to the scaffoldrc file.",
+      "items": {
+        "type": "string"
+      }
+    },
     "auth": {
       "type": "array",
       "description": "Authentication configuration for private scaffolds",

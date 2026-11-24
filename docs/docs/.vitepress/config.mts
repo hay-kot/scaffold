@@ -45,6 +45,12 @@ export default withMermaid(
           ]
         },
         {
+          text: "Snippets",
+          items:[
+            { text: "Usage", link:"/snippets/usage"},
+          ]
+        },
+        {
           text: "Configuration",
           items:[
             { text: "Scaffold Config", link: "/configuration/scaffold-file"},

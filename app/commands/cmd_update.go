@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"charm.land/huh/v2/spinner"
 	"github.com/hay-kot/scaffold/app/scaffold/pkgs"
 	"github.com/hay-kot/scaffold/internal/printer"
 	"github.com/urfave/cli/v3"
@@ -18,6 +17,7 @@ type updateStatus struct {
 
 func (ctrl *Controller) Update(ctx context.Context, c *cli.Command) error {
 	ctrl.ready()
+	ctrl.syncRCScaffolds()
 
 	scaffolds, err := pkgs.ListSystem(os.DirFS(ctrl.Flags.Cache))
 	if err != nil {
@@ -52,13 +52,7 @@ func (ctrl *Controller) Update(ctx context.Context, c *cli.Command) error {
 		}
 	}
 
-	err = spinner.New().
-		Title("Updating Scaffolds...").
-		Action(workfn).
-		Run()
-	if err != nil {
-		return err
-	}
+	runWithStderrSpinner("Updating Scaffolds...", workfn)
 
 	if len(uptodate) > 0 {
 		ctrl.printer.Title(fmt.Sprintf("%d scaffolds up to date", len(uptodate)))

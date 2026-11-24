@@ -152,6 +152,21 @@ func (r *Resolver) Resolve(arg string, checkDirs []string, authprovider AuthProv
 // there yet. It never pulls. cloned reports whether a clone happened. ref uses
 // the same syntax as Resolve, shorts included, and must be remote.
 func (r *Resolver) EnsureCached(ref string, authprovider AuthProvider) (cloned bool, err error) {
+	cached, err := r.Cached(ref)
+	if err != nil || cached {
+		return false, err
+	}
+
+	remoteRef, _ := IsRemote(ref, r.shorts)
+	if _, err := r.resolveRemote(remoteRef, authprovider); err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+// Cached reports whether the remote scaffold ref is in the cache.
+func (r *Resolver) Cached(ref string) (bool, error) {
 	remoteRef, ok := IsRemote(ref, r.shorts)
 	if !ok {
 		return false, fmt.Errorf("%q is not a remote scaffold", ref)
@@ -165,16 +180,12 @@ func (r *Resolver) EnsureCached(ref string, authprovider AuthProvider) (cloned b
 	_, err = os.Stat(pkg.CloneDir(r.cache))
 	switch {
 	case err == nil:
+		return true, nil
+	case os.IsNotExist(err):
 		return false, nil
-	case !os.IsNotExist(err):
+	default:
 		return false, fmt.Errorf("failed to check if repository is cached: %w", err)
 	}
-
-	if _, err := r.resolveRemote(remoteRef, authprovider); err != nil {
-		return false, err
-	}
-
-	return true, nil
 }
 
 func (r *Resolver) resolveRemote(remoteRef string, authprovider AuthProvider) (path string, err error) {

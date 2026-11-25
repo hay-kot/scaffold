@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"maps"
 	"strconv"
+	"strings"
 
 	"charm.land/huh/v2"
 	"github.com/hay-kot/scaffold/app/core/engine"
@@ -63,13 +64,12 @@ func LoadProject(fileSys fs.FS, opts Options) (*Project, error) {
 
 	var err error
 
-	p.NameTemplate, err = p.validate()
+	scaffoldFile, err := readFirst(p.RootFS, "scaffold.yaml", "scaffold.yml")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("scaffold.{yml,yaml} does not exist")
 	}
 
-	// Read scaffold.yaml
-	scaffoldFile, err := readFirst(p.RootFS, "scaffold.yaml", "scaffold.yml")
+	p.NameTemplate, err = RootDir(p.RootFS)
 	if err != nil {
 		return nil, err
 	}
@@ -84,22 +84,35 @@ func LoadProject(fileSys fs.FS, opts Options) (*Project, error) {
 	return p, nil
 }
 
-func (p *Project) validate() (str string, err error) {
-	// Ensure there is a scaffold.yaml file
-	_, err = readFirst(p.RootFS, "scaffold.yaml", "scaffold.yml")
-	if err != nil {
-		return "", fmt.Errorf("scaffold.{yml,yaml} does not exist")
-	}
-
-	// Ensure required directories exist
+// RootDir returns the name of the scaffold's root template directory: either
+// "templates" or one of the "{{ .Project }}" name variants. It returns an error
+// when none exist, or when more than one exists, because only one of them can
+// be rendered and the others would be silently ignored.
+func RootDir(fsys fs.FS) (string, error) {
+	var found []string
 	for _, dir := range append(projectNames[:], templateNames[:]...) {
-		_, err = p.RootFS.Open(dir)
-		if err == nil {
-			return dir, nil
+		info, err := fs.Stat(fsys, dir)
+		if err == nil && info.IsDir() {
+			found = append(found, dir)
 		}
 	}
 
-	return "", fmt.Errorf("{{ .Project }} directory does not exist")
+	switch len(found) {
+	case 0:
+		return "", fmt.Errorf("{{ .Project }} or templates directory does not exist")
+	case 1:
+		return found[0], nil
+	default:
+		return "", fmt.Errorf("scaffold must have exactly one root directory, found %d: %s", len(found), strings.Join(quoteAll(found), ", "))
+	}
+}
+
+func quoteAll(ss []string) []string {
+	out := make([]string, len(ss))
+	for i, s := range ss {
+		out[i] = strconv.Quote(s)
+	}
+	return out
 }
 
 // AskQuestions prompts for the project's questions and writes a summary of the

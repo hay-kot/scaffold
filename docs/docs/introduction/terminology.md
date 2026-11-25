@@ -11,7 +11,7 @@ a generic term for a repository or directory that has a `scaffold.{yml,yaml}` fi
 
 ## `project`
 
-a scaffold type that is used to generate a _new_ project, it contains one of the special scaffold project directories
+a scaffold type that is used to generate a _new_ project, it contains exactly one of the special scaffold project directories
 
 ## `template`
 

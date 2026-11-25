@@ -31,6 +31,8 @@ The root directory within your scaffold must use one of the following dynamic na
 - `{{ .ProjectPascal }}` - Project name in PascalCase
 :::
 
+A scaffold must have exactly one root directory. Scaffold rejects a scaffold that has more than one of these directories, or one of these directories and a `templates` directory, because it can only render one of them. `scaffold lint` reports the same error.
+
 ## Configuration File
 
 Project scaffolds require a `scaffold.yaml` or `scaffold.yml` config file placed at the root of the scaffold directory. This file has a whole range of options for defining questions to ask the user and different flags/options that can be set.

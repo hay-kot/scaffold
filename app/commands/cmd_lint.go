@@ -77,8 +77,12 @@ func (ctrl *Controller) Lint(pfpath string) error {
 		}
 	}
 
-	// Validate rewrites from fields exist
 	scaffolddir := filepath.Dir(pfpath)
+	if _, err := scaffold.RootDir(os.DirFS(scaffolddir)); err != nil {
+		errs = append(errs, err)
+	}
+
+	// Validate rewrites from fields exist
 	for _, rewrite := range pf.Rewrites {
 		abs, _ := filepath.Abs(filepath.Join(scaffolddir, rewrite.From))
 
